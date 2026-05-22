@@ -16,49 +16,67 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export default function ReviewPreview() {
-  const reviews = sampleReviews.slice(0, 3);
+  // Duplicate reviews array to create a seamless infinite scrolling loop
+  const marqueeReviews = [...sampleReviews, ...sampleReviews];
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Trusted by Digital Buyers</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            Real feedback from verified customers across our product range.
+    <section className="py-20 bg-gray-50 text-gray-900 border-t border-gray-200/50 relative overflow-hidden">
+      {/* Decorative gradient radial */}
+      <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[400px] h-[400px] bg-[#009ee3]/5 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 mb-16">
+        <div className="text-center">
+          <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 tracking-tight">
+            Trusted by <span className="text-[#009ee3] font-black">Digital Buyers</span>
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
+            Real feedback from verified buyers across our range of digital premium goods.
           </p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {reviews.map((review) => (
+      {/* Infinite scrolling marquee track */}
+      <div className="relative w-full flex overflow-x-hidden py-4 border-y border-gray-200 bg-gray-100/20 pointer-events-auto group">
+        
+        {/* Left/Right fading edge overlays for premium look */}
+        <div className="absolute top-0 bottom-0 left-0 w-24 bg-gradient-to-r from-gray-50 to-transparent z-10 pointer-events-none" />
+        <div className="absolute top-0 bottom-0 right-0 w-24 bg-gradient-to-l from-gray-50 to-transparent z-10 pointer-events-none" />
+
+        {/* Marquee Inner - Row 1 */}
+        <div className="flex gap-6 animate-marquee-scroll shrink-0 min-w-full group-hover:[animation-play-state:paused] pr-6">
+          {marqueeReviews.map((review, i) => (
             <div
-              key={review.id}
-              className="bg-gray-50 rounded-2xl border border-gray-100 p-6 flex flex-col hover:border-[#009ee3]/30 hover:shadow-md transition-all duration-200"
+              key={`${review.id}-${i}`}
+              className="w-[320px] shrink-0 bg-white border border-gray-200 shadow-sm p-6 rounded-2xl flex flex-col justify-between hover:border-[#009ee3]/30 hover:shadow-md transition-all duration-300"
             >
-              <div className="flex items-start justify-between mb-4">
-                <StarRating rating={review.rating} />
-                {review.verifiedPurchase && (
-                  <span className="flex items-center gap-1 text-emerald-600 text-xs font-medium">
-                    <BadgeCheck size={14} /> Verified
-                  </span>
-                )}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <StarRating rating={review.rating} />
+                  {review.verifiedPurchase && (
+                    <span className="flex items-center gap-1 text-emerald-600 text-xs font-bold uppercase tracking-wider">
+                      <BadgeCheck size={14} className="text-emerald-600" /> Verified
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-6 italic">
+                  &ldquo;{review.comment}&rdquo;
+                </p>
               </div>
 
-              <p className="text-gray-600 text-sm leading-relaxed flex-grow mb-5">
-                &ldquo;{review.comment}&rdquo;
-              </p>
-
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                <div className="w-9 h-9 bg-[#009ee3]/10 rounded-full flex items-center justify-center text-[#009ee3] font-bold text-sm">
+              <div className="flex items-center gap-3 pt-4 border-t border-gray-100 mt-auto">
+                <div className="w-8 h-8 bg-blue-50 text-[#009ee3] border border-blue-100/50 rounded-full flex items-center justify-center font-extrabold text-xs">
                   {review.userName.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">{review.userName}</p>
-                  <p className="text-xs text-gray-400">Verified Buyer</p>
+                  <p className="text-xs font-bold text-gray-900">{review.userName}</p>
+                  <p className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase">Verified Buyer</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

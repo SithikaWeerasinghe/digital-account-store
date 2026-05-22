@@ -5,79 +5,90 @@ import { Tv, Bot, Gamepad2, Cpu, Briefcase, Gift } from 'lucide-react';
 const categories = [
   {
     name: 'Streaming',
-    description: 'Entertainment subscriptions & media access',
+    description: 'Entertainment & media access',
     icon: Tv,
     color: 'bg-purple-100 text-purple-600',
-    border: 'hover:border-purple-300',
+    glowClass: 'glow-violet-hover',
     query: 'Streaming',
   },
   {
     name: 'AI Tools',
-    description: 'AI assistants, writing & design tools',
+    description: 'AI writing & design tools',
     icon: Bot,
     color: 'bg-blue-100 text-blue-600',
-    border: 'hover:border-blue-300',
+    glowClass: 'glow-cyan-hover',
     query: 'AI Tools',
   },
   {
     name: 'Gaming',
-    description: 'In-game items, bundles & game passes',
+    description: 'Keys, accounts & passes',
     icon: Gamepad2,
     color: 'bg-green-100 text-green-600',
-    border: 'hover:border-green-300',
+    glowClass: 'glow-green-hover',
     query: 'Gaming',
   },
   {
     name: 'Software',
-    description: 'License keys for essential software',
+    description: 'License keys & packages',
     icon: Cpu,
     color: 'bg-orange-100 text-orange-600',
-    border: 'hover:border-orange-300',
+    glowClass: 'glow-gold-hover',
     query: 'Software',
   },
   {
     name: 'Productivity',
-    description: 'Cloud storage, learning & work tools',
+    description: 'Work, cloud & learning tools',
     icon: Briefcase,
     color: 'bg-teal-100 text-teal-600',
-    border: 'hover:border-teal-300',
+    glowClass: 'glow-cyan-hover',
     query: 'Productivity',
   },
   {
     name: 'Gift Cards',
-    description: 'Digital gift codes for popular platforms',
+    description: 'Platform gift codes & vouchers',
     icon: Gift,
     color: 'bg-rose-100 text-rose-600',
-    border: 'hover:border-rose-300',
+    glowClass: 'glow-rose-hover',
     query: 'Gift Cards',
   },
 ];
 
 export default function CategorySection() {
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Explore Popular Categories</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
+    <section className="py-20 bg-white relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 text-gray-900 tracking-tight">
+            Explore <span className="text-[#009ee3] font-black">Popular Categories</span>
+          </h2>
+          <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
             Find exactly what you need across our curated selection of digital products.
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
           {categories.map((cat) => {
             const Icon = cat.icon;
             return (
               <Link
                 key={cat.name}
                 href={`${ROUTES.PRODUCTS}?category=${encodeURIComponent(cat.query)}`}
-                className={`group flex flex-col items-center p-5 bg-white rounded-2xl border border-gray-200 ${cat.border} hover:shadow-md transition-all duration-200 text-center cursor-pointer`}
+                className={`group flex flex-col items-center p-6 rounded-2xl bg-white border border-gray-200 transition-all duration-300 text-center cursor-pointer hover:-translate-y-1.5 ${cat.glowClass}`}
               >
-                <div className={`w-12 h-12 rounded-xl ${cat.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200`}>
-                  <Icon size={22} />
+                {/* Icon wrapper */}
+                <div className={`w-14 h-14 rounded-2xl ${cat.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-all duration-300 shadow-sm group-hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]`}>
+                  <Icon size={24} className="group-hover:rotate-6 transition-transform" />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-800 mb-1">{cat.name}</h3>
-                <p className="text-xs text-gray-500 leading-tight hidden sm:block">{cat.description}</p>
+                
+                {/* Heading */}
+                <h3 className="text-sm font-bold text-gray-900 mb-2 group-hover:text-[#009ee3] transition-colors">
+                  {cat.name}
+                </h3>
+                
+                {/* Subtitle */}
+                <p className="text-xs text-gray-500 leading-snug hidden sm:block">
+                  {cat.description}
+                </p>
               </Link>
             );
           })}

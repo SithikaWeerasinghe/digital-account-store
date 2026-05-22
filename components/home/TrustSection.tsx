@@ -3,51 +3,68 @@ import { Zap, Shield, Users, CheckCircle } from 'lucide-react';
 const benefits = [
   {
     icon: Zap,
-    title: 'Instant Digital Delivery',
-    description: 'Your purchase is delivered to your email within seconds of payment confirmation. No waiting, no delays.',
-    color: 'bg-blue-100 text-[#009ee3]',
+    title: 'Instant Delivery',
+    description: 'Credentials and licenses are instantly sent to your email after verification. Zero delays.',
+    color: 'bg-blue-50 text-[#009ee3] border border-blue-100/50',
+    glowClass: 'glow-cyan-hover',
   },
   {
     icon: Shield,
-    title: 'Secure Payment Process',
-    description: 'All transactions are processed through encrypted, secure payment gateways. Your data stays protected.',
-    color: 'bg-emerald-100 text-emerald-600',
+    title: 'Secure Checkout',
+    description: 'All payments are routed through military-grade encrypted processing networks to keep data safe.',
+    color: 'bg-green-50 text-green-600 border border-green-100/50',
+    glowClass: 'glow-green-hover',
   },
   {
     icon: Users,
-    title: 'Real Support Team',
-    description: 'A dedicated support team is ready to assist you with any order issue, delivery concern, or product question.',
-    color: 'bg-purple-100 text-purple-600',
+    title: 'Real Support',
+    description: 'A dedicated team is online to solve order inquiries, credentials setup, or refund questions.',
+    color: 'bg-purple-50 text-purple-600 border border-purple-100/50',
+    glowClass: 'glow-violet-hover',
   },
   {
     icon: CheckCircle,
-    title: 'Quality Checked Products',
-    description: 'Every product listed in our store is verified before publication to ensure it meets quality standards.',
-    color: 'bg-amber-100 text-amber-600',
+    title: 'Verified Stock',
+    description: 'Every product undergoes rigorous validation checks prior to listing to guarantee stability.',
+    color: 'bg-amber-50 text-amber-600 border border-amber-100/50',
+    glowClass: 'glow-gold-hover',
   },
 ];
 
 export default function TrustSection() {
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            Built for Fast, Safe, and Simple Digital Shopping
+    <section className="py-20 bg-white relative">
+      {/* Background decoration */}
+      <div className="absolute top-0 left-1/4 w-[300px] h-[300px] bg-[#009ee3]/5 rounded-full blur-[80px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 text-gray-900 tracking-tight">
+            Fast, Safe & <span className="text-[#009ee3] font-black">Secure Shopping</span>
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            We built Apex Digital around four principles that matter most to our customers.
+          <p className="text-gray-500 max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
+            Apex Digital is designed to provide the fastest and most secure checkout for digital goods.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {benefits.map(({ icon: Icon, title, description, color }) => (
-            <div key={title} className="group p-6 rounded-2xl border border-gray-100 hover:border-[#009ee3]/30 hover:shadow-md transition-all duration-200 bg-white">
-              <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200`}>
-                <Icon size={24} />
+          {benefits.map(({ icon: Icon, title, description, color, glowClass }) => (
+            <div 
+              key={title} 
+              className={`group p-8 rounded-2xl bg-gray-50 border border-gray-100/80 transition-all duration-300 hover:bg-white hover:border-gray-200 hover:-translate-y-1.5 ${glowClass}`}
+            >
+              {/* Icon Container */}
+              <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mb-5 group-hover:scale-105 transition-all duration-300`}>
+                <Icon size={22} />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+              
+              <h3 className="font-bold text-gray-900 text-base mb-3 group-hover:text-[#009ee3] transition-colors">
+                {title}
+              </h3>
+              
+              <p className="text-xs text-gray-500 leading-relaxed">
+                {description}
+              </p>
             </div>
           ))}
         </div>

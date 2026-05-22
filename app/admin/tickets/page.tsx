@@ -1,13 +1,13 @@
 import TicketTable from '@/components/admin/TicketTable';
 
-export default function AdminTicketsPage() {
-  const mockTickets = [
-    { id: 'TKT-001', userId: 'user-1', subject: 'Product key not working', message: '...', status: 'open' as const, priority: 'high' as const, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 'TKT-002', userId: 'user-2', subject: 'How to activate?', message: '...', status: 'in_progress' as const, priority: 'medium' as const, createdAt: new Date(Date.now() - 3600000).toISOString(), updatedAt: new Date().toISOString() },
-    { id: 'TKT-003', userId: 'user-3', subject: 'Refund request', message: '...', status: 'resolved' as const, priority: 'urgent' as const, createdAt: new Date(Date.now() - 86400000).toISOString(), updatedAt: new Date().toISOString() },
-    { id: 'TKT-004', userId: 'user-4', subject: 'Wrong item received', message: '...', status: 'closed' as const, priority: 'medium' as const, createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), updatedAt: new Date().toISOString() },
-  ];
+const mockTickets = [
+  { id: 'TKT-001', userId: 'user-1', subject: 'Product key not working', message: '...', status: 'open' as const, priority: 'high' as const, createdAt: '2026-05-22T08:00:00.000Z', updatedAt: '2026-05-22T08:00:00.000Z' },
+  { id: 'TKT-002', userId: 'user-2', subject: 'How to activate?', message: '...', status: 'in_progress' as const, priority: 'medium' as const, createdAt: '2026-05-22T07:00:00.000Z', updatedAt: '2026-05-22T07:00:00.000Z' },
+  { id: 'TKT-003', userId: 'user-3', subject: 'Refund request', message: '...', status: 'resolved' as const, priority: 'urgent' as const, createdAt: '2026-05-22T06:00:00.000Z', updatedAt: '2026-05-22T06:00:00.000Z' },
+  { id: 'TKT-004', userId: 'user-4', subject: 'Wrong item received', message: '...', status: 'closed' as const, priority: 'medium' as const, createdAt: '2026-05-21T08:00:00.000Z', updatedAt: '2026-05-22T08:00:00.000Z' },
+];
 
+export default function AdminTicketsPage() {
   return (
     <div className="space-y-6">
       <div>

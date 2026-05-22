@@ -15,6 +15,42 @@
   --color-warning: #ff7733;
 
   --font-sans: "Inter", system-ui, sans-serif;
+
+  /* Custom HSL and Hex neon palettes */
+  --color-cyber-dark: #070913;
+  --color-cyber-deep: #0e1224;
+  --color-cyber-border: rgba(255, 255, 255, 0.08);
+  --color-neon-cyan: #00f0ff;
+  --color-neon-violet: #bd00ff;
+  --color-neon-gold: #ffd700;
+
+  /* Animations */
+  --animate-text-shimmer: text-shimmer 6s linear infinite;
+  --animate-float-slow: float-slow 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
+  --animate-grid-glide: grid-glide 24s linear infinite;
+  --animate-marquee-scroll: marquee-scroll 25s linear infinite;
+
+  @keyframes text-shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(1deg); }
+  }
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 0.15; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(1.05); }
+  }
+  @keyframes grid-glide {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 40px; }
+  }
+  @keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 }
 
 @layer base {
@@ -86,5 +122,64 @@
   }
   .mp-button-secondary:hover {
     background-color: var(--color-secondary-hover);
+  }
+
+  /* Glassmorphism Panels */
+  .glass-card {
+    background: rgba(14, 18, 36, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card-light {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  /* Cyber Grid Utility */
+  .cyber-grid {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  }
+
+  /* Card glows */
+  .glow-primary-hover:hover {
+    box-shadow: 0 8px 30px rgba(0, 158, 227, 0.08);
+    border-color: rgba(0, 158, 227, 0.3);
+  }
+  .glow-cyan-hover:hover {
+    box-shadow: 0 8px 30px rgba(14, 165, 233, 0.08);
+    border-color: rgba(14, 165, 233, 0.3);
+  }
+  .glow-violet-hover:hover {
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.08);
+    border-color: rgba(139, 92, 246, 0.3);
+  }
+  .glow-gold-hover:hover {
+    box-shadow: 0 8px 30px rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+  .glow-green-hover:hover {
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.08);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+  .glow-rose-hover:hover {
+    box-shadow: 0 8px 30px rgba(244, 63, 94, 0.08);
+    border-color: rgba(244, 63, 94, 0.3);
+  }
+
+  /* Accordion Grid Animation */
+  .accordion-grid {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .accordion-grid.open {
+    grid-template-rows: 1fr;
   }
 }

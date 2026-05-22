@@ -12,13 +12,13 @@ export default function CheckoutSuccessPage() {
         
         <h1 className="text-2xl font-bold text-text-primary mb-2">Payment Successful!</h1>
         <p className="text-text-secondary mb-8">
-          Your order has been confirmed. We've sent the digital products to your email address.
+          Your order has been confirmed. We&apos;ve sent the digital products to your email address.
         </p>
         
         <div className="bg-gray-50 rounded-lg p-4 mb-8 text-left text-sm">
           <div className="flex justify-between mb-2">
             <span className="text-text-muted">Order ID:</span>
-            <span className="font-medium text-text-primary">ORD-{Math.floor(Math.random() * 100000)}</span>
+            <span className="font-medium text-text-primary">ORD-73921</span>
           </div>
           <div className="flex justify-between">
             <span className="text-text-muted">Total Paid:</span>

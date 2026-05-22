@@ -12,7 +12,7 @@ export default function CheckoutFailedPage() {
         
         <h1 className="text-2xl font-bold text-text-primary mb-2">Payment Failed</h1>
         <p className="text-text-secondary mb-8">
-          We couldn't process your payment. Please try again with a different payment method.
+          We couldn&apos;t process your payment. Please try again with a different payment method.
         </p>
         
         <div className="flex flex-col gap-3">
