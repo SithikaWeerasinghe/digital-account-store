@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
 import {
   Star, BadgeCheck, Zap, Shield, Package,
-  ChevronRight, Mail, CreditCard, Bitcoin, Banknote, Check
+  ChevronRight, Mail, CreditCard, Bitcoin, Banknote, Check, Gamepad2, Tv, Bot, Cpu, Briefcase, Gift
 } from 'lucide-react';
 
 function formatCurrency(n: number) {
@@ -18,8 +18,8 @@ function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} size={15}
-          className={i <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200 fill-gray-200'}
+        <Star key={i} size={14}
+          className={i <= Math.round(rating) ? 'fill-[#FACC15] text-[#FACC15] drop-shadow-[0_0_4px_rgba(250,204,21,0.4)]' : 'text-[#25253A] fill-[#25253A]'}
         />
       ))}
     </div>
@@ -32,6 +32,15 @@ const PAYMENT_METHODS = [
   { id: 'manual', label: 'Manual Payment', desc: 'Bank transfer or other', icon: Banknote },
 ];
 
+const categoryIcons: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  Gaming: Gamepad2, Streaming: Tv, 'AI Tools': Bot, Software: Cpu, Productivity: Briefcase, 'Gift Cards': Gift,
+};
+const categoryColors: Record<string, string> = {
+  Gaming: 'from-[#7C3AED] to-[#A855F7]', Streaming: 'from-[#6D28D9] to-[#8B5CF6]',
+  'AI Tools': 'from-[#5B21B6] to-[#7C3AED]', Software: 'from-[#4C1D95] to-[#6D28D9]',
+  Productivity: 'from-[#8B5CF6] to-[#A855F7]', 'Gift Cards': 'from-[#A855F7] to-[#C084FC]',
+};
+
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
   const product = sampleProducts.find((p) => p.slug === params.slug) ?? sampleProducts[0];
   const reviews = sampleReviews.slice(0, 3);
@@ -43,6 +52,12 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const [submitted, setSubmitted] = useState(false);
 
   const total = product.price * quantity;
+  const discountPct = product.originalPrice
+    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    : 0;
+
+  const CategoryIcon = categoryIcons[product.category] ?? Package;
+  const gradientColor = categoryColors[product.category] ?? 'from-[#8B5CF6] to-[#A855F7]';
 
   const handleCheckout = () => {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -53,100 +68,109 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     setSubmitted(true);
   };
 
-  if (!product) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-4">
-        <Package size={48} className="text-gray-300" />
-        <h1 className="text-2xl font-bold text-gray-800">Product Not Found</h1>
-        <p className="text-gray-500">The product you are looking for does not exist or has been removed.</p>
-        <Link href={ROUTES.PRODUCTS} className="mt-2 px-5 py-2.5 rounded-xl bg-[#009ee3] text-white font-semibold hover:bg-[#008cc9] transition-colors">
-          Browse Products
-        </Link>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#050509]">
       {/* Breadcrumb */}
-      <div className="border-b border-gray-200 bg-white">
+      <div className="border-b border-[#25253A] bg-[#0B0B12]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <nav className="flex items-center gap-1.5 text-sm text-gray-500">
-            <Link href={ROUTES.HOME} className="hover:text-[#009ee3] transition-colors">Home</Link>
-            <ChevronRight size={14} />
-            <Link href={ROUTES.PRODUCTS} className="hover:text-[#009ee3] transition-colors">Products</Link>
-            <ChevronRight size={14} />
-            <span className="text-gray-800 font-medium truncate max-w-[200px]">{product.name}</span>
+          <nav className="flex items-center gap-1.5 text-xs text-[#6B7280]" aria-label="Breadcrumb">
+            <Link href={ROUTES.HOME} className="hover:text-[#A855F7] transition-colors">Home</Link>
+            <ChevronRight size={13} />
+            <Link href={ROUTES.PRODUCTS} className="hover:text-[#A855F7] transition-colors">Products</Link>
+            <ChevronRight size={13} />
+            <span className="text-[#A1A1AA] font-medium truncate max-w-[200px]">{product.name}</span>
           </nav>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT COLUMN: Product Info */}
+
+          {/* LEFT: Product Info */}
           <div className="lg:col-span-2 space-y-6">
+
             {/* Product Header Card */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="aspect-video bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden">
-                {product.imageUrl ? (
-                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package size={64} className="text-gray-300" />
-                  </div>
-                )}
+            <div className="bg-[#11111A] rounded-xl border border-[#25253A] overflow-hidden relative">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/60 to-transparent" />
+
+              {/* Product visual */}
+              <div className={`h-56 bg-gradient-to-br ${gradientColor} flex items-center justify-center relative overflow-hidden`}>
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='none' stroke='white' stroke-width='0.5'/%3E%3C/svg%3E")`, backgroundSize: '40px 40px' }} />
+                <CategoryIcon size={80} className="text-white/70 drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]" />
                 {product.isInstantDelivery && (
                   <div className="absolute top-4 right-4">
-                    <span className="flex items-center gap-1.5 bg-[#009ee3] text-white text-sm font-semibold px-3 py-1.5 rounded-full shadow-lg">
-                      <Zap size={14} className="text-[#fff159]" /> Instant Email Delivery
+                    <span className="flex items-center gap-1.5 bg-[#22C55E]/20 backdrop-blur-sm border border-[#22C55E]/40 text-[#22C55E] text-xs font-bold px-3 py-1.5 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.2)]">
+                      <Zap size={12} className="fill-[#22C55E]" /> Instant Email Delivery
                     </span>
                   </div>
                 )}
               </div>
 
               <div className="p-6 sm:p-8">
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <span className="inline-flex items-center text-xs font-semibold text-[#009ee3] bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
-                    {product.category}
-                  </span>
-                  <span className={`text-sm font-semibold ${product.inStock ? 'text-emerald-600' : 'text-red-500'}`}>
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <span className="badge-purple">{product.category}</span>
+                  <span className={`text-xs font-bold tracking-widest uppercase ${product.inStock ? 'text-[#22C55E] drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]' : 'text-[#EF4444]'}`}>
                     {product.inStock ? '✓ In Stock' : '✗ Out of Stock'}
                   </span>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+                <h1
+                  className="text-2xl sm:text-3xl font-black uppercase text-white mb-4 leading-tight"
+                  style={{ fontFamily: 'var(--font-orbitron)' }}
+                >
+                  {product.name}
+                </h1>
 
                 <div className="flex items-center gap-4 mb-6">
                   <StarRating rating={product.rating} />
-                  <span className="font-bold text-gray-900">{product.rating}</span>
-                  <span className="text-gray-500 text-sm">{product.reviewsCount} reviews</span>
+                  <span className="font-bold text-white text-sm">{product.rating}</span>
+                  <span className="text-[#6B7280] text-xs">{product.reviewsCount} reviews</span>
                 </div>
 
-                <div className="flex items-end gap-3 mb-6">
-                  <span className="text-4xl font-bold text-gray-900">{formatCurrency(product.price)}</span>
+                <div className="flex items-end gap-3 mb-8">
+                  <span
+                    className="text-4xl font-black text-white drop-shadow-[0_0_10px_rgba(168,85,247,0.4)]"
+                    style={{ fontFamily: 'var(--font-orbitron)' }}
+                  >
+                    {formatCurrency(product.price)}
+                  </span>
                   {product.originalPrice && product.originalPrice > product.price && (
                     <>
-                      <span className="text-xl text-gray-400 line-through mb-0.5">{formatCurrency(product.originalPrice)}</span>
-                      <span className="text-sm font-bold text-red-500 mb-0.5">
-                        -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                      </span>
+                      <span className="text-xl text-[#6B7280] line-through mb-1">{formatCurrency(product.originalPrice)}</span>
+                      <span className="badge-red mb-1">-{discountPct}% OFF</span>
                     </>
                   )}
                 </div>
 
-                {/* Product Description */}
+                {/* Description */}
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Product Description</h2>
-                  <p className="text-gray-600 leading-relaxed">{product.description}</p>
+                  <h2
+                    className="text-sm font-bold uppercase tracking-wider text-white mb-3"
+                    style={{ fontFamily: 'var(--font-orbitron)' }}
+                  >
+                    Product Description
+                  </h2>
+                  <p className="text-[#A1A1AA] text-sm leading-relaxed">{product.description}</p>
                 </div>
 
                 {/* What You Receive */}
-                <div className="mb-6 bg-blue-50 rounded-xl p-5">
-                  <h2 className="text-base font-semibold text-gray-900 mb-3">What You Receive</h2>
-                  <ul className="space-y-2">
-                    {['Digital product details sent to your email', 'Step-by-step delivery instructions', 'Order confirmation number', 'Basic usage guidance', 'Access to support if needed'].map((item) => (
-                      <li key={item} className="flex items-start gap-2.5 text-sm text-gray-700">
-                        <Check size={15} className="text-[#009ee3] mt-0.5 flex-shrink-0" />
+                <div className="mb-6 bg-[#8B5CF6]/5 border border-[#8B5CF6]/20 rounded-xl p-5">
+                  <h2
+                    className="text-sm font-bold uppercase tracking-wider text-white mb-4"
+                    style={{ fontFamily: 'var(--font-orbitron)' }}
+                  >
+                    What You Receive
+                  </h2>
+                  <ul className="space-y-2.5">
+                    {[
+                      'Digital product details sent to your email',
+                      'Step-by-step delivery instructions',
+                      'Order confirmation number',
+                      'Basic usage guidance',
+                      'Access to support if needed',
+                    ].map((item) => (
+                      <li key={item} className="flex items-start gap-2.5 text-sm text-[#A1A1AA]">
+                        <Check size={14} className="text-[#8B5CF6] mt-0.5 flex-shrink-0" />
                         {item}
                       </li>
                     ))}
@@ -156,12 +180,17 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 {/* Key Features */}
                 {product.features?.length > 0 && (
                   <div className="mb-6">
-                    <h2 className="text-base font-semibold text-gray-900 mb-3">Key Features</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <h2
+                      className="text-sm font-bold uppercase tracking-wider text-white mb-3"
+                      style={{ fontFamily: 'var(--font-orbitron)' }}
+                    >
+                      Key Features
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {product.features.map((f) => (
-                        <div key={f} className="flex items-center gap-2 text-sm text-gray-700">
-                          <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                            <Check size={11} className="text-emerald-600" />
+                        <div key={f} className="flex items-center gap-2.5 text-sm text-[#A1A1AA]">
+                          <div className="w-5 h-5 rounded-full bg-[#22C55E]/10 border border-[#22C55E]/20 flex items-center justify-center flex-shrink-0">
+                            <Check size={10} className="text-[#22C55E]" />
                           </div>
                           {f}
                         </div>
@@ -171,9 +200,14 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 )}
 
                 {/* Important Notes */}
-                <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
-                  <h2 className="text-base font-semibold text-gray-900 mb-3">Important Before Purchase</h2>
-                  <ul className="space-y-1.5">
+                <div className="bg-[#FACC15]/5 border border-[#FACC15]/20 rounded-xl p-5">
+                  <h2
+                    className="text-sm font-bold uppercase tracking-wider text-white mb-3"
+                    style={{ fontFamily: 'var(--font-orbitron)' }}
+                  >
+                    Important Before Purchase
+                  </h2>
+                  <ul className="space-y-2">
                     {[
                       'Please enter a valid email address at checkout.',
                       'Digital products are delivered after payment confirmation.',
@@ -181,8 +215,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                       'Refunds are handled according to our refund policy.',
                       'Contact support if you face any issue with your order.',
                     ].map((note) => (
-                      <li key={note} className="flex items-start gap-2 text-sm text-amber-800">
-                        <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
+                      <li key={note} className="flex items-start gap-2 text-sm text-[#A1A1AA]">
+                        <span className="text-[#FACC15] mt-0.5 flex-shrink-0">•</span>
                         {note}
                       </li>
                     ))}
@@ -192,92 +226,111 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             </div>
 
             {/* Customer Reviews */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Customer Reviews</h2>
+            <div className="bg-[#11111A] rounded-xl border border-[#25253A] p-6 sm:p-8 relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/40 to-transparent" />
+              <h2
+                className="text-lg font-black uppercase tracking-wide text-white mb-6"
+                style={{ fontFamily: 'var(--font-orbitron)' }}
+              >
+                Customer Reviews
+              </h2>
               <div className="space-y-5">
                 {reviews.map((review) => (
-                  <div key={review.id} className="pb-5 border-b border-gray-100 last:border-0 last:pb-0">
+                  <div key={review.id} className="pb-5 border-b border-[#25253A] last:border-0 last:pb-0">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-[#009ee3]/10 rounded-full flex items-center justify-center text-[#009ee3] font-bold text-sm">
+                        <div className="w-9 h-9 bg-gradient-to-br from-[#8B5CF6] to-[#A855F7] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-[0_0_8px_rgba(139,92,246,0.3)] flex-shrink-0">
                           {review.userName.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{review.userName}</p>
+                          <p className="text-sm font-bold text-white">{review.userName}</p>
                           <StarRating rating={review.rating} />
                         </div>
                       </div>
                       {review.verifiedPurchase && (
-                        <span className="flex items-center gap-1 text-emerald-600 text-xs font-medium">
-                          <BadgeCheck size={13} /> Verified
+                        <span className="flex items-center gap-1 text-[#22C55E] text-[10px] font-bold tracking-wider uppercase">
+                          <BadgeCheck size={12} /> Verified
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 leading-relaxed ml-12">{review.comment}</p>
+                    <p className="text-sm text-[#A1A1AA] leading-relaxed ml-12">{review.comment}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Checkout Box */}
+          {/* RIGHT: Checkout Box */}
           <div className="lg:col-span-1">
             <div className="sticky top-24">
               {submitted ? (
-                <div className="bg-white rounded-2xl border border-emerald-200 p-6 text-center shadow-lg">
-                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Check size={28} className="text-emerald-600" />
+                <div className="bg-[#11111A] rounded-xl border border-[#22C55E]/40 p-6 text-center shadow-[0_0_20px_rgba(34,197,94,0.1)] relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#22C55E]/60 to-transparent" />
+                  <div className="w-14 h-14 bg-[#22C55E]/10 border border-[#22C55E]/30 rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                    <Check size={26} className="text-[#22C55E]" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Checkout Initiated!</h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <h3
+                    className="text-lg font-black uppercase text-white mb-2"
+                    style={{ fontFamily: 'var(--font-orbitron)' }}
+                  >
+                    Checkout Initiated!
+                  </h3>
+                  <p className="text-sm text-[#A1A1AA] mb-4">
                     Payment integration will be connected in a future update. Your order will be processed to{' '}
-                    <strong>{email}</strong>.
+                    <strong className="text-[#A855F7]">{email}</strong>.
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="text-sm text-[#009ee3] hover:underline"
+                    className="text-sm text-[#8B5CF6] hover:text-[#A855F7] transition-colors font-medium"
                   >
                     Edit Order
                   </button>
                 </div>
               ) : (
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                  {/* Header */}
-                  <div className="bg-gradient-to-r from-[#009ee3] to-[#006fa8] px-6 py-4">
-                    <h2 className="text-lg font-bold text-white">Complete Your Order</h2>
-                    <p className="text-white/75 text-sm">Instant delivery to your email</p>
+                <div className="bg-[#11111A] rounded-xl border border-[#25253A] overflow-hidden relative">
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B5CF6]/60 to-transparent" />
+
+                  {/* Checkout header */}
+                  <div className="bg-gradient-to-r from-[#8B5CF6]/20 to-[#A855F7]/10 border-b border-[#25253A] px-5 py-4">
+                    <h2
+                      className="text-sm font-black uppercase tracking-wider text-white"
+                      style={{ fontFamily: 'var(--font-orbitron)' }}
+                    >
+                      Complete Your Order
+                    </h2>
+                    <p className="text-[#A1A1AA] text-xs mt-0.5">Instant delivery to your email</p>
                   </div>
 
-                  <div className="p-6 space-y-5">
+                  <div className="p-5 space-y-5">
                     {/* Email */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        <span className="flex items-center gap-1.5"><Mail size={14} /> Email Address *</span>
+                      <label className="block text-xs font-bold text-white mb-2 uppercase tracking-wider">
+                        <span className="flex items-center gap-1.5"><Mail size={12} /> Email Address *</span>
                       </label>
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                         placeholder="your@email.com"
-                        className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#009ee3]/30 focus:border-[#009ee3] transition-all ${emailError ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white'}`}
+                        className={`mp-input ${emailError ? 'border-[#EF4444] focus:border-[#EF4444]' : ''}`}
                       />
-                      {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
+                      {emailError && <p className="text-xs text-[#EF4444] mt-1">{emailError}</p>}
                     </div>
 
                     {/* Quantity */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Quantity</label>
+                      <label className="block text-xs font-bold text-white mb-2 uppercase tracking-wider">Quantity</label>
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors font-bold"
+                          className="w-9 h-9 rounded-lg border border-[#25253A] bg-[#050509] flex items-center justify-center text-[#A1A1AA] hover:border-[#8B5CF6]/50 hover:text-white transition-all font-bold"
                         >
                           −
                         </button>
-                        <span className="w-8 text-center font-semibold text-gray-900">{quantity}</span>
+                        <span className="w-8 text-center font-bold text-white">{quantity}</span>
                         <button
                           onClick={() => setQuantity(Math.min(10, quantity + 1))}
-                          className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors font-bold"
+                          className="w-9 h-9 rounded-lg border border-[#25253A] bg-[#050509] flex items-center justify-center text-[#A1A1AA] hover:border-[#8B5CF6]/50 hover:text-white transition-all font-bold"
                         >
                           +
                         </button>
@@ -286,26 +339,26 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
                     {/* Payment Method */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Method</label>
+                      <label className="block text-xs font-bold text-white mb-2 uppercase tracking-wider">Payment Method</label>
                       <div className="space-y-2">
                         {PAYMENT_METHODS.map(({ id, label, desc, icon: Icon }) => (
                           <button
                             key={id}
                             type="button"
                             onClick={() => setPaymentMethod(id)}
-                            className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+                            className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 ${
                               paymentMethod === id
-                                ? 'border-[#009ee3] bg-blue-50'
-                                : 'border-gray-200 hover:border-gray-300 bg-white'
+                                ? 'border-[#8B5CF6]/60 bg-[#8B5CF6]/10 shadow-[0_0_10px_rgba(139,92,246,0.15)]'
+                                : 'border-[#25253A] bg-[#050509] hover:border-[#25253A]/80'
                             }`}
                           >
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${paymentMethod === id ? 'border-[#009ee3]' : 'border-gray-300'}`}>
-                              {paymentMethod === id && <div className="w-3 h-3 rounded-full bg-[#009ee3]" />}
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${paymentMethod === id ? 'border-[#A855F7]' : 'border-[#25253A]'}`}>
+                              {paymentMethod === id && <div className="w-2.5 h-2.5 rounded-full bg-[#A855F7]" />}
                             </div>
-                            <Icon size={18} className={paymentMethod === id ? 'text-[#009ee3]' : 'text-gray-400'} />
+                            <Icon size={16} className={paymentMethod === id ? 'text-[#A855F7]' : 'text-[#6B7280]'} />
                             <div>
-                              <p className={`text-sm font-semibold ${paymentMethod === id ? 'text-[#009ee3]' : 'text-gray-700'}`}>{label}</p>
-                              <p className="text-xs text-gray-400">{desc}</p>
+                              <p className={`text-xs font-bold ${paymentMethod === id ? 'text-[#A855F7]' : 'text-white'}`}>{label}</p>
+                              <p className="text-[10px] text-[#6B7280]">{desc}</p>
                             </div>
                           </button>
                         ))}
@@ -313,18 +366,23 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                     </div>
 
                     {/* Order Summary */}
-                    <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
-                      <div className="flex justify-between text-gray-600">
+                    <div className="bg-[#050509] rounded-xl border border-[#25253A] p-4 space-y-2 text-sm">
+                      <div className="flex justify-between text-[#A1A1AA]">
                         <span>Unit Price</span>
                         <span>{formatCurrency(product.price)}</span>
                       </div>
-                      <div className="flex justify-between text-gray-600">
+                      <div className="flex justify-between text-[#A1A1AA]">
                         <span>Quantity</span>
                         <span>× {quantity}</span>
                       </div>
-                      <div className="border-t border-gray-200 pt-2 flex justify-between font-bold text-gray-900 text-base">
+                      <div className="border-t border-[#25253A] pt-2 flex justify-between font-black text-white">
                         <span>Total</span>
-                        <span>{formatCurrency(total)}</span>
+                        <span
+                          className="text-[#A855F7] drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]"
+                          style={{ fontFamily: 'var(--font-orbitron)' }}
+                        >
+                          {formatCurrency(total)}
+                        </span>
                       </div>
                     </div>
 
@@ -332,13 +390,13 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                     <button
                       onClick={handleCheckout}
                       disabled={!product.inStock}
-                      className="w-full py-3.5 rounded-xl bg-[#009ee3] text-white font-bold text-base hover:bg-[#008cc9] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 shadow-md hover:shadow-lg active:scale-[0.98]"
+                      className="mp-button-primary w-full py-4 text-sm"
                     >
                       Continue to Checkout
                     </button>
 
-                    <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                      <Shield size={13} />
+                    <div className="flex items-center justify-center gap-2 text-xs text-[#6B7280]">
+                      <Shield size={12} />
                       Secure payment processing
                     </div>
                   </div>
