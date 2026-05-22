@@ -13,7 +13,7 @@ export default function HeroSection() {
   ];
 
   return (
-    <section className="relative bg-gradient-to-br from-[#009ee3] via-[#008cc9] to-blue-900 text-white overflow-hidden min-h-[90vh] flex items-center">
+    <section className="relative bg-gradient-to-br from-[#009ee3] via-[#008cc9] to-blue-900 text-white overflow-hidden min-h-[85vh] flex items-center">
       {/* Background cyber grid and glow gradients */}
       <div className="absolute inset-0 cyber-grid opacity-20 pointer-events-none animate-grid-glide" />
       <div className="absolute inset-0 pointer-events-none">
@@ -21,20 +21,11 @@ export default function HeroSection() {
         <div className="absolute top-[-20%] left-[20%] w-[600px] h-[600px] rounded-full bg-white/5 blur-[120px] animate-pulse-slow" />
       </div>
  
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 z-10">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 lg:pt-16 lg:pb-28 z-10 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           {/* Text Content Column */}
           <div className="lg:col-span-7">
-            {/* Instant Delivery Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/25 rounded-full px-4 py-1.5 mb-6">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#fff159] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#fff159]"></span>
-              </span>
-              <span className="text-xs font-semibold uppercase tracking-wider text-white/90">Instant Digital Delivery</span>
-            </div>
- 
             {/* Heading */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6 tracking-tight">
               Premium Digital Products,{' '}
@@ -83,14 +74,14 @@ export default function HeroSection() {
  
           {/* Floating Cards Showcase Column */}
           <div className="lg:col-span-5 hidden lg:block relative">
-            <div className="relative w-full h-[450px] flex items-center justify-center">
+            <div className="relative w-full h-[400px] flex items-center justify-center">
               
               {/* Outer decorative ring */}
               <div className="absolute w-[360px] h-[360px] rounded-full border border-dashed border-white/20 animate-[spin_60s_linear_infinite]" />
               
               {/* Floating Cards Stack */}
               {/* Card 1: Streaming Account */}
-              <div className="absolute top-10 left-5 w-60 p-5 glass-card-light rounded-2xl border border-white/60 shadow-lg animate-float-slow text-gray-900">
+              <div className="absolute top-2 left-2 w-[230px] p-5 glass-card-light rounded-2xl border border-white/60 shadow-lg animate-float-slow text-gray-900">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 bg-purple-100 border border-purple-200/50 px-2 py-0.5 rounded-full">Streaming</span>
                   <Zap size={15} className="text-purple-600" />
@@ -104,7 +95,7 @@ export default function HeroSection() {
               </div>
  
               {/* Card 2: AI Power Tool */}
-              <div className="absolute bottom-6 right-5 w-60 p-5 glass-card-light rounded-2xl border border-white/60 shadow-lg animate-float-slow [animation-delay:-3s] text-gray-900">
+              <div className="absolute bottom-2 right-2 w-[230px] p-5 glass-card-light rounded-2xl border border-white/60 shadow-lg animate-float-slow [animation-delay:-3s] text-gray-900">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#009ee3] bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">AI Tools</span>
                   <Zap size={15} className="text-[#009ee3]" />
@@ -118,7 +109,7 @@ export default function HeroSection() {
               </div>
  
               {/* Card 3: Gaming Pass */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 p-5 glass-card-light rounded-2xl border border-white/60 shadow-lg animate-float-slow [animation-delay:-1.5s] text-gray-900">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] p-5 glass-card-light rounded-2xl border border-white/60 shadow-lg animate-float-slow [animation-delay:-1.5s] text-gray-900">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">Gaming</span>
                   <Zap size={15} className="text-emerald-600" />
