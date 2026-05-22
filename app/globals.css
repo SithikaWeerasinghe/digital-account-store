@@ -14,7 +14,8 @@
   --color-danger: #f23d4f;
   --color-warning: #ff7733;
 
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-display: var(--font-display), "Space Grotesk", system-ui, sans-serif;
 
   /* Custom HSL and Hex neon palettes */
   --color-cyber-dark: #070913;
@@ -30,6 +31,11 @@
   --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
   --animate-grid-glide: grid-glide 24s linear infinite;
   --animate-marquee-scroll: marquee-scroll 25s linear infinite;
+  --animate-orbit-pulse: orbit-pulse 8s linear infinite;
+  --animate-orbit-pulse-reverse: orbit-pulse-reverse 6s linear infinite;
+  --animate-particle-slow-1: particle-slow-1 12s ease-in-out infinite;
+  --animate-particle-slow-2: particle-slow-2 15s ease-in-out infinite;
+  --animate-particle-slow-3: particle-slow-3 18s ease-in-out infinite;
 
   @keyframes text-shimmer {
     0%, 100% { background-position: 0% 50%; }
@@ -50,6 +56,26 @@
   @keyframes marquee-scroll {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
+  }
+  @keyframes orbit-pulse {
+    from { stroke-dashoffset: 276.46; }
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes orbit-pulse-reverse {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: 213.63; }
+  }
+  @keyframes particle-slow-1 {
+    0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.1; }
+    50% { transform: translateY(-40px) translateX(15px); opacity: 0.45; }
+  }
+  @keyframes particle-slow-2 {
+    0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.15; }
+    50% { transform: translateY(-30px) translateX(-20px); opacity: 0.55; }
+  }
+  @keyframes particle-slow-3 {
+    0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.05; }
+    50% { transform: translateY(-50px) translateX(10px); opacity: 0.35; }
   }
 }
 
@@ -86,6 +112,10 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 }
 

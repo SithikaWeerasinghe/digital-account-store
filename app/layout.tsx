@@ -1,11 +1,21 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants';
 
-const inter = Inter({ subsets: ['latin'] });
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['400', '500', '600', '700'],
+});
 
 export const metadata: Metadata = {
   title: APP_NAME,
@@ -19,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen flex flex-col bg-gray-50`} suppressHydrationWarning>
+      <body className={`${plusJakartaSans.variable} ${spaceGrotesk.variable} min-h-screen flex flex-col bg-gray-50`} suppressHydrationWarning>
         <Navbar />
         <main className="flex-grow">{children}</main>
         <Footer />
