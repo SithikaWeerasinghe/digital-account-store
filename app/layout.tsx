@@ -8,7 +8,7 @@ import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: APP_NAME,
+  title: `${APP_NAME} — Premium Digital Products`,
   description: APP_DESCRIPTION,
 };
 
@@ -19,7 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen flex flex-col bg-gray-50`} suppressHydrationWarning>
+      <body
+        className={`${inter.className} min-h-screen flex flex-col bg-[#f0f4f8]`}
+        suppressHydrationWarning
+      >
         <Navbar />
         <main className="flex-grow">{children}</main>
         <Footer />

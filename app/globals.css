@@ -2,89 +2,259 @@
 
 @theme {
   --color-primary: #009ee3;
-  --color-primary-hover: #008cc9;
-  --color-secondary: #fff159;
-  --color-secondary-hover: #ffe600;
-  --color-background: #ebebf0;
+  --color-primary-hover: #007ec0;
+  --color-secondary: #ffd700;
+  --color-secondary-hover: #e6c200;
+  --color-background: #f0f4f8;
   --color-card: #ffffff;
-  --color-text-primary: #333333;
-  --color-text-secondary: #666666;
-  --color-text-muted: #999999;
+  --color-text-primary: #0d1b2a;
+  --color-text-secondary: #4a5568;
+  --color-text-muted: #718096;
   --color-success: #00a650;
-  --color-danger: #f23d4f;
-  --color-warning: #ff7733;
+  --color-danger: #e53e3e;
+  --color-warning: #dd6b20;
+  --color-navy: #0d1b2a;
+  --color-yellow: #ffd700;
 
   --font-sans: "Inter", system-ui, sans-serif;
+
+  --shadow-card: 0 2px 12px 0 rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 8px 32px 0 rgba(0, 0, 0, 0.14);
+  --shadow-hero: 0 20px 60px 0 rgba(0, 158, 227, 0.25);
 }
 
 @layer base {
   :root {
-    --background: #ebebf0;
-    --foreground: #333333;
+    --background: #f0f4f8;
+    --foreground: #0d1b2a;
     --card: #ffffff;
-    --card-foreground: #333333;
-    --popover: #ffffff;
-    --popover-foreground: #333333;
+    --card-foreground: #0d1b2a;
     --primary: #009ee3;
     --primary-foreground: #ffffff;
-    --secondary: #fff159;
-    --secondary-foreground: #333333;
-    --muted: #f5f5f5;
-    --muted-foreground: #666666;
-    --accent: #e5f6ff;
-    --accent-foreground: #009ee3;
-    --destructive: #f23d4f;
-    --destructive-foreground: #ffffff;
-    --border: #e6e6e6;
-    --input: #cccccc;
+    --secondary: #ffd700;
+    --secondary-foreground: #0d1b2a;
+    --muted: #f7fafc;
+    --muted-foreground: #718096;
+    --accent: #e8f6fd;
+    --border: #e2e8f0;
+    --input: #cbd5e0;
     --ring: #009ee3;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   * {
     border-color: var(--border);
+    box-sizing: border-box;
   }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+    letter-spacing: -0.01em;
   }
 }
 
 @layer utilities {
-  .mp-card {
-    background-color: var(--card);
-    color: var(--card-foreground);
+  /* Premium card styles */
+  .apex-card {
+    background-color: #ffffff;
+    border-radius: 1.25rem;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.07);
+    border: 1px solid #e2e8f0;
+  }
+  .apex-card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .apex-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  /* Premium button styles */
+  .apex-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    background-color: #009ee3;
+    color: #ffffff;
     border-radius: 0.75rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--border);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: 0.01em;
+    transition: background-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+    box-shadow: 0 4px 14px 0 rgba(0, 158, 227, 0.35);
   }
-  .mp-button-primary {
-    background-color: var(--primary);
-    color: var(--primary-foreground);
-    border-radius: 0.375rem;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
+  .apex-btn-primary:hover {
+    background-color: #007ec0;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px 0 rgba(0, 158, 227, 0.45);
   }
-  .mp-button-primary:hover {
-    background-color: var(--color-primary-hover);
+  .apex-btn-primary:active {
+    transform: translateY(0);
   }
-  .mp-button-secondary {
-    background-color: var(--secondary);
-    color: var(--secondary-foreground);
-    border-radius: 0.375rem;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
+
+  .apex-btn-yellow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    background-color: #ffd700;
+    color: #0d1b2a;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    letter-spacing: 0.01em;
+    transition: background-color 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+    box-shadow: 0 4px 14px 0 rgba(255, 215, 0, 0.4);
   }
-  .mp-button-secondary:hover {
-    background-color: var(--color-secondary-hover);
+  .apex-btn-yellow:hover {
+    background-color: #e6c200;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px 0 rgba(255, 215, 0, 0.5);
+  }
+
+  .apex-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    transition: background-color 0.18s ease, border-color 0.18s ease;
+    backdrop-filter: blur(8px);
+  }
+  .apex-btn-ghost:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* Section padding */
+  .apex-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  /* Yellow background section */
+  .apex-yellow-bg {
+    background-color: #ffd700;
+  }
+
+  /* Input styles */
+  .apex-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1.5px solid #e2e8f0;
+    background-color: #ffffff;
+    font-size: 0.9375rem;
+    color: #0d1b2a;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    outline: none;
+  }
+  .apex-input:focus {
+    border-color: #009ee3;
+    box-shadow: 0 0 0 3px rgba(0, 158, 227, 0.15);
+  }
+  .apex-input.error {
+    border-color: #e53e3e;
+    background-color: #fff5f5;
+  }
+
+  /* Badge */
+  .apex-badge-blue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background-color: #e8f6fd;
+    color: #009ee3;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid rgba(0, 158, 227, 0.2);
+  }
+  .apex-badge-yellow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background-color: #fffbeb;
+    color: #b45309;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .apex-badge-green {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background-color: #f0fdf4;
+    color: #16a34a;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* Gradient text */
+  .apex-gradient-text {
+    background: linear-gradient(135deg, #009ee3 0%, #0066cc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animate floating */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+  .apex-float {
+    animation: float 4s ease-in-out infinite;
+  }
+  .apex-float-delay {
+    animation: float 4s ease-in-out 1s infinite;
+  }
+
+  /* Shimmer for trust badges */
+  @keyframes shimmer {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+  }
+  .apex-shimmer {
+    animation: shimmer 2.5s ease-in-out infinite;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f0f4f8;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #009ee3;
   }
 }
