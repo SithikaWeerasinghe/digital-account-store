@@ -1,29 +1,42 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ROUTES, APP_NAME } from '@/lib/constants';
-import { Menu, X, Zap } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navLinks = [
     { label: 'Home', href: ROUTES.HOME },
     { label: 'Products', href: ROUTES.PRODUCTS },
+    { label: 'Checkout', href: ROUTES.CHECKOUT },
     { label: 'Support', href: ROUTES.SUPPORT },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <header 
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? 'bg-background/90 backdrop-blur-md border-b border-border shadow-[0_4px_30px_rgba(0,0,0,0.5)]' 
+          : 'bg-transparent border-b border-transparent'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href={ROUTES.HOME} className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-[#009ee3] rounded-lg flex items-center justify-center">
-              <Zap size={18} className="text-[#fff159]" />
-            </div>
-            <span className="text-xl font-bold text-gray-900">
+          <Link href={ROUTES.HOME} className="flex items-center gap-2 flex-shrink-0 group">
+            <span className="text-2xl font-bold font-[family-name:var(--font-heading)] text-white tracking-widest uppercase transition-all duration-300 group-hover:text-primary drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]">
               {APP_NAME}
             </span>
           </Link>
@@ -34,7 +47,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-gray-600 hover:text-[#009ee3] transition-colors duration-150"
+                className="text-sm font-semibold tracking-wider uppercase text-text-secondary hover:text-primary transition-colors duration-200"
               >
                 {link.label}
               </Link>
@@ -45,7 +58,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href={ROUTES.PRODUCTS}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-[#009ee3] text-white text-sm font-semibold hover:bg-[#008cc9] transition-colors duration-150"
+              className="mp-button-primary"
             >
               Browse Products
             </Link>
@@ -54,33 +67,33 @@ export default function Navbar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2 rounded-md text-text-secondary hover:text-white hover:bg-card transition-colors focus:outline-none"
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
-          <div className="px-4 pt-3 pb-4 space-y-1">
+        <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-md absolute w-full left-0">
+          <div className="px-4 pt-4 pb-6 space-y-2 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:text-[#009ee3] hover:bg-blue-50 transition-colors"
+                className="block px-4 py-3 rounded-lg text-sm font-semibold tracking-wider uppercase text-text-secondary hover:text-white hover:bg-border/50 transition-colors"
               >
                 {link.label}
               </Link>
             ))}
-            <div className="pt-2">
+            <div className="pt-4 pb-2">
               <Link
                 href={ROUTES.PRODUCTS}
                 onClick={() => setMobileOpen(false)}
-                className="block w-full text-center px-4 py-2.5 rounded-lg bg-[#009ee3] text-white text-sm font-semibold hover:bg-[#008cc9] transition-colors"
+                className="block w-full text-center mp-button-primary"
               >
                 Browse Products
               </Link>

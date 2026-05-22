@@ -1,22 +1,26 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { sampleProducts } from '@/data/sampleProducts';
 import ProductCard from '@/components/products/ProductCard';
 import { Search, SlidersHorizontal, Zap, Shield, Package, HeadphonesIcon } from 'lucide-react';
 
-const CATEGORIES = ['All Products', 'Streaming', 'AI Tools', 'Gaming', 'Software', 'Productivity', 'Gift Cards'];
+const CATEGORIES = ['All Products', 'Gaming', 'Streaming', 'AI Tools', 'Software', 'Productivity', 'Gift Cards'];
 const SORT_OPTIONS = [
-  { label: 'Newest', value: 'newest' },
+  { label: 'Newest Releases', value: 'newest' },
   { label: 'Price: Low to High', value: 'price_asc' },
   { label: 'Price: High to Low', value: 'price_desc' },
-  { label: 'Popular', value: 'popular' },
-  { label: 'In Stock', value: 'in_stock' },
+  { label: 'Top Rated', value: 'popular' },
+  { label: 'In Stock Only', value: 'in_stock' },
 ];
 
-export default function ProductsPage() {
+function ProductsContent() {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('category');
+  
   const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All Products');
+  const [activeCategory, setActiveCategory] = useState(categoryParam || 'All Products');
   const [sort, setSort] = useState('newest');
 
   const filtered = useMemo(() => {
@@ -58,39 +62,44 @@ export default function ProductsPage() {
   }, [search, activeCategory, sort]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
       {/* Page Header */}
-      <div className="bg-gradient-to-r from-[#009ee3] to-[#006fa8] text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-3">Browse Digital Products</h1>
-          <p className="text-white/80 max-w-2xl text-base">
-            Find trusted digital products across streaming, AI tools, gaming, software, productivity, and gift card categories.
+      <div className="bg-secondary border-b border-border relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <h1 className="text-4xl sm:text-5xl font-black font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-6">
+            Browse Digital <span className="text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]">Products</span>
+          </h1>
+          <p className="text-text-secondary max-w-2xl mx-auto text-lg font-medium tracking-wide">
+            Explore gaming, streaming, AI, software, and productivity products with fast delivery and simple checkout.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
         {/* Search + Sort */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-5">
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-grow">
-            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search products..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#009ee3]/30 focus:border-[#009ee3] transition-all"
+              placeholder="Search products, categories, or keywords..."
+              className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-border bg-[#11111A] text-white text-sm font-medium tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-text-secondary shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
             />
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <SlidersHorizontal size={16} className="text-gray-400" />
+          <div className="flex items-center gap-3 flex-shrink-0 relative">
+            <SlidersHorizontal size={18} className="absolute left-4 text-primary pointer-events-none" />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#009ee3]/30 focus:border-[#009ee3] transition-all appearance-none cursor-pointer"
+              className="pl-12 pr-10 py-3.5 rounded-xl border border-border bg-[#11111A] text-white text-sm font-bold tracking-wider uppercase focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] min-w-[220px]"
             >
               {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} className="bg-card text-white">
                   {opt.label}
                 </option>
               ))}
@@ -99,15 +108,15 @@ export default function ProductsPage() {
         </div>
 
         {/* Category Filters */}
-        <div className="flex gap-2 flex-wrap mb-8">
+        <div className="flex gap-3 flex-wrap mb-10 pb-4 border-b border-border/50">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150 whitespace-nowrap ${
+              className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-200 border ${
                 activeCategory === cat
-                  ? 'bg-[#009ee3] text-white shadow-sm'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-[#009ee3]/50 hover:text-[#009ee3]'
+                  ? 'bg-primary/20 border-primary text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]'
+                  : 'bg-card border-border text-text-secondary hover:border-primary/50 hover:text-white'
               }`}
             >
               {cat}
@@ -116,8 +125,9 @@ export default function ProductsPage() {
         </div>
 
         {/* Results count */}
-        <p className="text-sm text-gray-500 mb-5">
-          Showing <span className="font-semibold text-gray-800">{filtered.length}</span>{' '}
+        <p className="text-sm font-medium tracking-wide text-text-secondary mb-6 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+          Showing <span className="text-white font-bold">{filtered.length}</span>{' '}
           {filtered.length === 1 ? 'product' : 'products'}
           {activeCategory !== 'All Products' ? ` in ${activeCategory}` : ''}
           {search ? ` matching "${search}"` : ''}
@@ -125,21 +135,23 @@ export default function ProductsPage() {
 
         {/* Product Grid */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filtered.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
-          <div className="py-24 text-center bg-white rounded-2xl border border-gray-200">
-            <Package size={40} className="text-gray-300 mx-auto mb-4" />
-            <h3 className="font-semibold text-gray-700 mb-2">No products found</h3>
-            <p className="text-sm text-gray-400 mb-5">
+          <div className="py-32 text-center mp-card">
+            <div className="w-20 h-20 bg-[#1A1A24] border border-border rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Package size={32} className="text-border" />
+            </div>
+            <h3 className="font-bold font-[family-name:var(--font-heading)] uppercase tracking-wider text-white text-xl mb-3">No products found</h3>
+            <p className="text-sm text-text-secondary tracking-wide mb-8">
               Try adjusting your search or selecting a different category.
             </p>
             <button
               onClick={() => { setSearch(''); setActiveCategory('All Products'); }}
-              className="px-5 py-2 rounded-xl bg-[#009ee3] text-white text-sm font-medium hover:bg-[#008cc9] transition-colors"
+              className="mp-button-primary"
             >
               Clear Filters
             </button>
@@ -147,21 +159,21 @@ export default function ProductsPage() {
         )}
 
         {/* Trust Strip */}
-        <div className="mt-16 border-t border-gray-200 pt-10">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="mt-20 border-t border-border pt-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { icon: Shield, label: 'Secure Checkout', desc: 'Encrypted payment processing' },
               { icon: Zap, label: 'Instant Delivery', desc: 'Email delivery after payment' },
               { icon: HeadphonesIcon, label: 'Support Tickets', desc: 'Help available any time' },
               { icon: Package, label: 'Order Tracking', desc: 'Check your order status' },
             ].map(({ icon: Icon, label, desc }) => (
-              <div key={label} className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100">
-                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center text-[#009ee3] flex-shrink-0">
-                  <Icon size={18} />
+              <div key={label} className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-5 mp-card text-center sm:text-left">
+                <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center text-primary flex-shrink-0 shadow-[0_0_10px_rgba(139,92,246,0.1)]">
+                  <Icon size={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">{label}</p>
-                  <p className="text-xs text-gray-500">{desc}</p>
+                  <p className="text-sm font-bold font-[family-name:var(--font-heading)] uppercase tracking-wide text-white mb-1">{label}</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">{desc}</p>
                 </div>
               </div>
             ))}
@@ -169,5 +181,13 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+      <ProductsContent />
+    </Suspense>
   );
 }

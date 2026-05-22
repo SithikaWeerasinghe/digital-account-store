@@ -2,43 +2,50 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-
-const homeFaqs = [
-  { q: 'How fast is delivery?', a: 'Digital products are delivered instantly to your email address, typically within seconds of payment confirmation.' },
-  { q: 'Where will I receive my product?', a: 'All product details are sent to the email address you provide during checkout. Please ensure it is correct before completing your purchase.' },
-  { q: 'Can I contact support after purchase?', a: 'Yes, our support team is available to help with any post-purchase questions or issues. Submit a ticket on our Support page.' },
-  { q: 'Do you offer refunds?', a: 'Refunds are handled on a case-by-case basis. If the product does not work as described and we cannot provide a replacement, a refund may be issued.' },
-];
+import { faqs } from '@/data/faqs';
 
 export default function FAQPreview() {
   const [open, setOpen] = useState<number | null>(0);
+  
+  // Take first 4 FAQs for home page
+  const homeFaqs = faqs.slice(0, 4);
 
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Frequently Asked Questions</h2>
-          <p className="text-gray-500">Quick answers to our most common questions.</p>
+    <section className="py-24 bg-background border-t border-border relative">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] uppercase tracking-wider text-white mb-4">
+            Common <span className="text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]">Questions</span>
+          </h2>
+          <div className="w-24 h-1 bg-primary mx-auto rounded-full shadow-[0_0_10px_rgba(139,92,246,0.6)] mb-4"></div>
+          <p className="text-text-secondary tracking-wide">Quick answers to our most common questions.</p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {homeFaqs.map((faq, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <div key={i} className={`mp-card overflow-hidden transition-all duration-300 ${open === i ? 'border-primary shadow-[0_0_15px_rgba(139,92,246,0.15)]' : ''}`}>
               <button
                 onClick={() => setOpen(open === i ? null : i)}
-                className="w-full flex items-center justify-between px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009ee3]"
+                className="w-full flex items-center justify-between px-6 py-5 text-left focus:outline-none group"
               >
-                <span className="font-medium text-gray-900">{faq.q}</span>
-                {open === i
-                  ? <ChevronUp size={18} className="text-[#009ee3] flex-shrink-0" />
-                  : <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />
-                }
-              </button>
-              {open === i && (
-                <div className="px-6 pb-5 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-3">
-                  {faq.a}
+                <span className={`font-bold font-[family-name:var(--font-heading)] tracking-wider uppercase text-sm ${open === i ? 'text-primary' : 'text-white group-hover:text-primary transition-colors'}`}>
+                  {faq.question}
+                </span>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${open === i ? 'bg-primary/20 text-primary' : 'bg-[#1A1A24] text-text-secondary group-hover:bg-primary/10 group-hover:text-primary'}`}>
+                  {open === i
+                    ? <ChevronUp size={18} />
+                    : <ChevronDown size={18} />
+                  }
                 </div>
-              )}
+              </button>
+              
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${open === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
+              >
+                <div className="px-6 pb-6 text-sm text-text-secondary leading-relaxed border-t border-border pt-4 font-medium">
+                  {faq.answer}
+                </div>
+              </div>
             </div>
           ))}
         </div>

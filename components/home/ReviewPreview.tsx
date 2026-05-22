@@ -1,14 +1,14 @@
 import { sampleReviews } from '@/data/sampleReviews';
-import { Star, BadgeCheck } from 'lucide-react';
+import { Star, ShieldCheck } from 'lucide-react';
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}
-          size={14}
-          className={i <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200 fill-gray-200'}
+          size={16}
+          className={i <= rating ? 'fill-primary text-primary drop-shadow-[0_0_5px_rgba(139,92,246,0.5)]' : 'text-border fill-border'}
         />
       ))}
     </div>
@@ -19,41 +19,49 @@ export default function ReviewPreview() {
   const reviews = sampleReviews.slice(0, 3);
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Trusted by Digital Buyers</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            Real feedback from verified customers across our product range.
+    <section className="py-24 bg-secondary border-t border-border relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-primary/5 rounded-[100%] blur-[80px] pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] uppercase tracking-wider text-white mb-4">
+            Trusted by <span className="text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]">Gamers</span>
+          </h2>
+          <div className="w-24 h-1 bg-primary mx-auto rounded-full shadow-[0_0_10px_rgba(139,92,246,0.6)] mb-4"></div>
+          <p className="text-text-secondary max-w-xl mx-auto tracking-wide">
+            Real feedback from verified customers across our digital product range.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {reviews.map((review) => (
             <div
               key={review.id}
-              className="bg-gray-50 rounded-2xl border border-gray-100 p-6 flex flex-col hover:border-[#009ee3]/30 hover:shadow-md transition-all duration-200"
+              className="mp-card p-8 flex flex-col group relative"
             >
-              <div className="flex items-start justify-between mb-4">
+              {/* Quote Mark Decoration */}
+              <div className="absolute top-6 right-6 text-6xl text-border/30 font-serif leading-none group-hover:text-primary/10 transition-colors">"</div>
+
+              <div className="flex items-start justify-between mb-6 relative z-10">
                 <StarRating rating={review.rating} />
-                {review.verifiedPurchase && (
-                  <span className="flex items-center gap-1 text-emerald-600 text-xs font-medium">
-                    <BadgeCheck size={14} /> Verified
-                  </span>
-                )}
               </div>
 
-              <p className="text-gray-600 text-sm leading-relaxed flex-grow mb-5">
-                &ldquo;{review.comment}&rdquo;
+              <p className="text-white text-sm leading-relaxed flex-grow mb-8 relative z-10 font-medium">
+                {review.comment}
               </p>
 
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                <div className="w-9 h-9 bg-[#009ee3]/10 rounded-full flex items-center justify-center text-[#009ee3] font-bold text-sm">
+              <div className="flex items-center gap-4 pt-6 border-t border-border relative z-10">
+                <div className="w-12 h-12 bg-[#1A1A24] border border-border rounded-xl flex items-center justify-center text-primary font-bold font-[family-name:var(--font-heading)] text-lg group-hover:border-primary/50 group-hover:shadow-[0_0_10px_rgba(139,92,246,0.2)] transition-all">
                   {review.userName.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">{review.userName}</p>
-                  <p className="text-xs text-gray-400">Verified Buyer</p>
+                  <p className="text-sm font-bold font-[family-name:var(--font-heading)] text-white tracking-wide uppercase">{review.userName}</p>
+                  {review.verifiedPurchase && (
+                    <p className="text-xs text-primary flex items-center gap-1 mt-1 font-semibold tracking-wider">
+                      <ShieldCheck size={12} /> VERIFIED
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

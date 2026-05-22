@@ -4,80 +4,78 @@ import { Tv, Bot, Gamepad2, Cpu, Briefcase, Gift } from 'lucide-react';
 
 const categories = [
   {
+    name: 'Gaming',
+    description: 'Digital gaming products, bundles, and game-related access delivered online.',
+    icon: Gamepad2,
+    query: 'Gaming',
+  },
+  {
     name: 'Streaming',
-    description: 'Entertainment subscriptions & media access',
+    description: 'Entertainment digital products for movies, shows, music, and online media.',
     icon: Tv,
-    color: 'bg-purple-100 text-purple-600',
-    border: 'hover:border-purple-300',
     query: 'Streaming',
   },
   {
     name: 'AI Tools',
-    description: 'AI assistants, writing & design tools',
+    description: 'AI-powered tools for writing, studying, coding, research, and productivity.',
     icon: Bot,
-    color: 'bg-blue-100 text-blue-600',
-    border: 'hover:border-blue-300',
     query: 'AI Tools',
   },
   {
-    name: 'Gaming',
-    description: 'In-game items, bundles & game passes',
-    icon: Gamepad2,
-    color: 'bg-green-100 text-green-600',
-    border: 'hover:border-green-300',
-    query: 'Gaming',
-  },
-  {
     name: 'Software',
-    description: 'License keys for essential software',
+    description: 'Useful software access and digital tools for work, study, and business.',
     icon: Cpu,
-    color: 'bg-orange-100 text-orange-600',
-    border: 'hover:border-orange-300',
     query: 'Software',
   },
   {
     name: 'Productivity',
-    description: 'Cloud storage, learning & work tools',
+    description: 'Digital tools that help you design, write, organize, and complete tasks faster.',
     icon: Briefcase,
-    color: 'bg-teal-100 text-teal-600',
-    border: 'hover:border-teal-300',
     query: 'Productivity',
   },
   {
     name: 'Gift Cards',
-    description: 'Digital gift codes for popular platforms',
+    description: 'Digital codes and prepaid items delivered quickly through email.',
     icon: Gift,
-    color: 'bg-rose-100 text-rose-600',
-    border: 'hover:border-rose-300',
     query: 'Gift Cards',
   },
 ];
 
 export default function CategorySection() {
   return (
-    <section className="py-16 bg-white">
+    <section className="py-24 bg-secondary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Explore Popular Categories</h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            Find exactly what you need across our curated selection of digital products.
-          </p>
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold font-[family-name:var(--font-heading)] uppercase tracking-wider text-white mb-4">
+            Popular Categories
+          </h2>
+          <div className="w-24 h-1 bg-primary mx-auto rounded-full shadow-[0_0_10px_rgba(139,92,246,0.6)]"></div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((cat) => {
             const Icon = cat.icon;
             return (
               <Link
                 key={cat.name}
                 href={`${ROUTES.PRODUCTS}?category=${encodeURIComponent(cat.query)}`}
-                className={`group flex flex-col items-center p-5 bg-white rounded-2xl border border-gray-200 ${cat.border} hover:shadow-md transition-all duration-200 text-center cursor-pointer`}
+                className="mp-card group flex items-start gap-5 p-6 cursor-pointer relative overflow-hidden"
               >
-                <div className={`w-12 h-12 rounded-xl ${cat.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200`}>
-                  <Icon size={22} />
+                {/* Hover Glow Effect */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[50px] group-hover:bg-primary/20 transition-all duration-300"></div>
+
+                <div className="w-14 h-14 rounded-2xl bg-[#1A1A24] border border-border flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:border-primary/50 group-hover:shadow-[0_0_15px_rgba(139,92,246,0.3)] transition-all duration-300 relative z-10">
+                  <Icon size={26} className="text-primary group-hover:text-accent transition-colors" />
                 </div>
-                <h3 className="text-sm font-semibold text-gray-800 mb-1">{cat.name}</h3>
-                <p className="text-xs text-gray-500 leading-tight hidden sm:block">{cat.description}</p>
+                
+                <div className="relative z-10">
+                  <h3 className="text-lg font-bold font-[family-name:var(--font-heading)] tracking-widest uppercase text-white mb-2 group-hover:text-primary transition-colors">
+                    {cat.name}
+                  </h3>
+                  <p className="text-sm text-text-secondary leading-relaxed">
+                    {cat.description}
+                  </p>
+                </div>
               </Link>
             );
           })}

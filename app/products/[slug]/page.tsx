@@ -6,8 +6,8 @@ import { sampleReviews } from '@/data/sampleReviews';
 import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
 import {
-  Star, BadgeCheck, Zap, Shield, Package,
-  ChevronRight, Mail, CreditCard, Bitcoin, Banknote, Check
+  Star, ShieldCheck, Zap, Shield, Package,
+  ChevronRight, Mail, CreditCard, Bitcoin, Banknote, Check, AlertCircle
 } from 'lucide-react';
 
 function formatCurrency(n: number) {
@@ -16,10 +16,10 @@ function formatCurrency(n: number) {
 
 function StarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((i) => (
-        <Star key={i} size={15}
-          className={i <= Math.round(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200 fill-gray-200'}
+        <Star key={i} size={16}
+          className={i <= Math.round(rating) ? 'fill-primary text-primary drop-shadow-[0_0_5px_rgba(139,92,246,0.5)]' : 'text-border fill-border'}
         />
       ))}
     </div>
@@ -29,7 +29,7 @@ function StarRating({ rating }: { rating: number }) {
 const PAYMENT_METHODS = [
   { id: 'card', label: 'Card Payment', desc: 'Visa, Mastercard, AMEX', icon: CreditCard },
   { id: 'crypto', label: 'Crypto Payment', desc: 'BTC, ETH, USDT', icon: Bitcoin },
-  { id: 'manual', label: 'Manual Payment', desc: 'Bank transfer or other', icon: Banknote },
+  { id: 'manual', label: 'Manual Payment', desc: 'Bank transfer', icon: Banknote },
 ];
 
 export default function ProductDetailPage({ params }: { params: { slug: string } }) {
@@ -55,11 +55,13 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
   if (!product) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-4">
-        <Package size={48} className="text-gray-300" />
-        <h1 className="text-2xl font-bold text-gray-800">Product Not Found</h1>
-        <p className="text-gray-500">The product you are looking for does not exist or has been removed.</p>
-        <Link href={ROUTES.PRODUCTS} className="mt-2 px-5 py-2.5 rounded-xl bg-[#009ee3] text-white font-semibold hover:bg-[#008cc9] transition-colors">
+      <div className="min-h-[70vh] bg-background flex flex-col items-center justify-center gap-6 px-4">
+        <div className="w-24 h-24 bg-[#11111A] border-2 border-border rounded-full flex items-center justify-center">
+          <Package size={40} className="text-border" />
+        </div>
+        <h1 className="text-3xl font-black font-[family-name:var(--font-heading)] uppercase tracking-widest text-white">Product Not Found</h1>
+        <p className="text-text-secondary tracking-wide font-medium">The product you are looking for does not exist or has been removed.</p>
+        <Link href={ROUTES.PRODUCTS} className="mp-button-primary mt-4">
           Browse Products
         </Link>
       </div>
@@ -67,86 +69,104 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background relative">
+      {/* Background decoration */}
+      <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none"></div>
+
       {/* Breadcrumb */}
-      <div className="border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <nav className="flex items-center gap-1.5 text-sm text-gray-500">
-            <Link href={ROUTES.HOME} className="hover:text-[#009ee3] transition-colors">Home</Link>
-            <ChevronRight size={14} />
-            <Link href={ROUTES.PRODUCTS} className="hover:text-[#009ee3] transition-colors">Products</Link>
-            <ChevronRight size={14} />
-            <span className="text-gray-800 font-medium truncate max-w-[200px]">{product.name}</span>
+      <div className="border-b border-border bg-secondary relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <nav className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-text-secondary">
+            <Link href={ROUTES.HOME} className="hover:text-primary transition-colors">Home</Link>
+            <ChevronRight size={14} className="text-border" />
+            <Link href={ROUTES.PRODUCTS} className="hover:text-primary transition-colors">Products</Link>
+            <ChevronRight size={14} className="text-border" />
+            <span className="text-white truncate max-w-[200px]">{product.name}</span>
           </nav>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+          
           {/* LEFT COLUMN: Product Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             {/* Product Header Card */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="aspect-video bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden">
+            <div className="mp-card overflow-hidden">
+              <div className="aspect-[21/9] bg-[#0A0A0F] relative overflow-hidden group">
+                {/* Glow effect behind image */}
+                <div className="absolute inset-0 bg-primary/20 blur-[50px] opacity-50"></div>
+                
                 {product.imageUrl ? (
-                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-80 mix-blend-lighten" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Package size={64} className="text-gray-300" />
+                  <div className="w-full h-full flex items-center justify-center relative z-10">
+                    <Package size={80} className="text-border" />
                   </div>
                 )}
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent opacity-80"></div>
+
                 {product.isInstantDelivery && (
-                  <div className="absolute top-4 right-4">
-                    <span className="flex items-center gap-1.5 bg-[#009ee3] text-white text-sm font-semibold px-3 py-1.5 rounded-full shadow-lg">
-                      <Zap size={14} className="text-[#fff159]" /> Instant Email Delivery
+                  <div className="absolute top-5 right-5 z-20">
+                    <span className="flex items-center gap-2 bg-primary/20 backdrop-blur-md border border-primary/50 text-white text-xs font-bold tracking-wider uppercase px-4 py-2 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.4)]">
+                      <Zap size={14} className="text-accent" /> Instant Email Delivery
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="p-6 sm:p-8">
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <span className="inline-flex items-center text-xs font-semibold text-[#009ee3] bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
+              <div className="p-8 sm:p-10 relative z-10 -mt-10 bg-card rounded-t-3xl border-t border-border">
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <span className="inline-flex items-center text-[10px] font-bold tracking-widest uppercase text-primary border border-primary/30 bg-primary/10 px-3 py-1.5 rounded-md shadow-[0_0_10px_rgba(139,92,246,0.1)]">
                     {product.category}
                   </span>
-                  <span className={`text-sm font-semibold ${product.inStock ? 'text-emerald-600' : 'text-red-500'}`}>
-                    {product.inStock ? '✓ In Stock' : '✗ Out of Stock'}
+                  <span className={`text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-md border ${product.inStock ? 'text-success border-success/30 bg-success/10' : 'text-destructive border-destructive/30 bg-destructive/10'}`}>
+                    {product.inStock ? 'In Stock' : 'Out of Stock'}
                   </span>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
+                <h1 className="text-3xl sm:text-4xl font-black font-[family-name:var(--font-heading)] uppercase tracking-wider text-white mb-6 drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">{product.name}</h1>
 
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-4 mb-8 bg-[#11111A] border border-border rounded-xl p-4 inline-flex">
                   <StarRating rating={product.rating} />
-                  <span className="font-bold text-gray-900">{product.rating}</span>
-                  <span className="text-gray-500 text-sm">{product.reviewsCount} reviews</span>
+                  <span className="font-bold text-white">{product.rating}</span>
+                  <span className="text-text-secondary text-sm font-medium">({product.reviewsCount} reviews)</span>
                 </div>
 
-                <div className="flex items-end gap-3 mb-6">
-                  <span className="text-4xl font-bold text-gray-900">{formatCurrency(product.price)}</span>
+                <div className="flex items-end gap-4 mb-10 pb-10 border-b border-border">
+                  <span className="text-5xl font-black font-[family-name:var(--font-heading)] text-white tracking-wider">{formatCurrency(product.price)}</span>
                   {product.originalPrice && product.originalPrice > product.price && (
-                    <>
-                      <span className="text-xl text-gray-400 line-through mb-0.5">{formatCurrency(product.originalPrice)}</span>
-                      <span className="text-sm font-bold text-red-500 mb-0.5">
+                    <div className="mb-2">
+                      <span className="text-xl text-text-secondary line-through mr-3 font-medium">{formatCurrency(product.originalPrice)}</span>
+                      <span className="text-xs font-bold tracking-widest uppercase text-white bg-destructive/20 border border-destructive px-2 py-1 rounded-md text-destructive shadow-[0_0_10px_rgba(239,68,68,0.3)]">
                         -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                       </span>
-                    </>
+                    </div>
                   )}
                 </div>
 
                 {/* Product Description */}
-                <div className="mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Product Description</h2>
-                  <p className="text-gray-600 leading-relaxed">{product.description}</p>
+                <div className="mb-10">
+                  <h2 className="text-lg font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-4 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_5px_#8b5cf6]"></span>
+                    Description
+                  </h2>
+                  <p className="text-text-secondary leading-relaxed font-medium">{product.description}</p>
                 </div>
 
                 {/* What You Receive */}
-                <div className="mb-6 bg-blue-50 rounded-xl p-5">
-                  <h2 className="text-base font-semibold text-gray-900 mb-3">What You Receive</h2>
-                  <ul className="space-y-2">
+                <div className="mb-10 bg-primary/5 border border-primary/20 rounded-2xl p-6 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[40px]"></div>
+                  <h2 className="text-lg font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-5 relative z-10 flex items-center gap-2">
+                    <Package size={18} className="text-primary" />
+                    What You Receive
+                  </h2>
+                  <ul className="space-y-3 relative z-10">
                     {['Digital product details sent to your email', 'Step-by-step delivery instructions', 'Order confirmation number', 'Basic usage guidance', 'Access to support if needed'].map((item) => (
-                      <li key={item} className="flex items-start gap-2.5 text-sm text-gray-700">
-                        <Check size={15} className="text-[#009ee3] mt-0.5 flex-shrink-0" />
+                      <li key={item} className="flex items-start gap-3 text-sm font-medium text-text-secondary">
+                        <Check size={16} className="text-primary mt-0.5 flex-shrink-0 drop-shadow-[0_0_5px_rgba(139,92,246,0.5)]" />
                         {item}
                       </li>
                     ))}
@@ -155,13 +175,16 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
                 {/* Key Features */}
                 {product.features?.length > 0 && (
-                  <div className="mb-6">
-                    <h2 className="text-base font-semibold text-gray-900 mb-3">Key Features</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="mb-10">
+                    <h2 className="text-lg font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-5 flex items-center gap-2">
+                      <Zap size={18} className="text-accent" />
+                      Key Features
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {product.features.map((f) => (
-                        <div key={f} className="flex items-center gap-2 text-sm text-gray-700">
-                          <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                            <Check size={11} className="text-emerald-600" />
+                        <div key={f} className="flex items-center gap-3 text-sm font-medium text-text-secondary bg-[#11111A] border border-border p-3 rounded-xl">
+                          <div className="w-6 h-6 rounded-md bg-accent/10 border border-accent/20 flex items-center justify-center flex-shrink-0">
+                            <Check size={12} className="text-accent" />
                           </div>
                           {f}
                         </div>
@@ -171,9 +194,12 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 )}
 
                 {/* Important Notes */}
-                <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
-                  <h2 className="text-base font-semibold text-gray-900 mb-3">Important Before Purchase</h2>
-                  <ul className="space-y-1.5">
+                <div className="bg-warning/5 border border-warning/20 rounded-2xl p-6">
+                  <h2 className="text-lg font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-warning mb-5 flex items-center gap-2">
+                    <AlertCircle size={18} />
+                    Important Before Purchase
+                  </h2>
+                  <ul className="space-y-2.5">
                     {[
                       'Please enter a valid email address at checkout.',
                       'Digital products are delivered after payment confirmation.',
@@ -181,8 +207,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                       'Refunds are handled according to our refund policy.',
                       'Contact support if you face any issue with your order.',
                     ].map((note) => (
-                      <li key={note} className="flex items-start gap-2 text-sm text-amber-800">
-                        <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
+                      <li key={note} className="flex items-start gap-3 text-sm font-medium text-warning/80">
+                        <span className="text-warning/50 mt-1 flex-shrink-0 text-[10px]">■</span>
                         {note}
                       </li>
                     ))}
@@ -192,28 +218,33 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
             </div>
 
             {/* Customer Reviews */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 sm:p-8">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Customer Reviews</h2>
-              <div className="space-y-5">
+            <div className="mp-card p-8 sm:p-10 relative overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-[80px]"></div>
+              
+              <h2 className="text-2xl font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-8 relative z-10">
+                Customer <span className="text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]">Reviews</span>
+              </h2>
+              
+              <div className="space-y-6 relative z-10">
                 {reviews.map((review) => (
-                  <div key={review.id} className="pb-5 border-b border-gray-100 last:border-0 last:pb-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-[#009ee3]/10 rounded-full flex items-center justify-center text-[#009ee3] font-bold text-sm">
+                  <div key={review.id} className="p-6 bg-[#11111A] border border-border rounded-xl">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-primary/10 border border-primary/30 rounded-xl flex items-center justify-center text-primary font-bold font-[family-name:var(--font-heading)] text-lg shadow-[0_0_10px_rgba(139,92,246,0.1)]">
                           {review.userName.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{review.userName}</p>
+                          <p className="text-sm font-bold font-[family-name:var(--font-heading)] text-white tracking-wide uppercase mb-1">{review.userName}</p>
                           <StarRating rating={review.rating} />
                         </div>
                       </div>
                       {review.verifiedPurchase && (
-                        <span className="flex items-center gap-1 text-emerald-600 text-xs font-medium">
-                          <BadgeCheck size={13} /> Verified
+                        <span className="flex items-center gap-1.5 text-success text-[10px] font-bold tracking-widest uppercase bg-success/10 border border-success/30 px-2.5 py-1 rounded-md">
+                          <ShieldCheck size={12} /> Verified
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 leading-relaxed ml-12">{review.comment}</p>
+                    <p className="text-sm text-text-secondary leading-relaxed font-medium">"{review.comment}"</p>
                   </div>
                 ))}
               </div>
@@ -222,62 +253,64 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
           {/* RIGHT COLUMN: Checkout Box */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24">
+            <div className="sticky top-32">
               {submitted ? (
-                <div className="bg-white rounded-2xl border border-emerald-200 p-6 text-center shadow-lg">
-                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Check size={28} className="text-emerald-600" />
+                <div className="mp-card p-8 text-center border-success/50 shadow-[0_0_30px_rgba(34,197,94,0.1)] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-success/5"></div>
+                  <div className="w-20 h-20 bg-success/10 border border-success/30 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+                    <Check size={32} className="text-success drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">Checkout Initiated!</h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <h3 className="text-xl font-bold font-[family-name:var(--font-heading)] uppercase tracking-wider text-white mb-3 relative z-10">Checkout Initiated!</h3>
+                  <p className="text-sm text-text-secondary font-medium mb-6 relative z-10">
                     Payment integration will be connected in a future update. Your order will be processed to{' '}
-                    <strong>{email}</strong>.
+                    <strong className="text-white bg-[#11111A] px-2 py-0.5 rounded ml-1">{email}</strong>.
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="text-sm text-[#009ee3] hover:underline"
+                    className="text-xs font-bold tracking-widest uppercase text-primary hover:text-white transition-colors relative z-10 border-b border-primary/30 hover:border-white pb-0.5"
                   >
                     Edit Order
                   </button>
                 </div>
               ) : (
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="mp-card overflow-hidden">
                   {/* Header */}
-                  <div className="bg-gradient-to-r from-[#009ee3] to-[#006fa8] px-6 py-4">
-                    <h2 className="text-lg font-bold text-white">Complete Your Order</h2>
-                    <p className="text-white/75 text-sm">Instant delivery to your email</p>
+                  <div className="bg-secondary border-b border-border px-8 py-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+                    <h2 className="text-lg font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-1 drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">Complete Order</h2>
+                    <p className="text-primary text-xs font-bold tracking-widest uppercase">Instant Email Delivery</p>
                   </div>
 
-                  <div className="p-6 space-y-5">
+                  <div className="p-8 space-y-8">
                     {/* Email */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                        <span className="flex items-center gap-1.5"><Mail size={14} /> Email Address *</span>
+                      <label className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">
+                        <Mail size={14} className="text-primary" /> Email Address *
                       </label>
                       <input
                         type="email"
                         value={email}
                         onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                         placeholder="your@email.com"
-                        className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#009ee3]/30 focus:border-[#009ee3] transition-all ${emailError ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white'}`}
+                        className={`w-full px-4 py-3 rounded-xl border bg-[#0A0A0F] text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] ${emailError ? 'border-destructive/50 ring-1 ring-destructive/20' : 'border-border'}`}
                       />
-                      {emailError && <p className="text-xs text-red-500 mt-1">{emailError}</p>}
+                      {emailError && <p className="text-xs font-bold tracking-wide text-destructive mt-2">{emailError}</p>}
                     </div>
 
                     {/* Quantity */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">Quantity</label>
-                      <div className="flex items-center gap-3">
+                      <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Quantity</label>
+                      <div className="flex items-center gap-4">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors font-bold"
+                          className="w-10 h-10 rounded-xl bg-[#11111A] border border-border flex items-center justify-center text-text-secondary hover:text-white hover:border-primary/50 transition-colors font-bold"
                         >
                           −
                         </button>
-                        <span className="w-8 text-center font-semibold text-gray-900">{quantity}</span>
+                        <span className="w-10 text-center font-bold text-white text-lg">{quantity}</span>
                         <button
                           onClick={() => setQuantity(Math.min(10, quantity + 1))}
-                          className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors font-bold"
+                          className="w-10 h-10 rounded-xl bg-[#11111A] border border-border flex items-center justify-center text-text-secondary hover:text-white hover:border-primary/50 transition-colors font-bold"
                         >
                           +
                         </button>
@@ -286,26 +319,28 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
 
                     {/* Payment Method */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Method</label>
-                      <div className="space-y-2">
+                      <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Payment Method</label>
+                      <div className="space-y-3">
                         {PAYMENT_METHODS.map(({ id, label, desc, icon: Icon }) => (
                           <button
                             key={id}
                             type="button"
                             onClick={() => setPaymentMethod(id)}
-                            className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+                            className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
                               paymentMethod === id
-                                ? 'border-[#009ee3] bg-blue-50'
-                                : 'border-gray-200 hover:border-gray-300 bg-white'
+                                ? 'border-primary bg-primary/5 shadow-[0_0_15px_rgba(139,92,246,0.15)]'
+                                : 'border-border bg-[#11111A] hover:border-primary/30'
                             }`}
                           >
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${paymentMethod === id ? 'border-[#009ee3]' : 'border-gray-300'}`}>
-                              {paymentMethod === id && <div className="w-3 h-3 rounded-full bg-[#009ee3]" />}
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${paymentMethod === id ? 'border-primary' : 'border-text-secondary'}`}>
+                              {paymentMethod === id && <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_5px_#8b5cf6]" />}
                             </div>
-                            <Icon size={18} className={paymentMethod === id ? 'text-[#009ee3]' : 'text-gray-400'} />
-                            <div>
-                              <p className={`text-sm font-semibold ${paymentMethod === id ? 'text-[#009ee3]' : 'text-gray-700'}`}>{label}</p>
-                              <p className="text-xs text-gray-400">{desc}</p>
+                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${paymentMethod === id ? 'bg-primary/20 text-primary' : 'bg-[#0A0A0F] border border-border text-text-secondary'}`}>
+                              <Icon size={18} />
+                            </div>
+                            <div className="text-left">
+                              <p className={`text-sm font-bold tracking-wide uppercase mb-0.5 ${paymentMethod === id ? 'text-white' : 'text-text-secondary'}`}>{label}</p>
+                              <p className="text-[10px] font-medium tracking-wider uppercase text-text-secondary/70">{desc}</p>
                             </div>
                           </button>
                         ))}
@@ -313,18 +348,19 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                     </div>
 
                     {/* Order Summary */}
-                    <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
-                      <div className="flex justify-between text-gray-600">
+                    <div className="bg-[#0A0A0F] border border-border rounded-xl p-5 space-y-3 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-[20px]"></div>
+                      <div className="flex justify-between text-xs font-bold tracking-widest uppercase text-text-secondary relative z-10">
                         <span>Unit Price</span>
                         <span>{formatCurrency(product.price)}</span>
                       </div>
-                      <div className="flex justify-between text-gray-600">
+                      <div className="flex justify-between text-xs font-bold tracking-widest uppercase text-text-secondary relative z-10">
                         <span>Quantity</span>
                         <span>× {quantity}</span>
                       </div>
-                      <div className="border-t border-gray-200 pt-2 flex justify-between font-bold text-gray-900 text-base">
-                        <span>Total</span>
-                        <span>{formatCurrency(total)}</span>
+                      <div className="border-t border-border/50 pt-3 mt-1 flex justify-between items-center relative z-10">
+                        <span className="text-sm font-bold tracking-widest uppercase text-white">Total</span>
+                        <span className="text-2xl font-black font-[family-name:var(--font-heading)] text-primary drop-shadow-[0_0_8px_rgba(139,92,246,0.4)]">{formatCurrency(total)}</span>
                       </div>
                     </div>
 
@@ -332,13 +368,13 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                     <button
                       onClick={handleCheckout}
                       disabled={!product.inStock}
-                      className="w-full py-3.5 rounded-xl bg-[#009ee3] text-white font-bold text-base hover:bg-[#008cc9] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 shadow-md hover:shadow-lg active:scale-[0.98]"
+                      className="w-full py-4 rounded-xl bg-primary text-white font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:-translate-y-0.5 active:translate-y-0"
                     >
                       Continue to Checkout
                     </button>
 
-                    <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                      <Shield size={13} />
+                    <div className="flex items-center justify-center gap-2 text-[10px] font-bold tracking-widest uppercase text-text-secondary/70">
+                      <Shield size={12} className="text-primary" />
                       Secure payment processing
                     </div>
                   </div>
