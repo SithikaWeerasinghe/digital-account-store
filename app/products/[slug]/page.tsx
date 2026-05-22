@@ -194,8 +194,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                 )}
 
                 {/* Important Notes */}
-                <div className="bg-warning/5 border border-warning/20 rounded-2xl p-6">
-                  <h2 className="text-lg font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-warning mb-5 flex items-center gap-2">
+                <div className="bg-primary/5 border border-primary/20 rounded-2xl p-6">
+                  <h2 className="text-lg font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-primary mb-5 flex items-center gap-2">
                     <AlertCircle size={18} />
                     Important Before Purchase
                   </h2>
@@ -207,8 +207,8 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
                       'Refunds are handled according to our refund policy.',
                       'Contact support if you face any issue with your order.',
                     ].map((note) => (
-                      <li key={note} className="flex items-start gap-3 text-sm font-medium text-warning/80">
-                        <span className="text-warning/50 mt-1 flex-shrink-0 text-[10px]">■</span>
+                      <li key={note} className="flex items-start gap-3 text-sm font-medium text-primary/80">
+                        <span className="text-primary/50 mt-1 flex-shrink-0 text-[10px]">■</span>
                         {note}
                       </li>
                     ))}
