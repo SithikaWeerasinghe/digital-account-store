@@ -1,51 +1,66 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { ROUTES, APP_NAME } from '@/lib/constants';
-import { Menu, X, Zap } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ROUTES } from '@/lib/constants';
+import { Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navLinks = [
-    { label: 'Home', href: ROUTES.HOME },
-    { label: 'Products', href: ROUTES.PRODUCTS },
-    { label: 'Support', href: ROUTES.SUPPORT },
+    { label: 'HOME', href: ROUTES.HOME },
+    { label: 'PRODUCTS', href: ROUTES.PRODUCTS },
+    { label: 'CHECKOUT', href: ROUTES.CHECKOUT },
+    { label: 'SUPPORT', href: ROUTES.SUPPORT },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <header 
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? 'bg-[#050509]/95 backdrop-blur-md border-b border-white/5 shadow-lg' 
+          : 'bg-[#050509]/60 backdrop-blur-sm border-b border-white/5'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href={ROUTES.HOME} className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-[#009ee3] rounded-lg flex items-center justify-center">
-              <Zap size={18} className="text-[#fff159]" />
-            </div>
-            <span className="text-xl font-bold text-gray-900">
-              {APP_NAME}
+        <div className="flex items-center justify-between h-20">
+          
+          {/* Clean Logo */}
+          <Link href={ROUTES.HOME} className="flex items-center gap-2 flex-shrink-0 group">
+            <span className="text-xl font-black font-heading text-white tracking-widest uppercase transition-all duration-300 group-hover:text-primary">
+              APEX<span className="text-primary group-hover:text-white transition-colors"> DIGITAL</span>
             </span>
           </Link>
 
-          {/* Desktop Nav */}
+          {/* Simple Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-gray-600 hover:text-[#009ee3] transition-colors duration-150"
+                className="text-xs font-black font-heading tracking-widest uppercase text-white/70 hover:text-primary transition-colors duration-200"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
 
-          {/* Desktop CTA */}
+          {/* Simple Desktop CTA */}
           <div className="hidden md:flex items-center gap-3">
             <Link
               href={ROUTES.PRODUCTS}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-[#009ee3] text-white text-sm font-semibold hover:bg-[#008cc9] transition-colors duration-150"
+              className="inline-flex items-center justify-center py-2.5 px-6 rounded-xl bg-primary text-white text-xs font-black font-heading tracking-widest uppercase hover:bg-primary-hover shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] transition-all duration-300"
             >
               Browse Products
             </Link>
@@ -54,33 +69,33 @@ export default function Navbar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2.5 rounded-xl border border-white/10 bg-[#0E1017] text-white/70 hover:text-white hover:border-primary/50 transition-colors focus:outline-none"
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
-          <div className="px-4 pt-3 pb-4 space-y-1">
+        <div className="md:hidden border-t border-white/5 bg-[#0E1017]/95 backdrop-blur-md absolute w-full left-0 z-40">
+          <div className="px-4 pt-4 pb-6 space-y-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:text-[#009ee3] hover:bg-blue-50 transition-colors"
+                className="block px-4 py-3 border border-[#1D1F2D] hover:border-primary/40 rounded-xl text-xs font-black tracking-widest uppercase text-white/70 hover:text-white hover:bg-primary/5 transition-all duration-200 font-heading"
               >
                 {link.label}
               </Link>
             ))}
-            <div className="pt-2">
+            <div className="pt-4">
               <Link
                 href={ROUTES.PRODUCTS}
                 onClick={() => setMobileOpen(false)}
-                className="block w-full text-center px-4 py-2.5 rounded-lg bg-[#009ee3] text-white text-sm font-semibold hover:bg-[#008cc9] transition-colors"
+                className="block w-full text-center py-3 bg-primary text-white text-xs font-black font-heading tracking-widest uppercase rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.3)]"
               >
                 Browse Products
               </Link>

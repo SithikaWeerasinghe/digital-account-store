@@ -1,53 +1,104 @@
-import { Zap, Shield, Users, CheckCircle } from 'lucide-react';
+'use client';
+
+import { Zap, Shield, Users, CheckCircle, Database } from 'lucide-react';
 
 const benefits = [
   {
-    icon: Zap,
-    title: 'Instant Digital Delivery',
-    description: 'Your purchase is delivered to your email within seconds of payment confirmation. No waiting, no delays.',
-    color: 'bg-blue-100 text-[#009ee3]',
+    icon: Shield,
+    title: 'COVERT ENCRYPTION',
+    statName: 'SECURE_TUNNEL',
+    statValue: 'AES_256_ACTIVE',
+    description: 'All network transactions are routed through fully encrypted gateways with tokenized authorization protocols, keeping billing logs safe.',
+    percentage: '100% Secure',
+    color: 'text-primary'
   },
   {
-    icon: Shield,
-    title: 'Secure Payment Process',
-    description: 'All transactions are processed through encrypted, secure payment gateways. Your data stays protected.',
-    color: 'bg-emerald-100 text-emerald-600',
+    icon: Zap,
+    title: 'ULTRA LATENCY DROP',
+    statName: 'DROP_TIME',
+    statValue: '1.2s_AVERAGE',
+    description: 'Bypass all delivery waiting times. Keys and file downloads are decrypted and dropped directly to your client terminal and inbox instantly.',
+    percentage: 'Instant Drop',
+    color: 'text-[#00F0FF]'
   },
   {
     icon: Users,
-    title: 'Real Support Team',
-    description: 'A dedicated support team is ready to assist you with any order issue, delivery concern, or product question.',
-    color: 'bg-purple-100 text-purple-600',
+    title: 'LIVE LOBBY COMMS',
+    statName: 'AGENT_PING',
+    statValue: '14min_RESPONSE',
+    description: 'Connect immediately to technical alignment team logs. Get detailed setup help, optimization support, and key decryption assistance.',
+    percentage: '24/7 Online',
+    color: 'text-accent'
   },
   {
     icon: CheckCircle,
-    title: 'Quality Checked Products',
-    description: 'Every product listed in our store is verified before publication to ensure it meets quality standards.',
-    color: 'bg-amber-100 text-amber-600',
+    title: 'INTEGRITY ASSURED',
+    statName: 'KEY_CHECK',
+    statValue: '0_VALIDATION_ERR',
+    description: 'Every software license key and overlay asset is pre-verified on our sandbox nodes before list activation to ensure full system compliance.',
+    percentage: '100% Verified',
+    color: 'text-emerald-500'
   },
 ];
 
 export default function TrustSection() {
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">
-            Built for Fast, Safe, and Simple Digital Shopping
+    <section className="py-24 bg-[#0E1017] border-y border-[#25253A]/60 relative overflow-hidden">
+      {/* Background Grid Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.012)_1px,transparent_1px)] bg-[size:25px_25px] pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* Header section */}
+        <div className="text-center mb-20">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-sm border border-[#25253A] bg-[#111219] font-mono text-[9px] font-black tracking-widest text-[#A1A1AA]/50 uppercase">
+            <Database size={10} className="text-primary animate-pulse" />
+            DIAGNOSTICS PROTOCOL :: SECURE CORE INTEGRITY
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black font-[family-name:var(--font-heading)] uppercase tracking-wider text-white mb-4">
+            SYSTEM DIAGNOSTIC <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-[#A855F7] drop-shadow-[0_0_10px_rgba(139,92,246,0.4)]">INTEL</span>
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto">
-            We built Apex Digital around four principles that matter most to our customers.
+          <p className="text-xs font-mono text-text-secondary tracking-widest uppercase max-w-xl mx-auto">
+            OPERATING PARAMETERS DESIGNED TO ENSURE PRECISE AND SECURE DIGITAL TRANSACTIONS
           </p>
+          <div className="w-16 h-[2px] bg-primary mx-auto mt-6 shadow-[0_0_10px_rgba(139,92,246,0.6)]"></div>
         </div>
 
+        {/* Benefits Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {benefits.map(({ icon: Icon, title, description, color }) => (
-            <div key={title} className="group p-6 rounded-2xl border border-gray-100 hover:border-[#009ee3]/30 hover:shadow-md transition-all duration-200 bg-white">
-              <div className={`w-12 h-12 rounded-xl ${color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200`}>
-                <Icon size={24} />
+          {benefits.map(({ icon: Icon, title, statName, statValue, description, percentage, color }) => (
+            <div 
+              key={title} 
+              className="group relative p-6 rounded-sm bg-[#11131E] border border-[#202230] hover:border-primary/45 transition-all duration-300 flex flex-col justify-between cyber-corners"
+            >
+              <div className="relative z-10">
+                {/* Tech icon wrap */}
+                <div className="w-12 h-12 rounded-sm bg-[#161826] border border-[#2A2D40] flex items-center justify-center mb-6 group-hover:scale-105 group-hover:border-primary/50 group-hover:shadow-[0_0_15px_rgba(139,92,246,0.25)] transition-all duration-300">
+                  <Icon size={20} className={`${color} group-hover:text-white transition-colors`} />
+                </div>
+                
+                {/* Title */}
+                <h3 className="text-xs font-black font-[family-name:var(--font-heading)] tracking-wider uppercase text-white mb-3 group-hover:text-primary transition-colors">
+                  {title}
+                </h3>
+                
+                {/* Description */}
+                <p className="text-[11px] text-text-secondary leading-relaxed font-medium mb-6">
+                  {description}
+                </p>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">{title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+
+              {/* Dynamic telemetry footer info */}
+              <div className="border-t border-[#1C1E2D] pt-4 mt-auto font-mono text-[9px] font-bold">
+                <div className="flex justify-between items-center text-white/30 mb-1.5">
+                  <span>{statName}</span>
+                  <span className="text-[#39FF14]">{statValue}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/20">INTEGRITY_INDEX:</span>
+                  <span className="text-white/80">{percentage}</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>

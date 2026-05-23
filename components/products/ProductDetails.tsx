@@ -1,6 +1,8 @@
 import { Product } from '@/types/product';
 import { formatCurrency } from '@/lib/utils';
 import { ShoppingCart, Check, ShieldCheck, Star } from 'lucide-react';
+import Link from 'next/link';
+import { ROUTES } from '@/lib/constants';
 
 export default function ProductDetails({ product }: { product: Product }) {
   return (
@@ -72,12 +74,12 @@ export default function ProductDetails({ product }: { product: Product }) {
               <ShoppingCart size={20} />
               Add to Cart
             </button>
-            <button 
-              disabled={!product.inStock}
-              className="mp-button-secondary flex-1 flex justify-center items-center py-3 text-lg"
+            <Link 
+              href={product.inStock ? ROUTES.CHECKOUT : '#'}
+              className={`mp-button-secondary flex-1 flex justify-center items-center py-3 text-lg ${!product.inStock ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
             >
               Buy Now
-            </button>
+            </Link>
           </div>
         </div>
       </div>

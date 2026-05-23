@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { faqs } from '@/data/faqs';
 import {
   ChevronDown, ChevronUp, Send, Ticket,
-  Mail, MessageSquare, Check, AlertCircle
+  Mail, MessageSquare, Check, AlertCircle, UploadCloud
 } from 'lucide-react';
 
 type FormData = {
@@ -31,21 +31,21 @@ const CONTACT_OPTIONS = [
     title: 'Support Tickets',
     desc: 'Best for order issues and product problems.',
     detail: 'Submit a detailed ticket and our team will review and respond.',
-    color: 'bg-blue-50 text-[#009ee3] border-blue-100',
+    color: 'text-primary border-primary bg-primary/10 group-hover:bg-primary/20',
   },
   {
     icon: Mail,
     title: 'Email Support',
     desc: 'Best for detailed questions and business inquiries.',
     detail: 'Send us a message and expect a reply within 24 hours.',
-    color: 'bg-purple-50 text-purple-600 border-purple-100',
+    color: 'text-accent border-accent bg-accent/10 group-hover:bg-accent/20',
   },
   {
     icon: MessageSquare,
-    title: 'Community / Social',
+    title: 'Community',
     desc: 'Best for quick updates and announcements.',
     detail: 'Follow our social channels for news and community discussions.',
-    color: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    color: 'text-success border-success bg-success/10 group-hover:bg-success/20',
   },
 ];
 
@@ -53,24 +53,30 @@ function FAQAccordion() {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {faqs.map((faq, i) => (
-        <div key={i} className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-[#009ee3]/30 transition-colors">
+        <div key={i} className={`mp-card overflow-hidden transition-all duration-300 ${open === i ? 'border-primary shadow-[0_0_15px_rgba(139,92,246,0.15)]' : ''}`}>
           <button
             onClick={() => setOpen(open === i ? null : i)}
-            className="w-full flex items-center justify-between px-6 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#009ee3]"
+            className="w-full flex items-center justify-between px-6 py-5 text-left focus:outline-none group"
           >
-            <span className="font-medium text-gray-900 pr-4">{faq.question}</span>
-            {open === i
-              ? <ChevronUp size={18} className="text-[#009ee3] flex-shrink-0" />
-              : <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />
-            }
+            <span className={`font-bold font-[family-name:var(--font-heading)] tracking-wider uppercase text-sm ${open === i ? 'text-primary' : 'text-white group-hover:text-primary transition-colors'}`}>
+              {faq.question}
+            </span>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${open === i ? 'bg-primary/20 text-primary' : 'bg-[#1A1A24] text-text-secondary group-hover:bg-primary/10 group-hover:text-primary'}`}>
+              {open === i
+                ? <ChevronUp size={18} />
+                : <ChevronDown size={18} />
+              }
+            </div>
           </button>
-          {open === i && (
-            <div className="px-6 pb-5 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
+          <div 
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${open === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
+          >
+            <div className="px-6 pb-6 text-sm text-text-secondary leading-relaxed border-t border-border pt-4 font-medium">
               {faq.answer}
             </div>
-          )}
+          </div>
         </div>
       ))}
     </div>
@@ -106,122 +112,132 @@ export default function SupportPage() {
   };
 
   const inputClass = (field: keyof FormData) =>
-    `w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#009ee3]/30 focus:border-[#009ee3] transition-all ${
-      errors[field] ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white'
+    `w-full px-4 py-3.5 rounded-xl border bg-[#0A0A0F] text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] ${
+      errors[field] ? 'border-destructive/50 ring-1 ring-destructive/20' : 'border-border'
     }`;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#009ee3] to-[#006fa8] text-white py-14">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-3">How Can We Help?</h1>
-          <p className="text-white/80 max-w-xl mx-auto text-base">
-            Need help with an order, payment, delivery, or product issue? Submit a ticket and our support team will assist you.
+      <div className="bg-secondary border-b border-border relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <h1 className="text-4xl sm:text-5xl font-black font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-6">
+            Need <span className="text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]">Support?</span>
+          </h1>
+          <p className="text-text-secondary max-w-2xl mx-auto text-lg font-medium tracking-wide">
+            Submit a ticket for order, payment, delivery, or product issues. Our support team will review your request and respond as soon as possible.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
         {/* Contact Options */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {CONTACT_OPTIONS.map(({ icon: Icon, title, desc, detail, color }) => (
-            <div key={title} className={`bg-white rounded-2xl border p-6 hover:shadow-md transition-all duration-200 ${color.split(' ').pop()}`}>
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 border ${color}`}>
-                <Icon size={22} />
+            <div key={title} className="mp-card p-6 flex flex-col group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-5 border transition-colors ${color} shadow-[0_0_15px_rgba(255,255,255,0.05)]`}>
+                <Icon size={24} />
               </div>
-              <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
-              <p className="text-sm text-gray-500 mb-2">{desc}</p>
-              <p className="text-xs text-gray-400">{detail}</p>
+              <h3 className="font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-2">{title}</h3>
+              <p className="text-sm font-medium text-text-secondary mb-3">{desc}</p>
+              <p className="text-[10px] tracking-wider uppercase text-text-secondary/70">{detail}</p>
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Support Ticket Form */}
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-            <div className="bg-gradient-to-r from-[#009ee3] to-[#006fa8] px-6 py-5">
-              <h2 className="text-xl font-bold text-white">Submit a Support Ticket</h2>
-              <p className="text-white/75 text-sm mt-1">
-                Fill in the details below and we&apos;ll respond as soon as possible.
-              </p>
+          <div className="mp-card overflow-hidden h-fit">
+            <div className="bg-secondary border-b border-border px-8 py-6 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+              <h2 className="text-lg font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-1 drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">Submit a Ticket</h2>
+              <p className="text-primary text-xs font-bold tracking-widest uppercase">We respond within 24 hours</p>
             </div>
 
             {submitted ? (
-              <div className="p-8 text-center">
-                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check size={30} className="text-emerald-600" />
+              <div className="p-10 text-center border-success/50 relative overflow-hidden">
+                <div className="absolute inset-0 bg-success/5"></div>
+                <div className="w-20 h-20 bg-success/10 border border-success/30 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+                  <Check size={32} className="text-success drop-shadow-[0_0_5px_rgba(34,197,94,0.5)]" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Ticket Submitted!</h3>
-                <p className="text-gray-500 text-sm leading-relaxed max-w-sm mx-auto">
+                <h3 className="text-xl font-bold font-[family-name:var(--font-heading)] uppercase tracking-wider text-white mb-4 relative z-10">Ticket Submitted!</h3>
+                <p className="text-sm text-text-secondary font-medium leading-relaxed max-w-sm mx-auto mb-8 relative z-10">
                   Your ticket has been submitted successfully. Our support team will review it and respond as soon as possible.
                 </p>
                 <button
                   onClick={() => { setSubmitted(false); setForm({ name: '', email: '', orderId: '', issueType: '', subject: '', message: '' }); }}
-                  className="mt-6 px-5 py-2.5 rounded-xl bg-[#009ee3] text-white text-sm font-semibold hover:bg-[#008cc9] transition-colors"
+                  className="mp-button-primary relative z-10"
                 >
                   Submit Another Ticket
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                {/* Full Name */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name *</label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="John Smith"
-                    className={inputClass('name')}
-                  />
-                  {errors.name && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.name}</p>}
+              <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Full Name */}
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Full Name *</label>
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      placeholder="John Doe"
+                      className={inputClass('name')}
+                    />
+                    {errors.name && <p className="text-xs font-bold tracking-wide text-destructive mt-2 flex items-center gap-1"><AlertCircle size={12} />{errors.name}</p>}
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Email Address *</label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      placeholder="you@email.com"
+                      className={inputClass('email')}
+                    />
+                    {errors.email && <p className="text-xs font-bold tracking-wide text-destructive mt-2 flex items-center gap-1"><AlertCircle size={12} />{errors.email}</p>}
+                  </div>
                 </div>
 
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address *</label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    placeholder="you@email.com"
-                    className={inputClass('email')}
-                  />
-                  {errors.email && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.email}</p>}
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Order ID */}
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Order ID <span className="text-text-secondary/50 font-medium">(optional)</span></label>
+                    <input
+                      type="text"
+                      value={form.orderId}
+                      onChange={(e) => setForm({ ...form, orderId: e.target.value })}
+                      placeholder="ORD-12345"
+                      className="w-full px-4 py-3.5 rounded-xl border bg-[#0A0A0F] text-white text-sm font-medium border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+                    />
+                  </div>
 
-                {/* Order ID */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Order ID <span className="text-gray-400 font-normal">(optional)</span></label>
-                  <input
-                    type="text"
-                    value={form.orderId}
-                    onChange={(e) => setForm({ ...form, orderId: e.target.value })}
-                    placeholder="ORD-12345"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#009ee3]/30 focus:border-[#009ee3] transition-all"
-                  />
-                </div>
-
-                {/* Issue Type */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Issue Type *</label>
-                  <select
-                    value={form.issueType}
-                    onChange={(e) => setForm({ ...form, issueType: e.target.value })}
-                    className={inputClass('issueType')}
-                  >
-                    <option value="">Select issue type...</option>
-                    {ISSUE_TYPES.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                  {errors.issueType && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.issueType}</p>}
+                  {/* Issue Type */}
+                  <div>
+                    <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Issue Type *</label>
+                    <select
+                      value={form.issueType}
+                      onChange={(e) => setForm({ ...form, issueType: e.target.value })}
+                      className={`${inputClass('issueType')} appearance-none cursor-pointer`}
+                    >
+                      <option value="" className="bg-card">Select issue type...</option>
+                      {ISSUE_TYPES.map((t) => (
+                        <option key={t} value={t} className="bg-card text-white">{t}</option>
+                      ))}
+                    </select>
+                    {errors.issueType && <p className="text-xs font-bold tracking-wide text-destructive mt-2 flex items-center gap-1"><AlertCircle size={12} />{errors.issueType}</p>}
+                  </div>
                 </div>
 
                 {/* Subject */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Subject *</label>
+                  <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Subject *</label>
                   <input
                     type="text"
                     value={form.subject}
@@ -229,12 +245,12 @@ export default function SupportPage() {
                     placeholder="Brief summary of the issue"
                     className={inputClass('subject')}
                   />
-                  {errors.subject && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.subject}</p>}
+                  {errors.subject && <p className="text-xs font-bold tracking-wide text-destructive mt-2 flex items-center gap-1"><AlertCircle size={12} />{errors.subject}</p>}
                 </div>
 
                 {/* Message */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Message *</label>
+                  <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Message *</label>
                   <textarea
                     rows={5}
                     value={form.message}
@@ -242,22 +258,23 @@ export default function SupportPage() {
                     placeholder="Please describe your issue in detail. Include any relevant order information."
                     className={`${inputClass('message')} resize-none`}
                   />
-                  {errors.message && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={12} />{errors.message}</p>}
+                  {errors.message && <p className="text-xs font-bold tracking-wide text-destructive mt-2 flex items-center gap-1"><AlertCircle size={12} />{errors.message}</p>}
                 </div>
 
                 {/* Screenshot (placeholder) */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Screenshot <span className="text-gray-400 font-normal">(optional)</span></label>
-                  <div className="w-full px-4 py-6 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 text-center text-sm text-gray-400 hover:border-[#009ee3]/40 transition-colors cursor-pointer">
-                    Click to upload or drag and drop a screenshot (JPG, PNG)
+                  <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Screenshot <span className="text-text-secondary/50 font-medium">(optional)</span></label>
+                  <div className="w-full px-4 py-8 rounded-xl border-2 border-dashed border-border bg-[#0A0A0F] text-center text-sm font-medium text-text-secondary hover:border-primary/50 hover:text-white transition-colors cursor-pointer group flex flex-col items-center gap-2">
+                    <UploadCloud size={24} className="text-text-secondary group-hover:text-primary transition-colors" />
+                    <span>Click to upload or drag and drop a screenshot (JPG, PNG)</span>
                   </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-[#009ee3] text-white font-bold text-base hover:bg-[#008cc9] transition-all duration-150 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98]"
+                  className="w-full py-4 rounded-xl bg-primary text-white font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest hover:bg-primary-hover transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
                 >
-                  <Send size={17} /> Submit Ticket
+                  <Send size={18} /> Submit Ticket
                 </button>
               </form>
             )}
@@ -265,7 +282,9 @@ export default function SupportPage() {
 
           {/* FAQ Section */}
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+            <h2 className="text-2xl font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-8">
+              Frequently Asked <span className="text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]">Questions</span>
+            </h2>
             <FAQAccordion />
           </div>
         </div>

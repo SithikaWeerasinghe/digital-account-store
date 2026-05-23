@@ -1,43 +1,92 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #009ee3;
-  --color-primary-hover: #008cc9;
-  --color-secondary: #fff159;
-  --color-secondary-hover: #ffe600;
-  --color-background: #ebebf0;
-  --color-card: #ffffff;
-  --color-text-primary: #333333;
-  --color-text-secondary: #666666;
-  --color-text-muted: #999999;
-  --color-success: #00a650;
-  --color-danger: #f23d4f;
-  --color-warning: #ff7733;
+  --color-primary: #8B5CF6;
+  --color-primary-hover: #A855F7;
+  --color-background: #050509;
+  --color-secondary-background: #0B0B12;
+  --color-card: #11111A;
+  --color-border: #25253A;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #A1A1AA;
+  --color-success: #22C55E;
+  --color-warning: #FACC15;
+  --color-hazard: #FF5500;
+  --color-neon-blue: #00F0FF;
+  --color-accent: #A855F7;
 
   --font-sans: "Inter", system-ui, sans-serif;
+  --font-heading: "Orbitron", sans-serif;
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-crosshair: pulseCrosshair 15s linear infinite;
+  --animate-embers: embers 12s linear infinite;
+  --animate-laser-scan: laserScan 4s linear infinite;
+  --animate-ticker: ticker 25s linear infinite;
+  --animate-spin-slow: spin-slow 20s linear infinite;
+  --animate-spin-reverse-slow: spin-reverse-slow 25s linear infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(0.5deg); }
+  }
+
+  @keyframes pulseCrosshair {
+    0%, 100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); opacity: 0.25; }
+    50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); opacity: 0.6; }
+  }
+
+  @keyframes embers {
+    0% { transform: translateY(100vh) translateX(0) scale(1); opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.4; }
+    100% { transform: translateY(-20vh) translateX(15px) scale(0.4); opacity: 0; }
+  }
+
+  @keyframes laserScan {
+    0% { top: 0%; opacity: 0; }
+    5% { opacity: 0.8; }
+    95% { opacity: 0.8; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  @keyframes ticker {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-33.3333%, 0, 0); }
+  }
+
+  @keyframes spin-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes spin-reverse-slow {
+    0% { transform: rotate(360deg); }
+    100% { transform: rotate(0deg); }
+  }
 }
 
 @layer base {
   :root {
-    --background: #ebebf0;
-    --foreground: #333333;
-    --card: #ffffff;
-    --card-foreground: #333333;
-    --popover: #ffffff;
-    --popover-foreground: #333333;
-    --primary: #009ee3;
-    --primary-foreground: #ffffff;
-    --secondary: #fff159;
-    --secondary-foreground: #333333;
-    --muted: #f5f5f5;
-    --muted-foreground: #666666;
-    --accent: #e5f6ff;
-    --accent-foreground: #009ee3;
-    --destructive: #f23d4f;
-    --destructive-foreground: #ffffff;
-    --border: #e6e6e6;
-    --input: #cccccc;
-    --ring: #009ee3;
+    --background: #050509;
+    --foreground: #FFFFFF;
+    --card: #11111A;
+    --card-foreground: #FFFFFF;
+    --popover: #11111A;
+    --popover-foreground: #FFFFFF;
+    --primary: #8B5CF6;
+    --primary-foreground: #FFFFFF;
+    --secondary: #0B0B12;
+    --secondary-foreground: #FFFFFF;
+    --muted: #0B0B12;
+    --muted-foreground: #A1A1AA;
+    --accent: #A855F7;
+    --accent-foreground: #FFFFFF;
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+    --border: #25253A;
+    --input: #25253A;
+    --ring: #8B5CF6;
     --radius: 0.5rem;
   }
 
@@ -50,41 +99,250 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: 0.05em;
   }
 }
 
-@layer utilities {
-  .mp-card {
-    background-color: var(--card);
-    color: var(--card-foreground);
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--border);
+.glow-border-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glow-border-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15) 30%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0.15) 70%,
+    transparent
+  );
+  transition: none;
+  z-index: 1;
+}
+
+.glow-border-button:hover::before {
+  left: 150%;
+  transition: left 0.7s ease-in-out;
+}
+
+/* Glitch Image Zoom Hover effect */
+.glitch-hover-img {
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.3s ease;
+}
+
+.group:hover .glitch-hover-img {
+  transform: scale(1.08);
+  filter: saturate(1.2) contrast(1.1) brightness(0.95);
+}
+
+/* Cyber Crop Bracket Corners */
+.cyber-corners {
+  position: relative;
+}
+.cyber-corners::before,
+.cyber-corners::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: rgba(139, 92, 246, 0.4);
+  border-style: solid;
+  pointer-events: none;
+}
+.cyber-corners::before {
+  top: 0; left: 0;
+  border-width: 2px 0 0 2px;
+}
+.cyber-corners::after {
+  bottom: 0; right: 0;
+  border-width: 0 2px 2px 0;
+}
+
+/* Advanced Card Utilities */
+.mp-card {
+  background-color: #11111A;
+  border: 1px solid #25253A;
+  border-radius: 0.25rem; /* tactical sharp corners */
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.mp-card:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.15), inset 0 0 10px rgba(139, 92, 246, 0.05);
+  transform: translateY(-2px);
+}
+
+.mp-card-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(139, 92, 246, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.02) 1px, transparent 1px);
+  background-size: 16px 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Tactical input classes */
+.mp-input-tactical {
+  background: rgba(8, 9, 13, 0.9);
+  border: 1px solid #25253A;
+  color: #FFFFFF;
+  font-family: monospace;
+  transition: all 0.3s ease;
+}
+.mp-input-tactical:focus {
+  border-color: #8B5CF6;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+  outline: none;
+}
+
+/* Tech scanner overlay line */
+.scanner-overlay {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #8B5CF6, #A855F7, #8B5CF6, transparent);
+  box-shadow: 0 0 8px #8B5CF6, 0 0 15px rgba(139, 92, 246, 0.5);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Glow Text */
+.neon-glow-text {
+  text-shadow: 0 0 8px rgba(139, 92, 246, 0.6);
+}
+
+.neon-glow-accent {
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+/* Fallback Animation Keyframes & Utility Classes */
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse-slow {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(0.5deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite !important;
+}
+
+.animate-spin-reverse-slow {
+  animation: spin-reverse-slow 14s linear infinite !important;
+}
+
+.animate-spin-fast {
+  animation: spin-slow 7s linear infinite !important;
+}
+
+.animate-spin-reverse-fast {
+  animation: spin-reverse-slow 8s linear infinite !important;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite !important;
+}
+
+/* Staggered Fade In Up Entrance */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  .mp-button-primary {
-    background-color: var(--primary);
-    color: var(--primary-foreground);
-    border-radius: 0.375rem;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
-  }
-  .mp-button-primary:hover {
-    background-color: var(--color-primary-hover);
-  }
-  .mp-button-secondary {
-    background-color: var(--secondary);
-    color: var(--secondary-foreground);
-    border-radius: 0.375rem;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 150ms;
-  }
-  .mp-button-secondary:hover {
-    background-color: var(--color-secondary-hover);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Category-specific Hover Micro-animations */
+
+/* 1. TV (Streaming) - Screen wiggle/shake */
+@keyframes tvWiggle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-6deg) scale(1.08); }
+  75% { transform: rotate(6deg) scale(1.08); }
+}
+.group:hover .animate-tv {
+  animation: tvWiggle 0.4s ease-in-out infinite;
+}
+
+/* 2. Bot (AI Tools) - Float up and down */
+@keyframes botFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.08); }
+}
+.group:hover .animate-bot {
+  animation: botFloat 0.7s ease-in-out infinite;
+}
+
+/* 3. Gamepad2 (Gaming) - Wiggle/Tilt press */
+@keyframes gamingPress {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(0.92) rotate(-8deg); }
+  75% { transform: scale(1.08) rotate(8deg); }
+}
+.group:hover .animate-gaming {
+  animation: gamingPress 0.5s ease-in-out infinite;
+}
+
+/* 4. CPU (Software) - Continuous rapid spin */
+@keyframes cpuSpin {
+  from { transform: rotate(0deg) scale(1); }
+  to { transform: rotate(360deg) scale(1.08); }
+}
+.group:hover .animate-cpu {
+  animation: cpuSpin 2s linear infinite;
+}
+
+/* 5. Briefcase (Productivity) - Subtle tilt bounce */
+@keyframes briefcaseSway {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-3px) rotate(-4deg); }
+  66% { transform: translateY(-3px) rotate(4deg); }
+}
+.group:hover .animate-productivity {
+  animation: briefcaseSway 0.6s ease-in-out infinite;
+}
+
+/* 6. Gift (Gift Cards) - Heartbeat pulse/bounce */
+@keyframes giftBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-5px) scale(1.06); }
+  50% { transform: translateY(0) scale(0.96); }
+  70% { transform: translateY(-2px) scale(1.03); }
+}
+.group:hover .animate-gift {
+  animation: giftBounce 0.8s ease-in-out infinite;
+}
+

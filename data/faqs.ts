@@ -1,26 +1,22 @@
 export const faqs = [
   {
-    question: 'How fast will I receive my product?',
+    question: 'How do I receive my order?',
     answer: 'All digital products are delivered instantly to your email address immediately after your payment is confirmed. In most cases, delivery happens within seconds of checkout.',
   },
   {
-    question: 'Where will I receive my product?',
-    answer: 'Your product details will be sent to the email address you provide at checkout. Please make sure you enter a valid email address and check your spam folder if you do not see it.',
+    question: 'What should I do if I did not receive my order?',
+    answer: 'Please check your spam or junk folder first. If you still cannot find the email with your order details, please submit a support ticket on our Support page with your Order ID, and our team will assist you promptly.',
   },
   {
-    question: 'What payment methods do you accept?',
-    answer: 'We accept all major credit and debit cards, as well as PayPal and select crypto payment methods for a secure and fast transaction experience.',
+    question: 'Can I change my email after purchase?',
+    answer: 'For security reasons, we send the digital products to the email address provided during checkout. If you made a mistake, please contact our support team immediately, although instant deliveries might have already been processed.',
   },
   {
-    question: 'Is there a warranty or guarantee?',
-    answer: 'Yes. All products come with a replacement guarantee. If the product you receive does not work as described, please contact our support team and we will resolve the issue promptly.',
+    question: 'How do refunds work?',
+    answer: 'Refunds are available only if the digital product or license key provided is non-functional and our support team cannot provide a working replacement. Due to the nature of digital goods, we cannot offer refunds for a change of mind.',
   },
   {
-    question: 'Can I contact support after my purchase?',
-    answer: 'Absolutely. Our support team is available to help you with any post-purchase questions. Simply submit a ticket on our Support page and we will respond as soon as possible.',
-  },
-  {
-    question: 'Do you offer refunds?',
-    answer: 'Refunds are available in cases where the product is non-functional and we are unable to provide a working replacement. Please review our refund policy for full details.',
+    question: 'Can I leave a review?',
+    answer: 'Yes! We encourage you to leave a review after testing your product. You will receive an automated email a few days after your purchase with a link to share your experience.',
   },
 ];
