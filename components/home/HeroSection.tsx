@@ -6,7 +6,7 @@ import { ArrowRight } from 'lucide-react';
 
 export default function HeroSection() {
   return (
-    <section className="relative bg-[#050509] text-white overflow-hidden min-h-[75vh] flex items-center pt-10 pb-14 lg:pt-12 lg:pb-20">
+    <section className="relative bg-[#050509] text-white overflow-hidden min-h-[80vh] flex items-center pt-12 pb-16 lg:pt-16 lg:pb-24">
       {/* Background Subtle Grid Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none"></div>
       
@@ -21,14 +21,14 @@ export default function HeroSection() {
           <div className="lg:col-span-6 flex flex-col items-start text-left">
             
             {/* Glitch-free high-conversion heading */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-[3.75rem] font-black leading-[1.1] mb-5 font-[family-name:var(--font-heading)] uppercase tracking-wide text-white">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[3.75rem] xl:text-[4.25rem] font-black leading-[1.1] mb-6 font-[family-name:var(--font-heading)] uppercase tracking-wide text-white">
               Premium Digital <br />
               Products, <span className="text-primary drop-shadow-[0_0_12px_rgba(139,92,246,0.45)]">Delivered</span> <br />
               <span className="text-primary drop-shadow-[0_0_12px_rgba(139,92,246,0.45)]">Instantly.</span>
             </h1>
 
             {/* Description */}
-            <p className="text-sm sm:text-base text-text-secondary leading-relaxed mb-8 max-w-xl font-medium">
+            <p className="text-base sm:text-lg lg:text-xl text-text-secondary leading-relaxed mb-10 max-w-2xl font-medium">
               Buy trusted digital products, subscriptions, gaming items, and productivity tools with fast delivery, secure checkout, and friendly support.
             </p>
 
@@ -52,49 +52,49 @@ export default function HeroSection() {
           </div>
 
           {/* RIGHT WING: Overlapping glassmorphism cards & rotating circular radar */}
-          <div className="lg:col-span-6 flex justify-center items-center relative h-[440px] w-full">
+          <div className="lg:col-span-6 flex justify-center items-center relative h-[460px] sm:h-[500px] lg:h-[520px] w-full">
             
             {/* Concentric Spinning Radar Circles backdrop (6 Concentric Rings) */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
               
-              {/* Ring 1 (Outermost - 460px) */}
-              <div className="absolute w-[380px] md:w-[460px] h-[380px] md:h-[460px] border-2 border-dashed border-primary/15 rounded-full animate-spin-slow"></div>
+              {/* Ring 1 (Outermost - 530px) */}
+              <div className="absolute w-[440px] md:w-[530px] h-[440px] md:h-[530px] border-2 border-dashed border-primary/15 rounded-full animate-spin-slow"></div>
               
-              {/* Ring 2 (400px) */}
-              <div className="absolute w-[330px] md:w-[400px] h-[330px] md:h-[400px] rounded-full border-2 border-t-2 border-r-2 border-transparent border-t-primary/40 border-r-accent/30 animate-spin-reverse-slow"></div>
+              {/* Ring 2 (460px) */}
+              <div className="absolute w-[380px] md:w-[460px] h-[380px] md:h-[460px] rounded-full border-2 border-t-2 border-r-2 border-transparent border-t-primary/40 border-r-accent/30 animate-spin-reverse-slow"></div>
               
-              {/* Ring 3 (350px) */}
-              <div className="absolute w-[290px] md:w-[350px] h-[290px] md:h-[350px] border border-dotted border-white/15 rounded-full"></div>
+              {/* Ring 3 (400px) */}
+              <div className="absolute w-[330px] md:w-[400px] h-[330px] md:h-[400px] border border-dotted border-white/15 rounded-full"></div>
               
-              {/* Ring 4 (290px) */}
-              <div className="absolute w-[240px] md:w-[290px] h-[240px] md:h-[290px] border-2 border-dashed border-primary/20 rounded-full animate-spin-fast"></div>
+              {/* Ring 4 (340px) */}
+              <div className="absolute w-[280px] md:w-[340px] h-[280px] md:h-[340px] border-2 border-dashed border-primary/20 rounded-full animate-spin-fast"></div>
               
-              {/* Ring 5 (230px) */}
-              <div className="absolute w-[190px] md:w-[230px] h-[190px] md:h-[230px] rounded-full border-2 border-t-2 border-l-2 border-transparent border-t-primary/35 border-l-accent/25 animate-spin-reverse-fast"></div>
+              {/* Ring 5 (280px) */}
+              <div className="absolute w-[220px] md:w-[280px] h-[220px] md:h-[280px] rounded-full border-2 border-t-2 border-l-2 border-transparent border-t-primary/35 border-l-accent/25 animate-spin-reverse-fast"></div>
               
-              {/* Ring 6 (Innermost - 160px) */}
-              <div className="absolute w-[130px] md:w-[160px] h-[130px] md:h-[160px] border border-dotted border-white/5 rounded-full"></div>
+              {/* Ring 6 (Innermost - 200px) */}
+              <div className="absolute w-[150px] md:w-[200px] h-[150px] md:h-[200px] border border-dotted border-white/5 rounded-full"></div>
             </div>
 
             {/* Cascading Glass Cards Container */}
-            <div className="relative w-full max-w-[440px] h-[360px] mt-4">
+            <div className="relative w-full max-w-[480px] h-[400px] mt-4">
               
               {/* Card 1: Netflix Premium (Top-Left) */}
               <div 
-                className="absolute top-0 left-2 z-10 w-[240px] bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-2xl p-5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.03] transition-all duration-300 animate-float"
+                className="absolute top-0 left-2 z-10 w-[260px] sm:w-[290px] md:w-[300px] bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.5)] hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.03] transition-all duration-300 animate-float"
                 style={{ animationDuration: '6s' }}
               >
                 <div className="flex flex-col gap-3">
                   <div>
-                    <span className="inline-block text-[9px] font-black tracking-wider uppercase text-purple-400 bg-purple-500/10 border border-purple-500/25 px-2.5 py-0.5 rounded-full font-mono">
+                    <span className="inline-block text-[10px] font-black tracking-wider uppercase text-purple-400 bg-purple-500/10 border border-purple-500/25 px-3 py-1 rounded-full font-mono">
                       STREAMING
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-sm font-black tracking-wide text-white">Netflix Premium</h3>
-                    <p className="text-[10px] text-white/50 mt-1 font-medium">4K Ultra HD • 1 Month Access</p>
+                    <h3 className="text-15px sm:text-base font-black tracking-wide text-white">Netflix Premium</h3>
+                    <p className="text-[11px] sm:text-xs text-white/50 mt-1.5 font-medium">4K Ultra HD • 1 Month Access</p>
                   </div>
-                  <div className="text-xs font-black text-white mt-1 font-mono">
+                  <div className="text-sm font-black text-white mt-1 font-mono">
                     $4.99
                   </div>
                 </div>
@@ -102,20 +102,20 @@ export default function HeroSection() {
 
               {/* Card 2: Xbox Game Pass Ultimate (Middle) */}
               <div 
-                className="absolute top-[110px] left-[70px] md:left-[90px] z-20 w-[240px] bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-2xl p-5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.03] transition-all duration-300 animate-float"
+                className="absolute top-[125px] left-[50px] sm:left-[80px] md:left-[90px] z-20 w-[260px] sm:w-[290px] md:w-[300px] bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.5)] hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.03] transition-all duration-300 animate-float"
                 style={{ animationDuration: '7s', animationDelay: '1.5s' }}
               >
                 <div className="flex flex-col gap-3">
                   <div>
-                    <span className="inline-block text-[9px] font-black tracking-wider uppercase text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/25 px-2.5 py-0.5 rounded-full font-mono">
+                    <span className="inline-block text-[10px] font-black tracking-wider uppercase text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/25 px-3 py-1 rounded-full font-mono">
                       GAMING
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-sm font-black tracking-wide text-white">Xbox Game Pass Ultimate</h3>
-                    <p className="text-[10px] text-white/50 mt-1 font-medium">100+ Games • PC/Console</p>
+                    <h3 className="text-15px sm:text-base font-black tracking-wide text-white">Xbox Game Pass Ultimate</h3>
+                    <p className="text-[11px] sm:text-xs text-white/50 mt-1.5 font-medium">100+ Games • PC/Console</p>
                   </div>
-                  <div className="text-xs font-black text-white mt-1 font-mono">
+                  <div className="text-sm font-black text-white mt-1 font-mono">
                     $9.99
                   </div>
                 </div>
@@ -123,20 +123,20 @@ export default function HeroSection() {
 
               {/* Card 3: ChatGPT Plus (Bottom-Right) */}
               <div 
-                className="absolute top-[220px] left-[140px] md:left-[180px] z-30 w-[240px] bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-2xl p-5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.03] transition-all duration-300 animate-float"
+                className="absolute top-[250px] left-[100px] sm:left-[160px] md:left-[180px] z-30 w-[260px] sm:w-[290px] md:w-[300px] bg-white/[0.03] backdrop-blur-md border border-white/[0.08] rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.5)] hover:bg-white/[0.06] hover:border-primary/20 hover:scale-[1.03] transition-all duration-300 animate-float"
                 style={{ animationDuration: '8s', animationDelay: '3s' }}
               >
                 <div className="flex flex-col gap-3">
                   <div>
-                    <span className="inline-block text-[9px] font-black tracking-wider uppercase text-white/60 bg-white/5 border border-white/10 px-2.5 py-0.5 rounded-full font-mono">
+                    <span className="inline-block text-[10px] font-black tracking-wider uppercase text-white/60 bg-white/5 border border-white/10 px-3 py-1 rounded-full font-mono">
                       AI TOOLS
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-sm font-black tracking-wide text-white">ChatGPT Plus</h3>
-                    <p className="text-[10px] text-white/50 mt-1 font-medium">GPT-4 access • Shared account</p>
+                    <h3 className="text-15px sm:text-base font-black tracking-wide text-white">ChatGPT Plus</h3>
+                    <p className="text-[11px] sm:text-xs text-white/50 mt-1.5 font-medium">GPT-4 access • Shared account</p>
                   </div>
-                  <div className="text-xs font-black text-white mt-1 font-mono">
+                  <div className="text-sm font-black text-white mt-1 font-mono">
                     $6.50
                   </div>
                 </div>

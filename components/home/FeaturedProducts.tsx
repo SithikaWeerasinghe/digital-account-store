@@ -32,14 +32,14 @@ export default function FeaturedProducts() {
   }, []);
 
   return (
-    <section className="py-24 bg-[#050509] relative overflow-hidden">
+    <section className="pt-4 pb-16 bg-[#050509] relative overflow-hidden">
       {/* Central glow behind products grid */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Asymmetric Tactical Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8 border-b border-[#25253A]/60 pb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-6 border-b border-[#25253A]/60 pb-4">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mb-3 rounded-sm bg-[#FF5500]/5 border border-[#FF5500]/30 font-mono text-[9px] font-black text-[#FF5500] tracking-widest uppercase">
               <Box size={10} className="animate-bounce" />

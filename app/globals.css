@@ -267,3 +267,82 @@
 .animate-float {
   animation: float 6s ease-in-out infinite !important;
 }
+
+/* Staggered Fade In Up Entrance */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Category-specific Hover Micro-animations */
+
+/* 1. TV (Streaming) - Screen wiggle/shake */
+@keyframes tvWiggle {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-6deg) scale(1.08); }
+  75% { transform: rotate(6deg) scale(1.08); }
+}
+.group:hover .animate-tv {
+  animation: tvWiggle 0.4s ease-in-out infinite;
+}
+
+/* 2. Bot (AI Tools) - Float up and down */
+@keyframes botFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-5px) scale(1.08); }
+}
+.group:hover .animate-bot {
+  animation: botFloat 0.7s ease-in-out infinite;
+}
+
+/* 3. Gamepad2 (Gaming) - Wiggle/Tilt press */
+@keyframes gamingPress {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(0.92) rotate(-8deg); }
+  75% { transform: scale(1.08) rotate(8deg); }
+}
+.group:hover .animate-gaming {
+  animation: gamingPress 0.5s ease-in-out infinite;
+}
+
+/* 4. CPU (Software) - Continuous rapid spin */
+@keyframes cpuSpin {
+  from { transform: rotate(0deg) scale(1); }
+  to { transform: rotate(360deg) scale(1.08); }
+}
+.group:hover .animate-cpu {
+  animation: cpuSpin 2s linear infinite;
+}
+
+/* 5. Briefcase (Productivity) - Subtle tilt bounce */
+@keyframes briefcaseSway {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-3px) rotate(-4deg); }
+  66% { transform: translateY(-3px) rotate(4deg); }
+}
+.group:hover .animate-productivity {
+  animation: briefcaseSway 0.6s ease-in-out infinite;
+}
+
+/* 6. Gift (Gift Cards) - Heartbeat pulse/bounce */
+@keyframes giftBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-5px) scale(1.06); }
+  50% { transform: translateY(0) scale(0.96); }
+  70% { transform: translateY(-2px) scale(1.03); }
+}
+.group:hover .animate-gift {
+  animation: giftBounce 0.8s ease-in-out infinite;
+}
+
