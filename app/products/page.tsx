@@ -69,8 +69,8 @@ function ProductsContent() {
       {/* Page Header */}
       <div className="bg-secondary border-b border-border relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h1 className="text-4xl sm:text-5xl font-black font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-6">
-            Browse Digital <span className="text-primary drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]">Products</span>
+          <h1 className="text-4xl sm:text-5xl font-black font-heading uppercase tracking-widest text-text-primary mb-6">
+            Browse Digital <span className="text-primary drop-shadow-[0_0_10px_rgba(0,158,227,0.2)]">Products</span>
           </h1>
           <p className="text-text-secondary max-w-2xl mx-auto text-lg font-medium tracking-wide">
             Explore gaming, streaming, AI, software, and productivity products with fast delivery and simple checkout.
@@ -88,7 +88,7 @@ function ProductsContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products, categories, or keywords..."
-              className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-border bg-[#11111A] text-white text-base font-medium tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-text-secondary shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-border bg-white text-text-primary text-base font-medium tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-text-secondary/50 shadow-sm"
             />
           </div>
           <div className="flex items-center gap-3 flex-shrink-0 relative">
@@ -96,10 +96,10 @@ function ProductsContent() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="pl-12 pr-10 py-3.5 rounded-xl border border-border bg-[#11111A] text-white text-base font-bold tracking-wider uppercase focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] min-w-[220px]"
+              className="pl-12 pr-10 py-3.5 rounded-xl border border-border bg-white text-text-primary text-base font-bold tracking-wider uppercase focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer shadow-sm min-w-[220px]"
             >
               {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-card text-white">
+                <option key={opt.value} value={opt.value} className="bg-white text-text-primary">
                   {opt.label}
                 </option>
               ))}
@@ -115,8 +115,8 @@ function ProductsContent() {
               onClick={() => setActiveCategory(cat)}
               className={`px-5 py-2.5 rounded-full text-sm font-bold tracking-widest uppercase transition-all duration-200 border ${
                 activeCategory === cat
-                  ? 'bg-primary/20 border-primary text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]'
-                  : 'bg-card border-border text-text-secondary hover:border-primary/50 hover:text-white'
+                  ? 'bg-primary border-primary text-white shadow-[0_4px_12px_rgba(0,158,227,0.25)]'
+                  : 'bg-white border-border text-text-secondary hover:border-primary/50 hover:text-primary'
               }`}
             >
               {cat}
@@ -127,7 +127,7 @@ function ProductsContent() {
         {/* Results count */}
         <p className="text-sm sm:text-base font-medium tracking-wide text-text-secondary mb-6 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-          Showing <span className="text-white font-bold">{filtered.length}</span>{' '}
+          Showing <span className="text-text-primary font-bold">{filtered.length}</span>{' '}
           {filtered.length === 1 ? 'product' : 'products'}
           {activeCategory !== 'All Products' ? ` in ${activeCategory}` : ''}
           {search ? ` matching "${search}"` : ''}
@@ -142,10 +142,10 @@ function ProductsContent() {
           </div>
         ) : (
           <div className="py-32 text-center mp-card">
-            <div className="w-20 h-20 bg-[#1A1A24] border border-border rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-slate-50 border border-border rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Package size={32} className="text-border" />
             </div>
-            <h3 className="font-bold font-[family-name:var(--font-heading)] uppercase tracking-wider text-white text-xl mb-3">No products found</h3>
+            <h3 className="font-bold font-heading uppercase tracking-wider text-text-primary text-xl mb-3">No products found</h3>
             <p className="text-sm sm:text-base text-text-secondary tracking-wide mb-8">
               Try adjusting your search or selecting a different category.
             </p>
@@ -168,11 +168,11 @@ function ProductsContent() {
               { icon: Package, label: 'Order Tracking', desc: 'Check your order status' },
             ].map(({ icon: Icon, label, desc }) => (
               <div key={label} className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-5 mp-card text-center sm:text-left">
-                <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center text-primary flex-shrink-0 shadow-[0_0_10px_rgba(139,92,246,0.1)]">
+                <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center text-primary flex-shrink-0 shadow-[0_0_10px_rgba(0,158,227,0.1)]">
                   <Icon size={20} />
                 </div>
                 <div>
-                  <p className="text-base font-bold font-[family-name:var(--font-heading)] uppercase tracking-wide text-white mb-1">{label}</p>
+                  <p className="text-base font-bold font-heading uppercase tracking-wide text-text-primary mb-1">{label}</p>
                   <p className="text-sm text-text-secondary leading-relaxed">{desc}</p>
                 </div>
               </div>

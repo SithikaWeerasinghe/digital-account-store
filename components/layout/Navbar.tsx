@@ -23,7 +23,6 @@ export default function Navbar() {
 
   const navLinks = [
     { label: 'HOME', href: ROUTES.HOME },
-    { label: 'PRODUCTS', href: ROUTES.PRODUCTS },
     { label: 'CHECKOUT', href: ROUTES.CHECKOUT },
     { label: 'SUPPORT', href: ROUTES.SUPPORT },
   ];
@@ -73,7 +72,11 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href={ROUTES.PRODUCTS}
-              className="inline-flex items-center justify-center py-2.5 px-6 rounded-xl bg-[#fff159] hover:bg-[#ffe600] text-slate-800 text-sm font-black font-heading tracking-widest uppercase border border-black/5 shadow-sm transition-all duration-300"
+              className={`inline-flex items-center justify-center py-2.5 px-6 rounded-xl text-sm font-black font-heading tracking-widest uppercase border transition-all duration-300 ${
+                isTransparent
+                  ? 'border-white/25 bg-white/5 text-white hover:bg-white/15 hover:border-white/40'
+                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm'
+              }`}
             >
               Browse Products
             </Link>
@@ -112,7 +115,7 @@ export default function Navbar() {
               <Link
                 href={ROUTES.PRODUCTS}
                 onClick={() => setMobileOpen(false)}
-                className="block w-full text-center py-3 bg-[#fff159] hover:bg-[#ffe600] text-slate-800 text-sm font-black font-heading tracking-widest uppercase rounded-xl border border-black/5 shadow-sm"
+                className="block w-full text-center py-3 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 text-sm font-black font-heading tracking-widest uppercase rounded-xl shadow-sm transition-all duration-200"
               >
                 Browse Products
               </Link>
