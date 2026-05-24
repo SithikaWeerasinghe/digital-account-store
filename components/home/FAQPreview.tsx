@@ -17,8 +17,8 @@ export default function FAQPreview() {
           <h2 className="text-4xl font-bold font-heading uppercase tracking-wider text-text-primary mb-4">
             Common <span className="text-primary drop-shadow-[0_0_10px_rgba(0,158,227,0.2)]">Questions</span>
           </h2>
-          <div className="w-24 h-1 bg-primary mx-auto rounded-full shadow-[0_0_10px_rgba(0,158,227,0.4)] mb-4"></div>
           <p className="text-text-secondary tracking-wide">Quick answers to our most common questions.</p>
+          <div className="w-16 h-[2px] bg-primary mx-auto mt-6 shadow-[0_0_10px_rgba(0,158,227,0.6)]"></div>
         </div>
 
         <div className="space-y-4">

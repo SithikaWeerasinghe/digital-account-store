@@ -361,7 +361,7 @@ export default function CategorySection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="pt-10 pb-4 bg-secondary-background relative overflow-hidden">
+    <section ref={sectionRef} className="pt-10 pb-16 bg-secondary-background relative overflow-hidden">
       {/* Background grid overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(0,158,227,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(0,158,227,0.012)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
 
