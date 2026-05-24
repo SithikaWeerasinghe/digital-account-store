@@ -18,27 +18,27 @@ export default function ProductDetails({ product }: { product: Product }) {
         
         <div className="p-8 lg:p-12 flex flex-col">
           <div className="mb-2 flex items-center gap-2">
-            <span className="bg-blue-100 text-blue-700 text-xs px-2.5 py-0.5 rounded-full font-medium">
+            <span className="bg-blue-100 text-blue-700 text-sm px-2.5 py-0.5 rounded-full font-medium">
               {product.category}
             </span>
             {product.inStock ? (
-              <span className="flex items-center gap-1 text-success text-xs font-medium">
+              <span className="flex items-center gap-1 text-success text-sm font-medium">
                 <Check size={14} /> In Stock
               </span>
             ) : (
-              <span className="text-danger text-xs font-medium">Out of Stock</span>
+              <span className="text-danger text-sm font-medium">Out of Stock</span>
             )}
           </div>
           
           <h1 className="text-3xl font-bold text-text-primary mb-4 leading-tight">{product.name}</h1>
           
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border">
-            <div className="flex items-center gap-1 text-sm">
-              <Star size={16} className="fill-secondary text-secondary" />
+            <div className="flex items-center gap-1 text-sm sm:text-base">
+              <Star size={16} className="fill-amber-400 text-amber-400" />
               <span className="font-bold">{product.rating}</span>
             </div>
-            <span className="text-text-muted text-sm">{product.reviewsCount} Reviews</span>
-            <div className="flex items-center gap-1 text-success text-sm ml-auto">
+            <span className="text-text-muted text-sm sm:text-base">{product.reviewsCount} Reviews</span>
+            <div className="flex items-center gap-1 text-success text-sm sm:text-base ml-auto">
               <ShieldCheck size={16} /> Guaranteed
             </div>
           </div>
@@ -58,7 +58,7 @@ export default function ProductDetails({ product }: { product: Product }) {
             <h3 className="font-semibold text-text-primary mb-3">Key Features:</h3>
             <ul className="space-y-2">
               {product.features.map((feature, i) => (
-                <li key={i} className="flex items-start gap-2 text-text-secondary text-sm">
+                <li key={i} className="flex items-start gap-2 text-text-secondary text-sm sm:text-base">
                   <Check size={18} className="text-primary mt-0.5 flex-shrink-0" />
                   <span>{feature}</span>
                 </li>

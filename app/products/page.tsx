@@ -88,7 +88,7 @@ function ProductsContent() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products, categories, or keywords..."
-              className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-border bg-[#11111A] text-white text-sm font-medium tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-text-secondary shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+              className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-border bg-[#11111A] text-white text-base font-medium tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-text-secondary shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
             />
           </div>
           <div className="flex items-center gap-3 flex-shrink-0 relative">
@@ -96,7 +96,7 @@ function ProductsContent() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="pl-12 pr-10 py-3.5 rounded-xl border border-border bg-[#11111A] text-white text-sm font-bold tracking-wider uppercase focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] min-w-[220px]"
+              className="pl-12 pr-10 py-3.5 rounded-xl border border-border bg-[#11111A] text-white text-base font-bold tracking-wider uppercase focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all appearance-none cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] min-w-[220px]"
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value} className="bg-card text-white">
@@ -113,7 +113,7 @@ function ProductsContent() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-widest uppercase transition-all duration-200 border ${
+              className={`px-5 py-2.5 rounded-full text-sm font-bold tracking-widest uppercase transition-all duration-200 border ${
                 activeCategory === cat
                   ? 'bg-primary/20 border-primary text-white shadow-[0_0_15px_rgba(139,92,246,0.3)]'
                   : 'bg-card border-border text-text-secondary hover:border-primary/50 hover:text-white'
@@ -125,7 +125,7 @@ function ProductsContent() {
         </div>
 
         {/* Results count */}
-        <p className="text-sm font-medium tracking-wide text-text-secondary mb-6 flex items-center gap-2">
+        <p className="text-sm sm:text-base font-medium tracking-wide text-text-secondary mb-6 flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           Showing <span className="text-white font-bold">{filtered.length}</span>{' '}
           {filtered.length === 1 ? 'product' : 'products'}
@@ -146,7 +146,7 @@ function ProductsContent() {
               <Package size={32} className="text-border" />
             </div>
             <h3 className="font-bold font-[family-name:var(--font-heading)] uppercase tracking-wider text-white text-xl mb-3">No products found</h3>
-            <p className="text-sm text-text-secondary tracking-wide mb-8">
+            <p className="text-sm sm:text-base text-text-secondary tracking-wide mb-8">
               Try adjusting your search or selecting a different category.
             </p>
             <button
@@ -172,8 +172,8 @@ function ProductsContent() {
                   <Icon size={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold font-[family-name:var(--font-heading)] uppercase tracking-wide text-white mb-1">{label}</p>
-                  <p className="text-xs text-text-secondary leading-relaxed">{desc}</p>
+                  <p className="text-base font-bold font-[family-name:var(--font-heading)] uppercase tracking-wide text-white mb-1">{label}</p>
+                  <p className="text-sm text-text-secondary leading-relaxed">{desc}</p>
                 </div>
               </div>
             ))}

@@ -18,7 +18,7 @@ export default function ProductFilter() {
           {categories.map(cat => (
             <button 
               key={cat} 
-              className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-sm sm:text-base whitespace-nowrap transition-colors ${
                 cat === 'All' 
                   ? 'bg-primary text-white font-medium' 
                   : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
@@ -30,9 +30,9 @@ export default function ProductFilter() {
         </div>
         
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-sm text-text-secondary whitespace-nowrap">Sort by:</span>
+          <span className="text-sm sm:text-base text-text-secondary whitespace-nowrap">Sort by:</span>
           <div className="relative">
-            <select className="appearance-none bg-gray-50 border border-border text-sm rounded-md py-1.5 pl-3 pr-8 focus:outline-none focus:ring-1 focus:ring-primary">
+            <select className="appearance-none bg-gray-50 border border-border text-sm sm:text-base rounded-md py-1.5 pl-3 pr-8 focus:outline-none focus:ring-1 focus:ring-primary">
               {sortOptions.map(opt => (
                 <option key={opt} value={opt}>{opt}</option>
               ))}

@@ -2,12 +2,15 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/lib/constants';
 import { Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === '/';
 
   // Scroll effect
   useEffect(() => {
@@ -25,12 +28,16 @@ export default function Navbar() {
     { label: 'SUPPORT', href: ROUTES.SUPPORT },
   ];
 
+  const isTransparent = isHome && !scrolled;
+
   return (
     <header 
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled 
-          ? 'bg-[#050509]/95 backdrop-blur-md border-b border-white/5 shadow-lg' 
-          : 'bg-[#050509]/60 backdrop-blur-sm border-b border-white/5'
+      className={`z-50 transition-all duration-300 ${
+        isHome ? 'fixed top-0 left-0 right-0' : 'sticky top-0'
+      } ${
+        isTransparent 
+          ? 'bg-transparent border-b border-white/10' 
+          : 'bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,8 +45,10 @@ export default function Navbar() {
           
           {/* Clean Logo */}
           <Link href={ROUTES.HOME} className="flex items-center gap-2 flex-shrink-0 group">
-            <span className="text-xl font-black font-heading text-white tracking-widest uppercase transition-all duration-300 group-hover:text-primary">
-              APEX<span className="text-primary group-hover:text-white transition-colors"> DIGITAL</span>
+            <span className={`text-xl font-black font-heading tracking-widest uppercase transition-all duration-300 ${
+              isTransparent ? 'text-white' : 'text-slate-800'
+            }`}>
+              APEX<span className={isTransparent ? 'text-[#fff159]' : 'text-primary'}> DIGITAL</span>
             </span>
           </Link>
 
@@ -49,7 +58,11 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-xs font-black font-heading tracking-widest uppercase text-white/70 hover:text-primary transition-colors duration-200"
+                className={`text-[13px] sm:text-sm font-black font-heading tracking-widest uppercase transition-colors duration-200 ${
+                  isTransparent 
+                    ? 'text-white/80 hover:text-[#fff159]' 
+                    : 'text-slate-600 hover:text-primary'
+                }`}
               >
                 {link.label}
               </Link>
@@ -60,7 +73,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href={ROUTES.PRODUCTS}
-              className="inline-flex items-center justify-center py-2.5 px-6 rounded-xl bg-primary text-white text-xs font-black font-heading tracking-widest uppercase hover:bg-primary-hover shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] transition-all duration-300"
+              className="inline-flex items-center justify-center py-2.5 px-6 rounded-xl bg-[#fff159] hover:bg-[#ffe600] text-slate-800 text-sm font-black font-heading tracking-widest uppercase border border-black/5 shadow-sm transition-all duration-300"
             >
               Browse Products
             </Link>
@@ -69,7 +82,11 @@ export default function Navbar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2.5 rounded-xl border border-white/10 bg-[#0E1017] text-white/70 hover:text-white hover:border-primary/50 transition-colors focus:outline-none"
+            className={`md:hidden p-2.5 rounded-xl border transition-colors focus:outline-none ${
+              isTransparent
+                ? 'border-white/10 bg-white/5 text-white/80 hover:text-white hover:border-white/25'
+                : 'border-slate-200 bg-slate-50 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+            }`}
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -79,14 +96,14 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/5 bg-[#0E1017]/95 backdrop-blur-md absolute w-full left-0 z-40">
-          <div className="px-4 pt-4 pb-6 space-y-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+        <div className="md:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md absolute w-full left-0 z-40">
+          <div className="px-4 pt-4 pb-6 space-y-2.5 shadow-md">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block px-4 py-3 border border-[#1D1F2D] hover:border-primary/40 rounded-xl text-xs font-black tracking-widest uppercase text-white/70 hover:text-white hover:bg-primary/5 transition-all duration-200 font-heading"
+                className="block px-4 py-3 border border-slate-100 hover:border-primary/45 rounded-xl text-sm font-black tracking-widest uppercase text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200 font-heading"
               >
                 {link.label}
               </Link>
@@ -95,7 +112,7 @@ export default function Navbar() {
               <Link
                 href={ROUTES.PRODUCTS}
                 onClick={() => setMobileOpen(false)}
-                className="block w-full text-center py-3 bg-primary text-white text-xs font-black font-heading tracking-widest uppercase rounded-xl shadow-[0_0_15px_rgba(139,92,246,0.3)]"
+                className="block w-full text-center py-3 bg-[#fff159] hover:bg-[#ffe600] text-slate-800 text-sm font-black font-heading tracking-widest uppercase rounded-xl border border-black/5 shadow-sm"
               >
                 Browse Products
               </Link>

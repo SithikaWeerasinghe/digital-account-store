@@ -11,21 +11,21 @@ function StreamingIcon({ className, isSquare }: { className?: string; isSquare?:
         {/* Left Column of N */}
         <path 
           d="M 6,3 L 10,3 L 10,21 L 6,21 Z" 
-          fill="#6D28D9" 
+          fill="#008cc9" 
           className="animate-netflix-left" 
         />
         {/* Right Column of N */}
         <path 
           d="M 14,3 L 18,3 L 18,21 L 14,21 Z" 
-          fill="#6D28D9" 
+          fill="#008cc9" 
           className="animate-netflix-right" 
         />
         {/* Diagonal Ribbon Overlay of N */}
         <path 
           d="M 6,3 L 10,3 L 18,21 L 14,21 Z" 
-          fill="#8B5CF6" 
+          fill="#009ee3" 
           className="animate-netflix-diagonal"
-          style={{ filter: 'drop-shadow(-2px 0px 4px rgba(0,0,0,0.5))' }}
+          style={{ filter: 'drop-shadow(-2px 0px 4px rgba(0,0,0,0.2))' }}
         />
       </g>
     </svg>
@@ -35,7 +35,7 @@ function StreamingIcon({ className, isSquare }: { className?: string; isSquare?:
 function AIToolsIcon({ className, isSquare }: { className?: string; isSquare?: boolean }) {
   return (
     <svg 
-      className={`w-10 h-10 sm:w-12 sm:h-12 text-purple-400 transition-all duration-500 ease-out origin-center animate-chatgpt-pulse group-hover:animate-chatgpt-hover ${className || ''}`}
+      className={`w-10 h-10 sm:w-12 sm:h-12 text-[#009ee3] transition-all duration-500 ease-out origin-center animate-chatgpt-pulse group-hover:animate-chatgpt-hover ${className || ''}`}
       viewBox="0 0 24 24" 
       fill="currentColor" 
       xmlns="http://www.w3.org/2000/svg"
@@ -48,7 +48,7 @@ function AIToolsIcon({ className, isSquare }: { className?: string; isSquare?: b
 function GamingIcon({ className, isSquare }: { className?: string; isSquare?: boolean }) {
   return (
     <svg 
-      className={`w-10 h-10 sm:w-12 sm:h-12 text-purple-400 group-hover:scale-105 transition-transform duration-300 ${className || ''}`} 
+      className={`w-10 h-10 sm:w-12 sm:h-12 text-[#009ee3] group-hover:scale-105 transition-transform duration-300 ${className || ''}`} 
       viewBox="0 0 16 16" 
       fill="none" 
       stroke="currentColor" 
@@ -57,7 +57,7 @@ function GamingIcon({ className, isSquare }: { className?: string; isSquare?: bo
       strokeLinejoin="round"
     >
       {/* Radar signal behind controller */}
-      <circle cx="8" cy="8" r="7" className={`stroke-purple-500/10 transition-all duration-500 origin-center ${isSquare ? 'animate-ping' : 'group-hover:animate-ping'}`} strokeWidth="0.5" />
+      <circle cx="8" cy="8" r="7" className={`stroke-[#009ee3]/10 transition-all duration-500 origin-center ${isSquare ? 'animate-ping' : 'group-hover:animate-ping'}`} strokeWidth="0.5" />
       
       {/* Interactive Gamepad shake wrapping group */}
       <g className="group-hover:animate-gamepad-shake origin-center transition-all duration-300">
@@ -65,31 +65,31 @@ function GamingIcon({ className, isSquare }: { className?: string; isSquare?: bo
         {/* Modern Gamepad Outer Body with Curved Handles */}
         <path 
           d="M3.051 3.26a.5.5 0 0 1 .354-.613l1.932-.518a.5.5 0 0 1 .62.39c.655-.079 1.35-.117 2.043-.117.72 0 1.443.041 2.12.126a.5.5 0 0 1 .622-.399l1.932.518a.5.5 0 0 1 .306.729q.211.136.373.297c.408.408.78 1.05 1.095 1.772.32.733.599 1.591.805 2.466s.34 1.78.364 2.606c.024.816-.059 1.602-.328 2.21a1.42 1.42 0 0 1-1.445.83c-.636-.067-1.115-.394-1.513-.773-.245-.232-.496-.526-.739-.808-.126-.148-.25-.292-.368-.423-.728-.804-1.597-1.527-3.224-1.527s-2.496.723-3.224 1.527c-.119.131-.242.275-.368.423-.243.282-.494.575-.739.808-.398.38-.877.706-1.513.773a1.42 1.42 0 0 1-1.445-.83c-.27-.608-.352-1.395-.329-2.21.024-.826.16-1.73.365-2.606.206-.875.486-1.733.805-2.466.315-.722.687-1.364 1.094-1.772a2.3 2.3 0 0 1 .433-.335l-.028-.079z" 
-          className="stroke-purple-400 fill-[#0D1117]" 
+          className="stroke-[#009ee3] fill-white" 
           strokeWidth="0.8"
         />
 
         {/* D-Pad cross */}
         <path 
           d="M 5,6.5 H 6 V 7.5 H 5 Z" 
-          className="fill-purple-500/20 stroke-purple-400" 
+          className="fill-[#009ee3]/25 stroke-[#009ee3]" 
           strokeWidth="0.5"
         />
-        <path d="M 5.5,6 V 8 M 4.5,7 H 6.5" className="stroke-purple-300" strokeWidth="0.6" />
+        <path d="M 5.5,6 V 8 M 4.5,7 H 6.5" className="stroke-[#008cc9]" strokeWidth="0.6" />
 
         {/* Action Buttons (glowing/pulsing) */}
         {/* Y Button (Top) */}
-        <circle cx="11.5" cy="5.8" r="0.5" fill="currentColor" className="text-purple-300 animate-pulse" style={{ animationDelay: '0.1s' }} />
+        <circle cx="11.5" cy="5.8" r="0.5" fill="currentColor" className="text-[#008cc9] animate-pulse" style={{ animationDelay: '0.1s' }} />
         {/* X Button (Left) */}
-        <circle cx="10.5" cy="6.8" r="0.5" fill="currentColor" className="text-purple-300 animate-pulse" style={{ animationDelay: '0.3s' }} />
+        <circle cx="10.5" cy="6.8" r="0.5" fill="currentColor" className="text-[#008cc9] animate-pulse" style={{ animationDelay: '0.3s' }} />
         {/* B Button (Right) */}
-        <circle cx="12.5" cy="6.8" r="0.5" fill="currentColor" className="text-purple-300 animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <circle cx="12.5" cy="6.8" r="0.5" fill="currentColor" className="text-[#008cc9] animate-pulse" style={{ animationDelay: '0.5s' }} />
         {/* A Button (Bottom) */}
-        <circle cx="11.5" cy="7.8" r="0.5" fill="currentColor" className="text-purple-300 animate-pulse" style={{ animationDelay: '0.7s' }} />
+        <circle cx="11.5" cy="7.8" r="0.5" fill="currentColor" className="text-[#008cc9] animate-pulse" style={{ animationDelay: '0.7s' }} />
 
         {/* Menu Buttons in Center */}
-        <line x1="7.2" y1="6.8" x2="7.8" y2="6.8" className="stroke-purple-400/80" strokeWidth="0.5" />
-        <line x1="8.2" y1="6.8" x2="8.8" y2="6.8" className="stroke-purple-400/80" strokeWidth="0.5" />
+        <line x1="7.2" y1="6.8" x2="7.8" y2="6.8" className="stroke-[#009ee3]/80" strokeWidth="0.5" />
+        <line x1="8.2" y1="6.8" x2="8.8" y2="6.8" className="stroke-[#009ee3]/80" strokeWidth="0.5" />
       </g>
     </svg>
   );
@@ -98,7 +98,7 @@ function GamingIcon({ className, isSquare }: { className?: string; isSquare?: bo
 function SoftwareIcon({ className, isSquare }: { className?: string; isSquare?: boolean }) {
   return (
     <svg 
-      className={`w-10 h-10 sm:w-12 sm:h-12 text-purple-400 group-hover:scale-105 transition-transform duration-300 ${className || ''}`} 
+      className={`w-10 h-10 sm:w-12 sm:h-12 text-[#009ee3] group-hover:scale-105 transition-transform duration-300 ${className || ''}`} 
       viewBox="0 0 24 24" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +116,7 @@ function SoftwareIcon({ className, isSquare }: { className?: string; isSquare?: 
         width="12" 
         height="12" 
         rx="1.5" 
-        fill="#0D1117" 
+        fill="white" 
         stroke="currentColor" 
         strokeWidth="1.5"
         className="animate-cpu-core"
@@ -199,18 +199,18 @@ function SoftwareIcon({ className, isSquare }: { className?: string; isSquare?: 
 
 function ProductivityIcon({ className, isSquare }: { className?: string; isSquare?: boolean }) {
   return (
-    <svg className={`w-10 h-10 sm:w-12 sm:h-12 text-purple-400 group-hover:scale-105 transition-transform duration-300 ${className || ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={`w-10 h-10 sm:w-12 sm:h-12 text-[#009ee3] group-hover:scale-105 transition-transform duration-300 ${className || ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       {/* Checklist page */}
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" className={`transition-all duration-300 ${isSquare ? 'stroke-purple-300' : ''}`} />
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" className={`transition-all duration-300 ${isSquare ? 'stroke-[#008cc9]' : ''}`} />
       <path d="M14 2v6h6" />
       {/* Text lines */}
-      <line x1="8" y1="13" x2="16" y2="13" className="stroke-purple-500/30" />
-      <line x1="8" y1="17" x2="14" y2="17" className="stroke-purple-500/30" />
+      <line x1="8" y1="13" x2="16" y2="13" className="stroke-[#009ee3]/30" />
+      <line x1="8" y1="17" x2="14" y2="17" className="stroke-[#009ee3]/30" />
       {/* Checklist item (checkmark drawing itself) */}
-      <path d="M8 12.5l2 2 4.5-4.5" className="stroke-purple-300 animate-draw-check origin-center" style={{ strokeDasharray: 20, strokeDashoffset: 0 }} />
+      <path d="M8 12.5l2 2 4.5-4.5" className="stroke-[#008cc9] animate-draw-check origin-center" style={{ strokeDasharray: 20, strokeDashoffset: 0 }} />
       {/* Mini spinning clock inside the document */}
-      <circle cx="16" cy="6" r="2.5" className="stroke-purple-500/25 fill-purple-500/5" />
-      <line x1="16" y1="6" x2="16" y2="4.5" className="stroke-purple-300 animate-clock-hand" style={{ transformOrigin: '16px 6px' }} />
+      <circle cx="16" cy="6" r="2.5" className="stroke-[#009ee3]/25 fill-[#009ee3]/5" />
+      <line x1="16" y1="6" x2="16" y2="4.5" className="stroke-[#008cc9] animate-clock-hand" style={{ transformOrigin: '16px 6px' }} />
     </svg>
   );
 }
@@ -218,13 +218,13 @@ function ProductivityIcon({ className, isSquare }: { className?: string; isSquar
 function GiftCardsIcon({ className, isSquare }: { className?: string; isSquare?: boolean }) {
   return (
     <svg 
-      className={`w-10 h-10 sm:w-12 sm:h-12 text-purple-400 group-hover:scale-105 transition-transform duration-300 ${className || ''}`} 
+      className={`w-10 h-10 sm:w-12 sm:h-12 text-[#009ee3] group-hover:scale-105 transition-transform duration-300 ${className || ''}`} 
       viewBox="0 0 24 24" 
       fill="none" 
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* Background soft glow rings radiating from heart */}
-      <circle cx="12" cy="12" r="9.5" className={`stroke-purple-500/10 transition-all duration-500 origin-center ${isSquare ? 'animate-ping' : 'group-hover:animate-ping'}`} strokeWidth="0.8" />
+      <circle cx="12" cy="12" r="9.5" className={`stroke-[#009ee3]/10 transition-all duration-500 origin-center ${isSquare ? 'animate-ping' : 'group-hover:animate-ping'}`} strokeWidth="0.8" />
       
       {/* Floating sparkles */}
       <path 
@@ -245,9 +245,9 @@ function GiftCardsIcon({ className, isSquare }: { className?: string; isSquare?:
       {/* Main Heart shape (glowing, pulsing, double-heartbeat) */}
       <path 
         d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-        fill="currentColor" 
+        fill="#fff159" 
         fillOpacity="0.1" 
-        stroke="currentColor" 
+        stroke="#fff159" 
         strokeWidth="2" 
         className="animate-heartbeat"
       />
@@ -261,9 +261,9 @@ const categories = [
     description: 'Entertainment subscriptions & media access',
     icon: StreamingIcon,
     query: 'Streaming',
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'group-hover:border-purple-500/40 group-hover:shadow-[0_0_12px_rgba(168,85,247,0.2)]',
+    color: 'text-primary',
+    bgColor: 'bg-primary/5',
+    borderColor: 'group-hover:border-primary/40 group-hover:shadow-[0_0_12px_rgba(0,158,227,0.2)]',
     iconAnimClass: 'animate-tv'
   },
   {
@@ -271,9 +271,9 @@ const categories = [
     description: 'AI assistants, writing & design tools',
     icon: AIToolsIcon,
     query: 'AI Tools',
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'group-hover:border-purple-500/40 group-hover:shadow-[0_0_12px_rgba(168,85,247,0.2)]',
+    color: 'text-primary',
+    bgColor: 'bg-primary/5',
+    borderColor: 'group-hover:border-primary/40 group-hover:shadow-[0_0_12px_rgba(0,158,227,0.2)]',
     iconAnimClass: ''
   },
   {
@@ -281,9 +281,9 @@ const categories = [
     description: 'In-game items, bundles & game passes',
     icon: GamingIcon,
     query: 'Gaming',
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'group-hover:border-purple-500/40 group-hover:shadow-[0_0_12px_rgba(168,85,247,0.2)]',
+    color: 'text-primary',
+    bgColor: 'bg-primary/5',
+    borderColor: 'group-hover:border-primary/40 group-hover:shadow-[0_0_12px_rgba(0,158,227,0.2)]',
     iconAnimClass: ''
   },
   {
@@ -291,9 +291,9 @@ const categories = [
     description: 'License keys for essential software',
     icon: SoftwareIcon,
     query: 'Software',
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'group-hover:border-purple-500/40 group-hover:shadow-[0_0_12px_rgba(168,85,247,0.25)]',
+    color: 'text-primary',
+    bgColor: 'bg-primary/5',
+    borderColor: 'group-hover:border-primary/40 group-hover:shadow-[0_0_12px_rgba(0,158,227,0.25)]',
     iconAnimClass: ''
   },
   {
@@ -301,9 +301,9 @@ const categories = [
     description: 'Cloud storage, learning & work tools',
     icon: ProductivityIcon,
     query: 'Productivity',
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'group-hover:border-purple-500/40 group-hover:shadow-[0_0_12px_rgba(168,85,247,0.2)]',
+    color: 'text-primary',
+    bgColor: 'bg-primary/5',
+    borderColor: 'group-hover:border-primary/40 group-hover:shadow-[0_0_12px_rgba(0,158,227,0.2)]',
     iconAnimClass: ''
   },
   {
@@ -311,9 +311,9 @@ const categories = [
     description: 'Digital gift codes for popular platforms',
     icon: GiftCardsIcon,
     query: 'Gift Cards',
-    color: 'text-purple-400',
-    bgColor: 'bg-purple-500/10',
-    borderColor: 'group-hover:border-purple-500/40 group-hover:shadow-[0_0_12px_rgba(168,85,247,0.2)]',
+    color: 'text-primary',
+    bgColor: 'bg-primary/5',
+    borderColor: 'group-hover:border-primary/40 group-hover:shadow-[0_0_12px_rgba(0,158,227,0.2)]',
     iconAnimClass: ''
   },
 ];
@@ -361,21 +361,21 @@ export default function CategorySection() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="pt-10 pb-4 bg-[#0A0B10] relative overflow-hidden">
-      {/* Background cyber grid overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.012)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+    <section ref={sectionRef} className="pt-10 pb-4 bg-secondary-background relative overflow-hidden">
+      {/* Background grid overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,158,227,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(0,158,227,0.012)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Header telemetry style */}
         <div className="text-center mb-6">
-          <h2 className="text-3xl sm:text-4xl font-black font-[family-name:var(--font-heading)] uppercase tracking-wider text-white mb-4">
+          <h2 className="text-3xl sm:text-4xl font-black font-heading uppercase tracking-wider text-text-primary mb-4">
             Explore Popular Categories
           </h2>
           <p className="text-sm text-text-secondary font-medium max-w-xl mx-auto leading-relaxed">
             Find exactly what you need across our curated selection of digital products.
           </p>
-          <div className="w-16 h-[2px] bg-primary mx-auto mt-6 shadow-[0_0_10px_rgba(139,92,246,0.6)]"></div>
+          <div className="w-16 h-[2px] bg-primary mx-auto mt-6 shadow-[0_0_10px_rgba(0,158,227,0.6)]"></div>
         </div>
 
         {/* Vertical Stack of Category Cards */}
@@ -387,7 +387,7 @@ export default function CategorySection() {
               <Link
                 key={cat.name}
                 href={`${ROUTES.PRODUCTS}?category=${encodeURIComponent(cat.query)}`}
-                className={`group flex items-center cursor-pointer relative overflow-hidden bg-[#11131E]/40 border border-white/[0.06] hover:bg-[#12131e]/80 transition-all duration-700 ease-out shadow-[0_4px_15px_rgba(0,0,0,0.25)] hover:shadow-[0_8px_25px_rgba(139,92,246,0.12)] ${
+                className={`group flex items-center cursor-pointer relative overflow-hidden bg-card border border-border hover:bg-slate-50/50 transition-all duration-700 ease-out shadow-sm hover:shadow-[0_8px_25px_rgba(0,158,227,0.08)] ${
                   isVisible ? 'animate-fade-in-up' : 'opacity-0'
                 } ${
                   isRectangular 
@@ -397,7 +397,7 @@ export default function CategorySection() {
                 style={{ animationDelay: isVisible ? `${index * 150}ms` : '0ms' }}
               >
                 {/* Glowing Icon Container */}
-                <div className={`flex items-center justify-center flex-shrink-0 transition-all duration-700 ease-out ${cat.bgColor} border border-white/[0.04] ${cat.borderColor} ${
+                <div className={`flex items-center justify-center flex-shrink-0 transition-all duration-700 ease-out ${cat.bgColor} border border-border ${cat.borderColor} ${
                   isRectangular ? 'w-20 h-20 mr-6 rounded-[22px]' : 'w-24 h-24 sm:w-28 sm:h-28 rounded-[30px] sm:rounded-[36px]'
                 }`}>
                   <Icon className={cat.iconAnimClass} isSquare={isSquare} />
@@ -407,13 +407,13 @@ export default function CategorySection() {
                 <div className={`flex-1 flex flex-col justify-center transition-all duration-700 ${
                   isRectangular ? 'opacity-100 max-w-full' : 'opacity-0 max-w-0 overflow-hidden pointer-events-none'
                 }`}>
-                  <h3 className="text-lg sm:text-xl font-black font-[family-name:var(--font-heading)] tracking-wider uppercase text-white group-hover:text-primary transition-colors">
+                  <h3 className="text-xl sm:text-2xl font-black font-heading tracking-wider uppercase text-slate-800 group-hover:text-primary transition-colors">
                     {cat.name}
                   </h3>
                   
                   {/* Expandable description */}
-                  <div className="max-h-0 opacity-0 group-hover:max-h-[50px] group-hover:opacity-100 transition-all duration-300 ease-in-out overflow-hidden mt-0 group-hover:mt-1.5 transform translate-y-1 group-hover:translate-y-0">
-                    <p className="text-sm sm:text-base text-text-secondary leading-relaxed font-medium">
+                  <div className="max-h-0 opacity-0 group-hover:max-h-[60px] group-hover:opacity-100 transition-all duration-300 ease-in-out overflow-hidden mt-0 group-hover:mt-1.5 transform translate-y-1 group-hover:translate-y-0">
+                    <p className="text-[15px] sm:text-lg text-text-secondary leading-relaxed font-medium">
                       {cat.description}
                     </p>
                   </div>
@@ -422,7 +422,7 @@ export default function CategorySection() {
                 {/* Interactive Arrow Indicator */}
                 <div className={`transition-all duration-700 ${
                   isRectangular ? 'opacity-30 group-hover:opacity-100 group-hover:translate-x-1 ml-5' : 'opacity-0 w-0 overflow-hidden pointer-events-none'
-                } text-white group-hover:text-primary`}>
+                } text-slate-400 group-hover:text-primary`}>
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>

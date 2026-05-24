@@ -1,19 +1,18 @@
 import type { Metadata } from 'next';
-import { Inter, Orbitron } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants';
 
-const inter = Inter({ 
+const geistSans = Geist({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-geist-sans',
 });
 
-const orbitron = Orbitron({
+const geistMono = Geist_Mono({
   subsets: ['latin'],
-  variable: '--font-orbitron',
-  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-geist-mono',
 });
 
 export const metadata: Metadata = {
@@ -27,8 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${orbitron.variable}`}>
-      <body className={`${inter.className} min-h-screen flex flex-col bg-background text-foreground`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.className} min-h-screen flex flex-col bg-background text-foreground`} suppressHydrationWarning>
         <Navbar />
         <main className="flex-grow">{children}</main>
         <Footer />

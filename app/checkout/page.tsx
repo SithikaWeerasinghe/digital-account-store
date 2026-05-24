@@ -44,12 +44,12 @@ export default function CheckoutPage() {
           </div>
           
           <h2 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-white mb-2 tracking-wide">Order preview created</h2>
-          <p className="text-[#A1A1AA] mb-6">
+          <p className="text-[#A1A1AA] text-sm sm:text-base mb-6">
             Your checkout details are ready. Real payment processing will be connected in the backend phase.
           </p>
           
           <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 mb-8">
-            <p className="text-sm text-primary font-medium">Checkout request created successfully. Payment integration will be connected later.</p>
+            <p className="text-sm sm:text-base text-primary font-medium">Checkout request created successfully. Payment integration will be connected later.</p>
           </div>
           
           <Link href="/" className="mp-button-primary w-full inline-block text-center py-3">
@@ -86,33 +86,33 @@ export default function CheckoutPage() {
                 
                 {/* Email */}
                 <div>
-                  <label htmlFor="email" className="block text-sm font-bold text-white mb-2 uppercase tracking-wider">Email Address</label>
+                  <label htmlFor="email" className="block text-sm sm:text-base font-bold text-white mb-2 uppercase tracking-wider">Email Address</label>
                   <input
                     type="email"
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email for delivery"
-                    className="w-full bg-[#050509] border border-[#25253A] rounded-lg px-4 py-3 text-white placeholder:text-[#4A4A5A] focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] transition-all"
+                    className="w-full bg-[#050509] border border-[#25253A] rounded-lg px-4 py-3 text-white text-base placeholder:text-[#4A4A5A] focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] transition-all"
                   />
                 </div>
 
                 {/* Quantity */}
                 <div>
-                  <label htmlFor="quantity" className="block text-sm font-bold text-white mb-2 uppercase tracking-wider">Quantity</label>
+                  <label htmlFor="quantity" className="block text-sm sm:text-base font-bold text-white mb-2 uppercase tracking-wider">Quantity</label>
                   <input
                     type="number"
                     id="quantity"
                     min="1"
                     value={quantity}
                     onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                    className="w-full bg-[#050509] border border-[#25253A] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] transition-all"
+                    className="w-full bg-[#050509] border border-[#25253A] rounded-lg px-4 py-3 text-white text-base focus:outline-none focus:border-[#8B5CF6] focus:ring-1 focus:ring-[#8B5CF6] transition-all"
                   />
                 </div>
 
                 {/* Payment Method */}
                 <div>
-                  <label className="block text-sm font-bold text-white mb-3 uppercase tracking-wider">Payment Method</label>
+                  <label className="block text-sm sm:text-base font-bold text-white mb-3 uppercase tracking-wider">Payment Method</label>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     
                     {/* Card */}
@@ -126,8 +126,8 @@ export default function CheckoutPage() {
                       }`}
                     >
                       <CreditCard size={24} className={`mb-2 ${paymentMethod === 'card' ? 'text-[#A855F7]' : 'text-[#A1A1AA]'}`} />
-                      <span className="font-bold text-white text-sm mb-1">Card Payment</span>
-                      <span className="text-xs text-[#A1A1AA] leading-tight">Pay securely using a debit or credit card.</span>
+                      <span className="font-bold text-white text-base mb-1">Card Payment</span>
+                      <span className="text-xs sm:text-sm text-[#A1A1AA] leading-tight">Pay securely using a debit or credit card.</span>
                     </button>
 
                     {/* Crypto */}
@@ -141,8 +141,8 @@ export default function CheckoutPage() {
                       }`}
                     >
                       <Bitcoin size={24} className={`mb-2 ${paymentMethod === 'crypto' ? 'text-[#A855F7]' : 'text-[#A1A1AA]'}`} />
-                      <span className="font-bold text-white text-sm mb-1">Crypto Payment</span>
-                      <span className="text-xs text-[#A1A1AA] leading-tight">Pay using supported cryptocurrency options.</span>
+                      <span className="font-bold text-white text-base mb-1">Crypto Payment</span>
+                      <span className="text-xs sm:text-sm text-[#A1A1AA] leading-tight">Pay using supported cryptocurrency options.</span>
                     </button>
 
                     {/* Manual */}
@@ -156,8 +156,8 @@ export default function CheckoutPage() {
                       }`}
                     >
                       <Banknote size={24} className={`mb-2 ${paymentMethod === 'manual' ? 'text-[#A855F7]' : 'text-[#A1A1AA]'}`} />
-                      <span className="font-bold text-white text-sm mb-1">Manual Payment</span>
-                      <span className="text-xs text-[#A1A1AA] leading-tight">Submit an order request and complete payment manually.</span>
+                      <span className="font-bold text-white text-base mb-1">Manual Payment</span>
+                      <span className="text-xs sm:text-sm text-[#A1A1AA] leading-tight">Submit an order request and complete payment manually.</span>
                     </button>
                   </div>
                 </div>
@@ -196,15 +196,15 @@ export default function CheckoutPage() {
                   <span className="text-xs font-bold text-primary tracking-widest uppercase">GAME</span>
                 </div>
                 <div className="flex-1">
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-primary border border-primary/30 px-2 py-0.5 rounded-md bg-primary/5 inline-block mb-1">
+                  <span className="text-xs font-bold tracking-widest uppercase text-primary border border-primary/30 px-2 py-0.5 rounded-md bg-primary/5 inline-block mb-1">
                     Gaming
                   </span>
                   <h4 className="font-bold text-white leading-tight mb-1">Gaming Digital Bundle</h4>
-                  <p className="text-[#A1A1AA] text-sm">${price.toFixed(2)}</p>
+                  <p className="text-[#A1A1AA] text-sm sm:text-base">${price.toFixed(2)}</p>
                 </div>
               </div>
 
-              <div className="space-y-3 mb-6 pb-6 border-b border-[#25253A] text-sm">
+              <div className="space-y-3 mb-6 pb-6 border-b border-[#25253A] text-sm sm:text-base">
                 <div className="flex justify-between text-[#A1A1AA]">
                   <span>Price</span>
                   <span>${price.toFixed(2)}</span>
@@ -216,28 +216,28 @@ export default function CheckoutPage() {
               </div>
 
               <div className="flex justify-between items-center mb-6">
-                <span className="font-bold text-white text-lg">Total</span>
+                <span className="font-bold text-white text-lg sm:text-xl">Total</span>
                 <span className="font-black text-[#A855F7] text-2xl drop-shadow-[0_0_8px_rgba(168,85,247,0.4)]">
                   ${(price * quantity).toFixed(2)}
                 </span>
               </div>
 
               <div className="space-y-2 mb-2">
-                <div className="flex items-center gap-2 text-xs font-medium text-[#A1A1AA]">
+                <div className="flex items-center gap-2 text-sm font-medium text-[#A1A1AA]">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]"></div> Instant Delivery
                 </div>
-                <div className="flex items-center gap-2 text-xs font-medium text-[#A1A1AA]">
+                <div className="flex items-center gap-2 text-sm font-medium text-[#A1A1AA]">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]"></div> Verified Stock
                 </div>
-                <div className="flex items-center gap-2 text-xs font-medium text-[#A1A1AA]">
+                <div className="flex items-center gap-2 text-sm font-medium text-[#A1A1AA]">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6]"></div> Support Available
                 </div>
               </div>
             </div>
 
             <div className="bg-[#11111A] border border-[#25253A] rounded-2xl p-6">
-              <h4 className="font-bold text-white text-sm uppercase tracking-wider mb-4">Important Before Purchase</h4>
-              <ul className="space-y-3 text-sm text-[#A1A1AA]">
+              <h4 className="font-bold text-white text-base uppercase tracking-wider mb-4">Important Before Purchase</h4>
+              <ul className="space-y-3 text-sm sm:text-base text-[#A1A1AA]">
                 <li className="flex gap-2">
                   <span className="text-[#8B5CF6]">•</span> Enter a valid email address.
                 </li>

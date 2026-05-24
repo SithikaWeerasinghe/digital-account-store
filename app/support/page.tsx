@@ -60,7 +60,7 @@ function FAQAccordion() {
             onClick={() => setOpen(open === i ? null : i)}
             className="w-full flex items-center justify-between px-6 py-5 text-left focus:outline-none group"
           >
-            <span className={`font-bold font-[family-name:var(--font-heading)] tracking-wider uppercase text-sm ${open === i ? 'text-primary' : 'text-white group-hover:text-primary transition-colors'}`}>
+            <span className={`font-bold font-[family-name:var(--font-heading)] tracking-wider uppercase text-base ${open === i ? 'text-primary' : 'text-white group-hover:text-primary transition-colors'}`}>
               {faq.question}
             </span>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${open === i ? 'bg-primary/20 text-primary' : 'bg-[#1A1A24] text-text-secondary group-hover:bg-primary/10 group-hover:text-primary'}`}>
@@ -73,7 +73,7 @@ function FAQAccordion() {
           <div 
             className={`overflow-hidden transition-all duration-300 ease-in-out ${open === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
           >
-            <div className="px-6 pb-6 text-sm text-text-secondary leading-relaxed border-t border-border pt-4 font-medium">
+            <div className="px-6 pb-6 text-[15px] sm:text-base text-text-secondary leading-relaxed border-t border-border pt-4 font-medium">
               {faq.answer}
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function SupportPage() {
   };
 
   const inputClass = (field: keyof FormData) =>
-    `w-full px-4 py-3.5 rounded-xl border bg-[#0A0A0F] text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] ${
+    `w-full px-4 py-3.5 rounded-xl border bg-[#0A0A0F] text-white text-base font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] ${
       errors[field] ? 'border-destructive/50 ring-1 ring-destructive/20' : 'border-border'
     }`;
 
@@ -143,8 +143,8 @@ export default function SupportPage() {
                 <Icon size={24} />
               </div>
               <h3 className="font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest text-white mb-2">{title}</h3>
-              <p className="text-sm font-medium text-text-secondary mb-3">{desc}</p>
-              <p className="text-[10px] tracking-wider uppercase text-text-secondary/70">{detail}</p>
+              <p className="text-sm sm:text-base font-medium text-text-secondary mb-3">{desc}</p>
+              <p className="text-[11px] sm:text-xs tracking-wider uppercase text-text-secondary/70">{detail}</p>
             </div>
           ))}
         </div>
@@ -180,7 +180,7 @@ export default function SupportPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Full Name */}
                   <div>
-                    <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Full Name *</label>
+                    <label className="block text-sm font-bold tracking-widest uppercase text-text-secondary mb-3">Full Name *</label>
                     <input
                       type="text"
                       value={form.name}
@@ -193,7 +193,7 @@ export default function SupportPage() {
 
                   {/* Email */}
                   <div>
-                    <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Email Address *</label>
+                    <label className="block text-sm font-bold tracking-widest uppercase text-text-secondary mb-3">Email Address *</label>
                     <input
                       type="email"
                       value={form.email}
@@ -208,19 +208,19 @@ export default function SupportPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Order ID */}
                   <div>
-                    <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Order ID <span className="text-text-secondary/50 font-medium">(optional)</span></label>
+                    <label className="block text-sm font-bold tracking-widest uppercase text-text-secondary mb-3">Order ID <span className="text-text-secondary/50 font-medium">(optional)</span></label>
                     <input
                       type="text"
                       value={form.orderId}
                       onChange={(e) => setForm({ ...form, orderId: e.target.value })}
                       placeholder="ORD-12345"
-                      className="w-full px-4 py-3.5 rounded-xl border bg-[#0A0A0F] text-white text-sm font-medium border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
+                      className="w-full px-4 py-3.5 rounded-xl border bg-[#0A0A0F] text-white text-base font-medium border-border focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
                     />
                   </div>
 
                   {/* Issue Type */}
                   <div>
-                    <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Issue Type *</label>
+                    <label className="block text-sm font-bold tracking-widest uppercase text-text-secondary mb-3">Issue Type *</label>
                     <select
                       value={form.issueType}
                       onChange={(e) => setForm({ ...form, issueType: e.target.value })}
@@ -237,7 +237,7 @@ export default function SupportPage() {
 
                 {/* Subject */}
                 <div>
-                  <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Subject *</label>
+                  <label className="block text-sm font-bold tracking-widest uppercase text-text-secondary mb-3">Subject *</label>
                   <input
                     type="text"
                     value={form.subject}
@@ -250,7 +250,7 @@ export default function SupportPage() {
 
                 {/* Message */}
                 <div>
-                  <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Message *</label>
+                  <label className="block text-sm font-bold tracking-widest uppercase text-text-secondary mb-3">Message *</label>
                   <textarea
                     rows={5}
                     value={form.message}
@@ -263,8 +263,8 @@ export default function SupportPage() {
 
                 {/* Screenshot (placeholder) */}
                 <div>
-                  <label className="block text-xs font-bold tracking-widest uppercase text-text-secondary mb-3">Screenshot <span className="text-text-secondary/50 font-medium">(optional)</span></label>
-                  <div className="w-full px-4 py-8 rounded-xl border-2 border-dashed border-border bg-[#0A0A0F] text-center text-sm font-medium text-text-secondary hover:border-primary/50 hover:text-white transition-colors cursor-pointer group flex flex-col items-center gap-2">
+                  <label className="block text-sm font-bold tracking-widest uppercase text-text-secondary mb-3">Screenshot <span className="text-text-secondary/50 font-medium">(optional)</span></label>
+                  <div className="w-full px-4 py-8 rounded-xl border-2 border-dashed border-border bg-[#0A0A0F] text-center text-sm sm:text-base font-medium text-text-secondary hover:border-primary/50 hover:text-white transition-colors cursor-pointer group flex flex-col items-center gap-2">
                     <UploadCloud size={24} className="text-text-secondary group-hover:text-primary transition-colors" />
                     <span>Click to upload or drag and drop a screenshot (JPG, PNG)</span>
                   </div>
