@@ -1,4 +1,4 @@
-import { Order, OrderItem } from '@/types/order';
+import { Order, OrderItem, CreateOrderInput } from '@/types/order';
 import { sampleProducts } from '@/data/sampleProducts';
 
 // Interface representing the database row structure for the orders table
@@ -91,7 +91,17 @@ export function mapDatabaseOrder(row: DatabaseOrderRow): Order {
     status: frontendStatus,
     paymentMethod: row.payment_method,
     createdAt: row.created_at,
-    updatedAt: row.created_at
+    updatedAt: row.created_at,
+    // Database-style/snake_case compatibility
+    invoice_number: row.invoice_number,
+    customer_email: row.customer_email,
+    product_id: row.product_id,
+    quantity: row.quantity,
+    amount: row.amount,
+    payment_method: row.payment_method,
+    payment_status: row.payment_status,
+    delivery_status: row.delivery_status,
+    created_at: row.created_at
   };
 }
 
@@ -107,33 +117,49 @@ function generateInvoiceNumber(): string {
 /**
  * Creates a new order mock-saved in-memory.
  */
-export async function createOrder(input: {
-  customerEmail: string;
-  productId: string;
-  quantity: number;
-  paymentMethod: 'card' | 'crypto' | 'manual';
-}): Promise<Order> {
+export async function createOrder(input: CreateOrderInput): Promise<Order> {
   await new Promise((resolve) => setTimeout(resolve, 100));
 
-  if (!input.customerEmail || !input.customerEmail.includes('@')) {
+  const customerEmail = input.customerEmail || input.customer_email;
+  const productId = input.productId || input.product_id;
+  const paymentMethod = input.paymentMethod || input.payment_method;
+  const quantity = input.quantity;
+
+  if (!customerEmail || !customerEmail.includes('@')) {
     throw new Error('A valid customer email is required');
   }
 
-  const product = sampleProducts.find((p) => p.id === input.productId);
+  if (!productId) {
+    throw new Error('Product ID is required');
+  }
+
+  if (quantity === undefined || quantity === null || Number(quantity) < 1) {
+    throw new Error('Quantity must be at least 1');
+  }
+
+  const product = sampleProducts.find((p) => p.id === productId);
   if (!product) {
     throw new Error('Product not found');
   }
 
-  const orderAmount = Number((product.price * input.quantity).toFixed(2));
+  const orderAmount = input.amount !== undefined ? Number(input.amount) : Number((product.price * Number(quantity)).toFixed(2));
   
+  if (orderAmount <= 0) {
+    throw new Error('Amount must be greater than 0');
+  }
+
+  if (!paymentMethod || !['card', 'crypto', 'manual'].includes(paymentMethod)) {
+    throw new Error('Payment method must be card, crypto, or manual');
+  }
+
   const newRow: DatabaseOrderRow = {
     id: `ord-${Math.random().toString(36).substring(2, 11)}`,
     invoice_number: generateInvoiceNumber(),
-    customer_email: input.customerEmail,
-    product_id: input.productId,
-    quantity: input.quantity,
+    customer_email: customerEmail,
+    product_id: productId,
+    quantity: Number(quantity),
     amount: orderAmount,
-    payment_method: input.paymentMethod,
+    payment_method: paymentMethod,
     payment_status: 'pending',
     delivery_status: 'pending',
     created_at: new Date().toISOString()

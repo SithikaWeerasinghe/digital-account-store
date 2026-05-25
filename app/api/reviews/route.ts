@@ -16,15 +16,8 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { orderId, productId, customerEmail, rating, comment } = body;
 
-    const newReview = await reviewService.createReview({
-      orderId,
-      productId,
-      customerEmail,
-      rating: Number(rating),
-      comment
-    });
+    const newReview = await reviewService.createReview(body);
 
     return NextResponse.json({ success: true, data: newReview }, { status: 201 });
   } catch (error: any) {

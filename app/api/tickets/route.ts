@@ -16,16 +16,8 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, orderId, issueType, subject, message } = body;
 
-    const newTicket = await ticketService.createTicket({
-      name,
-      email,
-      orderId,
-      issueType,
-      subject,
-      message
-    });
+    const newTicket = await ticketService.createTicket(body);
 
     return NextResponse.json({ success: true, data: newTicket }, { status: 201 });
   } catch (error: any) {

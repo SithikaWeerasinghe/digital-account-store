@@ -17,3 +17,14 @@ export interface TicketMessage {
   isAdmin: boolean;
   createdAt: string;
 }
+
+export type CreateTicketInput = {
+  name: string;
+  email: string;
+  orderId?: string;
+  order_id?: string;
+  issueType?: string;
+  issue_type?: string;
+  subject: string;
+  message: string;
+};

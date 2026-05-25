@@ -1,4 +1,4 @@
-import { Ticket } from '@/types/ticket';
+import { Ticket, CreateTicketInput } from '@/types/ticket';
 
 export interface DatabaseTicketRow {
   id: string;
@@ -73,20 +73,16 @@ export function mapDatabaseTicket(row: DatabaseTicketRow): Ticket {
  * Creates a new support ticket.
  * Performs rigorous validations on mandatory input parameters.
  */
-export async function createTicket(input: {
-  name: string;
-  email: string;
-  orderId?: string;
-  issueType: string;
-  subject: string;
-  message: string;
-}): Promise<Ticket> {
+export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
   await new Promise((resolve) => setTimeout(resolve, 50));
+
+  const orderId = input.orderId || input.order_id;
+  const issueType = input.issueType || input.issue_type;
 
   // Required Field Validations
   if (!input.name || !input.name.trim()) throw new Error('Name is required');
   if (!input.email || !input.email.trim() || !input.email.includes('@')) throw new Error('A valid email address is required');
-  if (!input.issueType || !input.issueType.trim()) throw new Error('Issue Type is required');
+  if (!issueType || !issueType.trim()) throw new Error('Issue Type is required');
   if (!input.subject || !input.subject.trim()) throw new Error('Subject is required');
   if (!input.message || !input.message.trim() || input.message.trim().length < 20) {
     throw new Error('Message is required and must be at least 20 characters long');
@@ -96,8 +92,8 @@ export async function createTicket(input: {
     id: `TKT-${Math.floor(100 + Math.random() * 900)}`, // Standardized ticket tracking tag
     name: input.name.trim(),
     email: input.email.trim(),
-    order_id: input.orderId?.trim() || null,
-    issue_type: input.issueType.trim(),
+    order_id: orderId?.trim() || null,
+    issue_type: issueType.trim(),
     subject: input.subject.trim(),
     message: input.message.trim(),
     status: 'open',

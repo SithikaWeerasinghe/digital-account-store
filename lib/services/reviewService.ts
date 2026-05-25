@@ -1,4 +1,4 @@
-import { Review } from '@/types/review';
+import { Review, CreateReviewInput } from '@/types/review';
 import { sampleReviews } from '@/data/sampleReviews';
 
 // Database-style review representation
@@ -74,26 +74,25 @@ export async function getReviewsByProductId(productId: string): Promise<Review[]
  * Creates a new review.
  * Default approved status is false (pending approval).
  */
-export async function createReview(input: {
-  orderId?: string;
-  productId: string;
-  customerEmail: string;
-  rating: number;
-  comment: string;
-}): Promise<Review> {
+export async function createReview(input: CreateReviewInput): Promise<Review> {
   await new Promise((resolve) => setTimeout(resolve, 50));
 
-  if (!input.productId) throw new Error('Product ID is required');
-  if (!input.customerEmail || !input.customerEmail.includes('@')) throw new Error('A valid email is required');
-  if (input.rating < 1 || input.rating > 5) throw new Error('Rating must be between 1 and 5');
+  const orderId = input.orderId || input.order_id;
+  const productId = input.productId || input.product_id;
+  const customerEmail = input.customerEmail || input.customer_email;
+
+  const ratingVal = Number(input.rating);
+  if (!productId) throw new Error('Product ID is required');
+  if (!customerEmail || !customerEmail.includes('@')) throw new Error('A valid email is required');
+  if (isNaN(ratingVal) || ratingVal < 1 || ratingVal > 5) throw new Error('Rating must be between 1 and 5');
   if (!input.comment || !input.comment.trim()) throw new Error('Comment is required');
 
   const newRow: DatabaseReviewRow = {
     id: `rev-${Math.random().toString(36).substring(2, 9)}`,
-    order_id: input.orderId || null,
-    product_id: input.productId,
-    customer_email: input.customerEmail.trim(),
-    rating: Math.floor(input.rating),
+    order_id: orderId || null,
+    product_id: productId,
+    customer_email: customerEmail.trim(),
+    rating: Math.floor(ratingVal),
     comment: input.comment.trim(),
     is_approved: false, // Default is unapproved (requires moderation)
     created_at: new Date().toISOString()

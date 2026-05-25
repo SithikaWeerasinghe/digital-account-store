@@ -17,22 +17,27 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    // Extract input parameters
-    const { customerEmail, productId, quantity, paymentMethod } = body;
-    
     // Create new order using order service layer
-    const newOrder = await orderService.createOrder({
-      customerEmail,
-      productId,
-      quantity: Number(quantity || 1),
-      paymentMethod
-    });
+    const newOrder = await orderService.createOrder(body);
 
     return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
   } catch (error: any) {
+    // Differentiate between validation errors (400) and unexpected errors (500)
+    const validationErrors = [
+      'A valid customer email is required',
+      'Product ID is required',
+      'Quantity must be at least 1',
+      'Amount must be greater than 0',
+      'Payment method must be card, crypto, or manual',
+      'Product not found'
+    ];
+    
+    const isValidationError = validationErrors.includes(error.message);
+    const status = isValidationError ? 400 : 500;
+
     return NextResponse.json(
       { success: false, message: error.message || 'Failed to process checkout order' },
-      { status: 400 }
+      { status }
     );
   }
 }
