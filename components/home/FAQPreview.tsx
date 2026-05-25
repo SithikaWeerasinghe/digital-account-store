@@ -40,10 +40,12 @@ export default function FAQPreview() {
               </button>
               
               <div 
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${open === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
+                className={`faq-content-grid ${open === i ? 'open' : ''}`}
               >
-                <div className="px-6 pb-6 text-[15px] sm:text-base text-text-secondary leading-relaxed border-t border-border pt-4 font-medium">
-                  {faq.answer}
+                <div className="faq-content-inner">
+                  <div className="px-6 pb-6 text-[15px] sm:text-base text-text-secondary leading-relaxed border-t border-border pt-4 font-medium">
+                    {faq.answer}
+                  </div>
                 </div>
               </div>
             </div>

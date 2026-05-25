@@ -26,36 +26,38 @@ export default function KillFeedTicker() {
         FEED: LIVE_DROP_LOGGER
       </div>
 
-      <div className="flex w-max pl-[190px] animate-ticker">
-        {triplicatedEvents.map((evt, idx) => {
-          const Icon = evt.icon;
-          return (
-            <div
-              key={idx}
-              className="flex items-center gap-2.5 mx-12 font-mono text-sm font-bold whitespace-nowrap"
-            >
-              {/* Event Badge */}
-              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-white border border-border text-[11px] font-black tracking-widest uppercase ${evt.color}`}>
-                <Icon size={10} className="animate-pulse" />
-                {evt.label}
-              </span>
+      <div className="pl-[190px]">
+        <div className="flex w-max animate-ticker">
+          {triplicatedEvents.map((evt, idx) => {
+            const Icon = evt.icon;
+            return (
+              <div
+                key={idx}
+                className="flex items-center gap-2.5 mx-12 font-mono text-sm font-bold whitespace-nowrap"
+              >
+                {/* Event Badge */}
+                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-white border border-border text-[11px] font-black tracking-widest uppercase ${evt.color}`}>
+                  <Icon size={10} className="animate-pulse" />
+                  {evt.label}
+                </span>
 
-              {/* User */}
-              <span className="text-text-primary">{evt.user}</span>
+                {/* User */}
+                <span className="text-text-primary">{evt.user}</span>
 
-              {/* Action symbol */}
-              <span className="text-slate-400 font-light">&gt;&gt;</span>
+                {/* Action symbol */}
+                <span className="text-slate-400 font-light">&gt;&gt;</span>
 
-              {/* Item details */}
-              <span className="text-text-secondary font-medium">{evt.item}</span>
+                {/* Item details */}
+                <span className="text-text-secondary font-medium">{evt.item}</span>
 
-              {/* Latency/Telemetry data */}
-              <span className="text-text-secondary/60 text-xs bg-white px-1.5 py-0.5 border border-border rounded-sm font-mono font-medium">
-                [{evt.stat}]
-              </span>
-            </div>
-          );
-        })}
+                {/* Latency/Telemetry data */}
+                <span className="text-text-secondary/60 text-xs bg-white px-1.5 py-0.5 border border-border rounded-sm font-mono font-medium">
+                  [{evt.stat}]
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
       
       {/* Right shadow fade overlay */}

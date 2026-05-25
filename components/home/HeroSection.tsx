@@ -76,63 +76,69 @@ export default function HeroSection() {
               
               {/* Card 1: Netflix Premium (Top-Left) */}
               <div 
-                className="absolute top-0 left-2 z-10 w-[260px] sm:w-[290px] md:w-[300px] bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:scale-[1.03] transition-all duration-300 animate-float"
+                className="absolute top-0 left-2 z-10 w-[260px] sm:w-[290px] md:w-[300px] animate-float"
                 style={{ animationDuration: '6s' }}
               >
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <span className="inline-block text-xs font-black tracking-wider uppercase text-[#fff159] bg-[#fff159]/10 border border-[#fff159]/25 px-3 py-1 rounded-full font-mono">
-                      STREAMING
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-black tracking-wide text-white">Netflix Premium</h3>
-                    <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">4K Ultra HD • 1 Month Access</p>
-                  </div>
-                  <div className="text-[15px] font-black text-white mt-1 font-mono">
-                    $4.99
+                <div className="w-full h-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:scale-[1.03] transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out">
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <span className="inline-block text-xs font-black tracking-wider uppercase text-[#fff159] bg-[#fff159]/10 border border-[#fff159]/25 px-3 py-1 rounded-full font-mono">
+                        STREAMING
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-black tracking-wide text-white">Netflix Premium</h3>
+                      <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">4K Ultra HD • 1 Month Access</p>
+                    </div>
+                    <div className="text-[15px] font-black text-white mt-1 font-mono">
+                      $4.99
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Card 2: Xbox Game Pass Ultimate (Middle) */}
               <div 
-                className="absolute top-[125px] left-[50px] sm:left-[80px] md:left-[90px] z-20 w-[260px] sm:w-[290px] md:w-[300px] bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:scale-[1.03] transition-all duration-300 animate-float"
+                className="absolute top-[125px] left-[50px] sm:left-[80px] md:left-[90px] z-20 w-[260px] sm:w-[290px] md:w-[300px] animate-float"
                 style={{ animationDuration: '7s', animationDelay: '1.5s' }}
               >
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <span className="inline-block text-xs font-black tracking-wider uppercase text-white bg-white/10 border border-white/20 px-3 py-1 rounded-full font-mono">
-                      GAMING
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-black tracking-wide text-white">Xbox Game Pass Ultimate</h3>
-                    <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">100+ Games • PC/Console</p>
-                  </div>
-                  <div className="text-[15px] font-black text-white mt-1 font-mono">
-                    $9.99
+                <div className="w-full h-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:scale-[1.03] transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out">
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <span className="inline-block text-xs font-black tracking-wider uppercase text-white bg-white/10 border border-white/20 px-3 py-1 rounded-full font-mono">
+                        GAMING
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-black tracking-wide text-white">Xbox Game Pass Ultimate</h3>
+                      <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">100+ Games • PC/Console</p>
+                    </div>
+                    <div className="text-[15px] font-black text-white mt-1 font-mono">
+                      $9.99
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Card 3: ChatGPT Plus (Bottom-Right) */}
               <div 
-                className="absolute top-[250px] left-[100px] sm:left-[160px] md:left-[180px] z-30 w-[260px] sm:w-[290px] md:w-[300px] bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:scale-[1.03] transition-all duration-300 animate-float"
+                className="absolute top-[250px] left-[100px] sm:left-[160px] md:left-[180px] z-30 w-[260px] sm:w-[290px] md:w-[300px] animate-float"
                 style={{ animationDuration: '8s', animationDelay: '3s' }}
               >
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <span className="inline-block text-xs font-black tracking-wider uppercase text-white/90 bg-white/15 border border-white/25 px-3 py-1 rounded-full font-mono">
-                      AI TOOLS
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-base sm:text-lg font-black tracking-wide text-white">ChatGPT Plus</h3>
-                    <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">GPT-4 access • Shared account</p>
-                  </div>
-                  <div className="text-[15px] font-black text-white mt-1 font-mono">
-                    $6.50
+                <div className="w-full h-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:scale-[1.03] transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out">
+                  <div className="flex flex-col gap-3">
+                    <div>
+                      <span className="inline-block text-xs font-black tracking-wider uppercase text-white/90 bg-white/15 border border-white/25 px-3 py-1 rounded-full font-mono">
+                        AI TOOLS
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-base sm:text-lg font-black tracking-wide text-white">ChatGPT Plus</h3>
+                      <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">GPT-4 access • Shared account</p>
+                    </div>
+                    <div className="text-[15px] font-black text-white mt-1 font-mono">
+                      $6.50
+                    </div>
                   </div>
                 </div>
               </div>

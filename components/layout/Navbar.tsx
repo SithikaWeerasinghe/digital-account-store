@@ -98,31 +98,35 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md absolute w-full left-0 z-40">
-          <div className="px-4 pt-4 pb-6 space-y-2.5 shadow-md">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="block px-4 py-3 border border-slate-100 hover:border-primary/45 rounded-xl text-sm font-black tracking-widest uppercase text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200 font-heading"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="pt-4">
-              <Link
-                href={ROUTES.PRODUCTS}
-                onClick={() => setMobileOpen(false)}
-                className="block w-full text-center py-3 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 text-sm font-black font-heading tracking-widest uppercase rounded-xl shadow-sm transition-all duration-200"
-              >
-                Browse Products
-              </Link>
-            </div>
+      <div 
+        className={`md:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md absolute w-full left-0 z-40 transition-all duration-300 ease-out origin-top ${
+          mobileOpen 
+            ? 'opacity-100 translate-y-0 scale-y-100 visible' 
+            : 'opacity-0 -translate-y-2 scale-y-95 invisible pointer-events-none'
+        }`}
+      >
+        <div className="px-4 pt-4 pb-6 space-y-2.5 shadow-md">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileOpen(false)}
+              className="block px-4 py-3 border border-slate-100 hover:border-primary/45 rounded-xl text-sm font-black tracking-widest uppercase text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200 font-heading"
+            >
+              {link.label}
+            </Link>
+          ))}
+          <div className="pt-4">
+            <Link
+              href={ROUTES.PRODUCTS}
+              onClick={() => setMobileOpen(false)}
+              className="block w-full text-center py-3 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 text-sm font-black font-heading tracking-widest uppercase rounded-xl shadow-sm transition-all duration-200"
+            >
+              Browse Products
+            </Link>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }

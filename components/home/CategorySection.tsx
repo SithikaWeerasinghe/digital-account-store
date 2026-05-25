@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
 import { useState, useEffect, useRef } from 'react';
 
-function StreamingIcon({ className, isSquare }: { className?: string; isSquare?: boolean }) {
+function StreamingIcon({ className }: { className?: string; isSquare?: boolean }) {
   return (
     <svg className={`w-10 h-10 sm:w-12 sm:h-12 group-hover:scale-105 transition-transform duration-300 ${className || ''}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <g className="animate-netflix-zoom">
@@ -32,7 +32,7 @@ function StreamingIcon({ className, isSquare }: { className?: string; isSquare?:
   );
 }
 
-function AIToolsIcon({ className, isSquare }: { className?: string; isSquare?: boolean }) {
+function AIToolsIcon({ className }: { className?: string; isSquare?: boolean }) {
   return (
     <svg 
       className={`w-10 h-10 sm:w-12 sm:h-12 text-[#009ee3] transition-all duration-500 ease-out origin-center animate-chatgpt-pulse group-hover:animate-chatgpt-hover ${className || ''}`}
@@ -95,7 +95,7 @@ function GamingIcon({ className, isSquare }: { className?: string; isSquare?: bo
   );
 }
 
-function SoftwareIcon({ className, isSquare }: { className?: string; isSquare?: boolean }) {
+function SoftwareIcon({ className }: { className?: string; isSquare?: boolean }) {
   return (
     <svg 
       className={`w-10 h-10 sm:w-12 sm:h-12 text-[#009ee3] group-hover:scale-105 transition-transform duration-300 ${className || ''}`} 
@@ -387,25 +387,25 @@ export default function CategorySection() {
               <Link
                 key={cat.name}
                 href={`${ROUTES.PRODUCTS}?category=${encodeURIComponent(cat.query)}`}
-                className={`group flex items-center cursor-pointer relative overflow-hidden bg-card border border-border hover:bg-slate-50/50 transition-all duration-700 ease-out shadow-sm hover:shadow-[0_8px_25px_rgba(0,158,227,0.08)] ${
+                className={`group flex items-center cursor-pointer relative overflow-hidden bg-card border border-border hover:bg-slate-50/50 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) shadow-sm hover:shadow-[0_8px_25px_rgba(0,158,227,0.08)] ${
                   isVisible ? 'animate-fade-in-up' : 'opacity-0'
                 } ${
                   isRectangular 
-                    ? 'w-full max-w-4xl rounded-[32px] p-6 sm:p-8 border-primary/20 h-auto min-h-[120px] sm:min-h-[136px]' 
-                    : 'is-square w-36 h-36 sm:w-44 sm:h-44 rounded-[44px] justify-center p-0 border-white/10 mx-auto'
+                    ? 'w-full max-w-4xl rounded-[32px] p-5 sm:p-6 border-primary/20 h-[132px] sm:h-[148px]' 
+                    : 'is-square w-36 h-36 sm:w-44 sm:h-44 rounded-[44px] p-0 border-white/10 mx-auto'
                 }`}
-                style={{ animationDelay: isVisible ? `${index * 150}ms` : '0ms' }}
+                style={{ animationDelay: isVisible ? `${index * 120}ms` : '0ms' }}
               >
                 {/* Glowing Icon Container */}
-                <div className={`flex items-center justify-center flex-shrink-0 transition-all duration-700 ease-out ${cat.bgColor} border border-border ${cat.borderColor} ${
-                  isRectangular ? 'w-20 h-20 mr-6 rounded-[22px]' : 'w-24 h-24 sm:w-28 sm:h-28 rounded-[30px] sm:rounded-[36px]'
+                <div className={`flex items-center justify-center flex-shrink-0 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${cat.bgColor} border border-border ${cat.borderColor} ${
+                  isRectangular ? 'w-20 h-20 mr-6 ml-0 rounded-[22px]' : 'w-24 h-24 sm:w-28 sm:h-28 rounded-[30px] sm:rounded-[36px] mx-auto'
                 }`}>
                   <Icon className={cat.iconAnimClass} isSquare={isSquare} />
                 </div>
                 
                 {/* Content Area */}
-                <div className={`flex-1 flex flex-col justify-center transition-all duration-700 ${
-                  isRectangular ? 'opacity-100 max-w-full' : 'opacity-0 max-w-0 overflow-hidden pointer-events-none'
+                <div className={`flex-1 flex flex-col justify-center transition-[opacity,transform] duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${
+                  isRectangular ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'
                 }`}>
                   <h3 className="text-xl sm:text-2xl font-black font-heading tracking-wider uppercase text-slate-800 group-hover:text-primary transition-colors">
                     {cat.name}
@@ -420,8 +420,8 @@ export default function CategorySection() {
                 </div>
 
                 {/* Interactive Arrow Indicator */}
-                <div className={`transition-all duration-700 ${
-                  isRectangular ? 'opacity-30 group-hover:opacity-100 group-hover:translate-x-1 ml-5' : 'opacity-0 w-0 overflow-hidden pointer-events-none'
+                <div className={`transition-[opacity,transform] duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${
+                  isRectangular ? 'opacity-30 group-hover:opacity-100 group-hover:translate-x-1 ml-5 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'
                 } text-slate-400 group-hover:text-primary`}>
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />

@@ -112,14 +112,14 @@
 .glow-border-button {
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glow-border-button::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 50%;
   height: 100%;
   background: linear-gradient(
@@ -130,18 +130,19 @@
     rgba(255, 255, 255, 0.15) 70%,
     transparent
   );
-  transition: none;
+  transform: translateX(-100%);
   z-index: 1;
+  pointer-events: none;
 }
 
 .glow-border-button:hover::before {
-  left: 150%;
-  transition: left 0.7s ease-in-out;
+  transform: translateX(300%);
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Glitch Image Zoom Hover effect */
 .glitch-hover-img {
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), filter 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
 }
 
 .group:hover .glitch-hover-img {
@@ -178,7 +179,7 @@
   border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 0.25rem; /* tactical sharp corners */
   position: relative;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mp-card:hover {
@@ -204,12 +205,28 @@
   border: 1px solid var(--color-border, #e2e8f0);
   color: var(--color-text-primary, #333333);
   font-family: monospace;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .mp-input-tactical:focus {
   border-color: var(--color-primary, #009ee3);
   box-shadow: 0 0 10px rgba(0, 158, 227, 0.2);
   outline: none;
+}
+
+/* Smooth Grid Accordion Utility */
+.faq-content-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+}
+.faq-content-grid.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.faq-content-inner {
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* Tech scanner overlay line */

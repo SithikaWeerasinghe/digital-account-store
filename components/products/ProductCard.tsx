@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { ROUTES } from '@/lib/constants';
-import { Star, Zap, Package, Eye, ShieldAlert, Cpu } from 'lucide-react';
+import { Star, Zap, Package, Eye, ShieldAlert } from 'lucide-react';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);

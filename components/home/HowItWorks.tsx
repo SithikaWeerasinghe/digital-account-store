@@ -97,9 +97,9 @@ export default function HowItWorks() {
 
       <style>{`
         @keyframes techPipeline {
-          0% { left: 0%; width: 0%; }
-          50% { left: 25%; width: 50%; }
-          100% { left: 100%; width: 0%; }
+          0% { transform: translateX(-100%) scaleX(0); }
+          50% { transform: translateX(150%) scaleX(1.5); }
+          100% { transform: translateX(400%) scaleX(0); }
         }
       `}</style>
     </section>
