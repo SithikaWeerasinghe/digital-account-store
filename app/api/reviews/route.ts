@@ -1,10 +1,37 @@
 import { NextResponse } from 'next/server';
-import { sampleReviews } from '@/data/sampleReviews';
+import * as reviewService from '@/lib/services/reviewService';
 
 export async function GET() {
-  return NextResponse.json(sampleReviews);
+  try {
+    const reviews = await reviewService.getApprovedReviews();
+    return NextResponse.json({ success: true, data: reviews });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message || 'Failed to fetch reviews' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
-  return NextResponse.json({ message: 'Review created' }, { status: 201 });
+  try {
+    const body = await request.json();
+    const { orderId, productId, customerEmail, rating, comment } = body;
+
+    const newReview = await reviewService.createReview({
+      orderId,
+      productId,
+      customerEmail,
+      rating: Number(rating),
+      comment
+    });
+
+    return NextResponse.json({ success: true, data: newReview }, { status: 201 });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message || 'Failed to submit review' },
+      { status: 400 }
+    );
+  }
 }
+

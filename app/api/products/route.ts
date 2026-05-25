@@ -1,12 +1,31 @@
 import { NextResponse } from 'next/server';
-import { sampleProducts } from '@/data/sampleProducts';
+import * as productService from '@/lib/services/productService';
 
 export async function GET() {
-  return NextResponse.json(sampleProducts);
+  try {
+    const products = await productService.getProducts();
+    return NextResponse.json({ success: true, data: products });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message || 'Failed to fetch products' },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  // Placeholder logic
-  return NextResponse.json({ message: 'Product created', product: body }, { status: 201 });
+  try {
+    const body = await request.json();
+    // In the future, this will run: productService.createProduct(body)
+    return NextResponse.json(
+      { success: true, data: { message: 'Product creation placeholder', product: body } },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message || 'Failed to create product' },
+      { status: 400 }
+    );
+  }
 }
+
