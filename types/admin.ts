@@ -14,3 +14,8 @@ export interface DashboardStats {
   revenueChange: number; // percentage
   ordersChange: number; // percentage
 }
+
+export type AdminLoginInput = {
+  email: string;
+  password?: string;
+};

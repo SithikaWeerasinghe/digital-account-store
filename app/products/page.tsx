@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo, Suspense } from 'react';
+import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { sampleProducts } from '@/data/sampleProducts';
+import { fetchProducts } from '@/lib/api';
+import { Product } from '@/types/product';
 import ProductCard from '@/components/products/ProductCard';
 import { Search, SlidersHorizontal, Zap, Shield, Package, HeadphonesIcon } from 'lucide-react';
 
@@ -23,8 +24,27 @@ function ProductsContent() {
   const [activeCategory, setActiveCategory] = useState(categoryParam || 'All Products');
   const [sort, setSort] = useState('newest');
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchProducts();
+        setProducts(data);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load products');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProducts();
+  }, []);
+
   const filtered = useMemo(() => {
-    let result = [...sampleProducts];
+    let result = [...products];
 
     if (activeCategory !== 'All Products') {
       result = result.filter((p) => p.category === activeCategory);
@@ -134,7 +154,23 @@ function ProductsContent() {
         </p>
 
         {/* Product Grid */}
-        {filtered.length > 0 ? (
+        {isLoading ? (
+          <div className="py-32 text-center mp-card">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <h3 className="font-bold font-heading uppercase tracking-wider text-text-primary text-xl mb-3">Loading Products...</h3>
+          </div>
+        ) : error ? (
+          <div className="py-32 text-center mp-card border-hazard/50">
+            <h3 className="font-bold font-heading uppercase tracking-wider text-hazard text-xl mb-3">Error Loading Products</h3>
+            <p className="text-text-secondary tracking-wide mb-8">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mp-button-primary"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filtered.map((product) => (
               <ProductCard key={product.id} product={product} />

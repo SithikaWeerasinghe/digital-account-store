@@ -3,17 +3,19 @@
 import { useState } from 'react';
 import { CreditCard, Bitcoin, Banknote, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { createOrder } from '@/lib/api';
 
 export default function CheckoutPage() {
   const [email, setEmail] = useState('');
   const [quantity, setQuantity] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto' | 'manual'>('card');
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const price = 9.99;
 
-  const handleCheckout = (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
@@ -30,7 +32,21 @@ export default function CheckoutPage() {
       return;
     }
 
-    setIsSuccess(true);
+    setIsLoading(true);
+    try {
+      await createOrder({
+        customerEmail: email,
+        productId: 'prod-1',
+        quantity: quantity,
+        amount: price * quantity,
+        paymentMethod: paymentMethod
+      });
+      setIsSuccess(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to process checkout. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isSuccess) {
@@ -172,8 +188,12 @@ export default function CheckoutPage() {
                 )}
 
                 <div className="pt-4">
-                  <button type="submit" className="mp-button-primary w-full py-4 text-lg tracking-widest font-bold">
-                    Continue to Checkout
+                  <button type="submit" disabled={isLoading} className="mp-button-primary w-full py-4 text-lg tracking-widest font-bold disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2">
+                    {isLoading ? (
+                      <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Processing...</>
+                    ) : (
+                      'Continue to Checkout'
+                    )}
                   </button>
                 </div>
               </form>

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { sampleProducts } from '@/data/sampleProducts';
-import { sampleReviews } from '@/data/sampleReviews';
+import { useState, useEffect, use } from 'react';
+import { fetchProductBySlug, fetchReviews } from '@/lib/api';
+import { Product } from '@/types/product';
+import { Review } from '@/types/review';
 import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
 import {
@@ -32,9 +33,32 @@ const PAYMENT_METHODS = [
   { id: 'manual', label: 'Manual Payment', desc: 'Bank transfer', icon: Banknote },
 ];
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = sampleProducts.find((p) => p.slug === params.slug) ?? sampleProducts[0];
-  const reviews = sampleReviews.slice(0, 3);
+export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = use(params);
+  const slug = resolvedParams.slug;
+  const [product, setProduct] = useState<Product | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const [productData, reviewsData] = await Promise.all([
+          fetchProductBySlug(slug),
+          fetchReviews()
+        ]);
+        setProduct(productData);
+        setReviews(reviewsData.slice(0, 3));
+      } catch (err: any) {
+        setError(err.message || 'Failed to load product details');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [slug]);
 
   const [email, setEmail] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -42,7 +66,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   const [emailError, setEmailError] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const total = product.price * quantity;
+  const total = product ? product.price * quantity : 0;
 
   const handleCheckout = () => {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -53,7 +77,16 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
     setSubmitted(true);
   };
 
-  if (!product) {
+  if (isLoading) {
+    return (
+      <div className="min-h-[70vh] bg-background flex flex-col items-center justify-center gap-6 px-4">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+        <h1 className="text-xl font-black font-heading uppercase tracking-widest text-text-primary">Loading Product...</h1>
+      </div>
+    );
+  }
+
+  if (error || !product) {
     return (
       <div className="min-h-[70vh] bg-background flex flex-col items-center justify-center gap-6 px-4">
         <div className="w-24 h-24 bg-card border border-border rounded-full flex items-center justify-center shadow-2xl">
