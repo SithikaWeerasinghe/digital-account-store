@@ -31,7 +31,7 @@ export default function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto font-heading">
               <Link
                 href={ROUTES.PRODUCTS}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#fff159] hover:bg-[#ffe600] text-slate-900 font-extrabold text-sm tracking-widest uppercase transition-all duration-200 shadow-[0_4px_12px_rgba(255,241,89,0.35)] hover:shadow-[0_4px_20px_rgba(255,241,89,0.55)]"
+                className="btn-premium-shine inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#fff159] hover:bg-[#ffe600] text-slate-900 font-extrabold text-sm tracking-widest uppercase transition-all duration-200 shadow-[0_4px_12px_rgba(255,241,89,0.35)] hover:shadow-[0_4px_20px_rgba(255,241,89,0.55)]"
               >
                 Browse Products
                 <ArrowRight size={14} className="stroke-[3]" />

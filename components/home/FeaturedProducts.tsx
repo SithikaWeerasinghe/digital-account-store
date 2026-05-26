@@ -40,7 +40,7 @@ export default function FeaturedProducts() {
         
         {/* Centered Tactical Header */}
         <div className="flex flex-col items-center text-center mb-10 border-b border-border/60 pb-8">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mb-3 rounded-sm bg-[#FF5500]/10 border border-[#FF5500]/25 font-mono text-xs font-black text-[#FF5500] tracking-widest uppercase">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-3 rounded-full bg-[#FF5500]/8 border border-[#FF5500]/20 font-mono text-[10px] font-bold text-[#FF5500] tracking-widest uppercase shadow-sm">
             <Box size={10} className="animate-bounce" />
             HOT DEPLOYMENT :: ACQUISITION COORDINATES
           </div>
@@ -53,11 +53,11 @@ export default function FeaturedProducts() {
           <div className="w-16 h-[2px] bg-primary mx-auto mt-6 shadow-[0_0_10px_rgba(0,158,227,0.6)]"></div>
 
           {/* Dynamic Restock Countdown Widget */}
-          <div className="mt-5 flex items-center gap-3 bg-secondary border border-border rounded-sm p-3 font-mono">
-            <Clock size={16} className="text-[#FF5500] animate-pulse" />
+          <div className="mt-6 flex items-center gap-3.5 bg-white border border-slate-200/80 rounded-2xl p-3 px-5 font-mono shadow-[0_4px_12px_rgba(0,0,0,0.03)]">
+            <Clock size={15} className="text-[#FF5500] animate-pulse" />
             <div className="text-left">
-              <span className="text-[10px] text-slate-400 tracking-widest block font-bold uppercase">NEXT SUPPLY_DROP</span>
-              <span className="text-sm font-black text-slate-800 tracking-wider">
+              <span className="text-[9px] text-slate-400 tracking-widest block font-bold uppercase">NEXT SUPPLY DROP</span>
+              <span className="text-sm font-extrabold text-slate-800 tracking-wider">
                 {String(timeLeft.hours).padStart(2, '0')}h : {String(timeLeft.minutes).padStart(2, '0')}m : {String(timeLeft.seconds).padStart(2, '0')}s
               </span>
             </div>
@@ -65,7 +65,7 @@ export default function FeaturedProducts() {
         </div>
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 py-4 px-1">
           {featured.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
