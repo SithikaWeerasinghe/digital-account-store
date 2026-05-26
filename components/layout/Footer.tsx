@@ -1,11 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ROUTES, APP_NAME } from '@/lib/constants';
 import { Terminal } from 'lucide-react';
 
 export default function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <footer className="bg-[#0B0C10] border-t border-slate-800/80 text-slate-400 relative overflow-hidden font-sans">
