@@ -1,13 +1,29 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import OrderTable from '@/components/admin/OrderTable';
+import { fetchOrders } from '@/lib/api';
+import { Order } from '@/types/order';
 
 export default function AdminOrdersPage() {
-  const mockOrders = [
-    { id: 'ORD-123', userId: 'user-1', items: [], totalAmount: 45.99, status: 'completed' as const, paymentMethod: 'card', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 'ORD-124', userId: 'user-2', items: [], totalAmount: 19.99, status: 'pending' as const, paymentMethod: 'paypal', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 'ORD-125', userId: 'user-3', items: [], totalAmount: 89.99, status: 'completed' as const, paymentMethod: 'crypto', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 'ORD-126', userId: 'user-4', items: [], totalAmount: 14.99, status: 'failed' as const, paymentMethod: 'card', createdAt: new Date(Date.now() - 86400000).toISOString(), updatedAt: new Date(Date.now() - 86400000).toISOString() },
-    { id: 'ORD-127', userId: 'user-5', items: [], totalAmount: 29.99, status: 'refunded' as const, paymentMethod: 'paypal', createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), updatedAt: new Date(Date.now() - 86400000).toISOString() },
-  ];
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchOrders();
+        setOrders(data);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch orders');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -16,7 +32,22 @@ export default function AdminOrdersPage() {
         <p className="text-text-secondary mt-1">View and manage customer orders</p>
       </div>
       
-      <OrderTable orders={mockOrders} />
+      {isLoading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : error ? (
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-6 py-4 rounded-xl">
+          <h3 className="font-bold text-lg mb-1">Error Loading Orders</h3>
+          <p>{error}</p>
+        </div>
+      ) : orders.length > 0 ? (
+        <OrderTable orders={orders} />
+      ) : (
+        <div className="text-center py-12 bg-white border border-border rounded-xl">
+          <p className="text-text-secondary">No orders found.</p>
+        </div>
+      )}
     </div>
   );
 }

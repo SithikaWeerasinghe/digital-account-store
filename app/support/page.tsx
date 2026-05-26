@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { faqs } from '@/data/faqs';
+import { createTicket } from '@/lib/api';
 import {
   ChevronDown, ChevronUp, Send, Ticket,
   Mail, MessageSquare, Check, AlertCircle, UploadCloud
@@ -89,6 +90,8 @@ export default function SupportPage() {
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState('');
 
   const validate = () => {
     const newErrors: Partial<FormData> = {};
@@ -100,7 +103,7 @@ export default function SupportPage() {
     return newErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const v = validate();
     if (Object.keys(v).length > 0) {
@@ -108,7 +111,24 @@ export default function SupportPage() {
       return;
     }
     setErrors({});
-    setSubmitted(true);
+    setApiError('');
+    setIsLoading(true);
+
+    try {
+      await createTicket({
+        name: form.name,
+        email: form.email,
+        orderId: form.orderId || undefined,
+        issueType: form.issueType,
+        subject: form.subject,
+        message: form.message,
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      setApiError(err.message || 'Failed to submit ticket. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const inputClass = (field: keyof FormData) =>
@@ -270,11 +290,22 @@ export default function SupportPage() {
                   </div>
                 </div>
 
+                {apiError && (
+                  <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm font-medium px-4 py-3 rounded-xl flex items-center gap-2">
+                    <AlertCircle size={16} /> {apiError}
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full py-4 rounded-xl bg-primary text-white font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest hover:bg-primary-hover transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3"
+                  disabled={isLoading}
+                  className="w-full py-4 rounded-xl bg-primary text-white font-bold font-[family-name:var(--font-heading)] uppercase tracking-widest hover:bg-primary-hover transition-all duration-300 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Send size={18} /> Submit Ticket
+                  {isLoading ? (
+                    <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Submitting...</>
+                  ) : (
+                    <><Send size={18} /> Submit Ticket</>
+                  )}
                 </button>
               </form>
             )}

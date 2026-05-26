@@ -1,7 +1,32 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES, APP_NAME } from '@/lib/constants';
+import { adminLogin } from '@/lib/api';
 
 export default function AdminLogin() {
+  const router = useRouter();
+  const [email, setEmail] = useState('admin@example.com');
+  const [password, setPassword] = useState('password123');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      await adminLogin({ email, password });
+      router.push(ROUTES.ADMIN.DASHBOARD);
+    } catch (err: any) {
+      setError(err.message || 'Invalid credentials');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-border">
@@ -10,13 +35,15 @@ export default function AdminLogin() {
           <p className="text-text-secondary">Sign in to manage your store</p>
         </div>
         
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleLogin}>
           <div>
             <label className="block text-sm font-medium text-text-primary mb-1">Email</label>
             <input 
               type="email" 
               className="w-full bg-white border border-input rounded-md py-2 px-3 focus:ring-2 focus:ring-primary focus:outline-none"
-              defaultValue="admin@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
           
@@ -25,7 +52,9 @@ export default function AdminLogin() {
             <input 
               type="password" 
               className="w-full bg-white border border-input rounded-md py-2 px-3 focus:ring-2 focus:ring-primary focus:outline-none"
-              defaultValue="password123"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
           </div>
           
@@ -37,9 +66,10 @@ export default function AdminLogin() {
             <Link href="#" className="text-sm text-primary hover:underline">Forgot password?</Link>
           </div>
           
-          <Link href={ROUTES.ADMIN.DASHBOARD} className="mp-button-primary w-full text-center block mt-6 py-2.5">
-            Sign In
-          </Link>
+          {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+          <button type="submit" disabled={isLoading} className="mp-button-primary w-full text-center block mt-6 py-2.5 disabled:opacity-50">
+            {isLoading ? 'Signing in...' : 'Sign In'}
+          </button>
         </form>
       </div>
     </div>
