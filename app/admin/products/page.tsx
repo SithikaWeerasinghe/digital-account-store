@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import ProductTable from '@/components/admin/ProductTable';
 import { Plus } from 'lucide-react';
-import { fetchProducts } from '@/lib/api';
+import { fetchAdminProducts } from '@/lib/api';
 import { Product } from '@/types/product';
 
 export default function AdminProductsPage() {
@@ -15,7 +15,7 @@ export default function AdminProductsPage() {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchProducts();
+        const data = await fetchAdminProducts();
         setProducts(data);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch products');

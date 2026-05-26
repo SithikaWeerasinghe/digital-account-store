@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import OrderTable from '@/components/admin/OrderTable';
-import { fetchOrders } from '@/lib/api';
+import { fetchAdminOrders } from '@/lib/api';
 import { Order } from '@/types/order';
 
 export default function AdminOrdersPage() {
@@ -14,7 +14,7 @@ export default function AdminOrdersPage() {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchOrders();
+        const data = await fetchAdminOrders();
         setOrders(data);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch orders');
@@ -45,7 +45,7 @@ export default function AdminOrdersPage() {
         <OrderTable orders={orders} />
       ) : (
         <div className="text-center py-12 bg-white border border-border rounded-xl">
-          <p className="text-text-secondary">No orders found.</p>
+          <p className="text-text-secondary">No orders yet.</p>
         </div>
       )}
     </div>

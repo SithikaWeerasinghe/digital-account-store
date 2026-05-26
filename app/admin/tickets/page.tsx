@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import TicketTable from '@/components/admin/TicketTable';
-import { fetchTickets } from '@/lib/api';
+import { fetchAdminTickets } from '@/lib/api';
 import { Ticket } from '@/types/ticket';
 
 export default function AdminTicketsPage() {
@@ -14,7 +14,7 @@ export default function AdminTicketsPage() {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchTickets();
+        const data = await fetchAdminTickets();
         setTickets(data);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch tickets');
@@ -45,7 +45,7 @@ export default function AdminTicketsPage() {
         <TicketTable tickets={tickets} />
       ) : (
         <div className="text-center py-12 bg-white border border-border rounded-xl">
-          <p className="text-text-secondary">No tickets found.</p>
+          <p className="text-text-secondary">No tickets yet.</p>
         </div>
       )}
     </div>
