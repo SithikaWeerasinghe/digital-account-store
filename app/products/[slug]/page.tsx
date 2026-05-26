@@ -20,7 +20,7 @@ function StarRating({ rating }: { rating: number }) {
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((i) => (
         <Star key={i} size={16}
-          className={i <= Math.round(rating) ? 'fill-warning text-warning' : 'text-slate-200 fill-slate-200'}
+          className={i <= Math.round(rating) ? 'fill-amber-500 text-amber-500' : 'text-slate-200 fill-slate-200'}
         />
       ))}
     </div>
@@ -94,7 +94,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         </div>
         <h1 className="text-3xl font-black font-heading uppercase tracking-widest text-text-primary">Product Not Found</h1>
         <p className="text-text-secondary tracking-wide font-medium">The product you are looking for does not exist or has been removed.</p>
-        <Link href={ROUTES.PRODUCTS} className="px-6 py-3 bg-primary text-white font-black font-heading tracking-widest uppercase rounded-xl hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20">
+        <Link href={ROUTES.PRODUCTS} className="btn-premium-shine px-6 py-3 bg-primary text-white font-black font-heading tracking-widest uppercase rounded-xl hover:bg-primary-hover transition-colors shadow-lg shadow-primary/20 hover:shadow-[0_0_20px_rgba(0,158,227,0.35)]">
           Browse Products
         </Link>
       </div>
@@ -111,9 +111,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase text-text-secondary">
             <Link href={ROUTES.HOME} className="hover:text-primary transition-colors">Home</Link>
-            <ChevronRight size={12} className="text-border" />
+            <ChevronRight size={12} className="text-primary/70 stroke-[2.5]" />
             <Link href={ROUTES.PRODUCTS} className="hover:text-primary transition-colors">Products</Link>
-            <ChevronRight size={12} className="text-border" />
+            <ChevronRight size={12} className="text-primary/70 stroke-[2.5]" />
             <span className="text-text-primary truncate max-w-[200px]">{product.name}</span>
           </nav>
         </div>
@@ -126,25 +126,27 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           <div className="lg:col-span-2 space-y-8">
             {/* Product Header Card */}
             <div className="bg-card border border-border shadow-2xl rounded-3xl overflow-hidden">
-              <div className="aspect-[21/9] bg-gradient-to-br from-primary to-accent relative overflow-hidden group">
-                {/* Glow effect behind image */}
-                <div className="absolute inset-0 bg-primary/20 blur-[50px] opacity-50"></div>
-                
+              <div className="aspect-[21/9] relative overflow-hidden group bg-slate-900 border-b border-border">
                 {product.imageUrl ? (
-                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover opacity-80 mix-blend-luminosity" />
+                  <img 
+                    src={product.imageUrl} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-103" 
+                  />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center relative z-10">
-                    <Package size={80} className="text-primary/45" />
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-850 to-slate-800 relative z-10">
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(0,158,227,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,158,227,0.03)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
+                    <Package size={64} className="text-primary/45 animate-pulse" />
                   </div>
                 )}
                 
-                {/* Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent opacity-95"></div>
+                {/* Subtle dark gradient overlay at the bottom for element blend */}
+                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
                 {product.isInstantDelivery && (
-                  <div className="absolute top-5 right-5 z-20">
-                    <span className="flex items-center gap-2 bg-primary text-white text-xs font-black font-heading tracking-widest uppercase px-4 py-2 rounded-full shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-                      <Zap size={14} className="text-warning fill-warning animate-pulse" /> Instant Email Delivery
+                  <div className="absolute top-4 right-4 z-20">
+                    <span className="flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-primary/20 text-primary text-xs font-black font-heading tracking-widest uppercase px-3.5 py-1.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
+                      <Zap size={11} className="text-primary fill-primary animate-pulse" /> INSTANT EMAIL DELIVERY
                     </span>
                   </div>
                 )}
@@ -235,8 +237,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 )}
 
                 {/* Important Notes */}
-                <div className="bg-warning/5 border border-warning/20 rounded-2xl p-6">
-                  <h2 className="text-lg font-black font-heading uppercase tracking-widest text-warning mb-5 flex items-center gap-2">
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6">
+                  <h2 className="text-lg font-black font-heading uppercase tracking-widest text-amber-600 mb-5 flex items-center gap-2">
                     <AlertCircle size={18} />
                     Important Before Purchase
                   </h2>
@@ -248,8 +250,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       'Refunds are handled according to our refund policy.',
                       'Contact support if you face any issue with your order.',
                     ].map((note) => (
-                      <li key={note} className="flex items-start gap-3 text-sm sm:text-base font-medium text-warning/80">
-                        <span className="text-warning/55 mt-1 flex-shrink-0 text-[10px]">■</span>
+                      <li key={note} className="flex items-start gap-3 text-sm sm:text-base font-bold text-amber-900">
+                        <span className="text-amber-500/80 mt-1 flex-shrink-0 text-[10px]">■</span>
                         {note}
                       </li>
                     ))}

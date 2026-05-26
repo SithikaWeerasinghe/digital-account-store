@@ -68,9 +68,9 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href={ROUTES.PRODUCTS}
-              className={`inline-flex items-center justify-center py-2.5 px-6 rounded-xl text-sm font-black font-heading tracking-widest uppercase border transition-all duration-300 ${isTransparent
-                  ? 'border-white/25 bg-white/5 text-white hover:bg-white/15 hover:border-white/40'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm'
+              className={`btn-premium-shine inline-flex items-center justify-center py-2.5 px-6 rounded-xl text-sm font-black font-heading tracking-widest uppercase border transition-all duration-300 ${isTransparent
+                  ? 'border-white/25 bg-white/10 text-white hover:bg-white/20 hover:border-white/40 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)]'
+                  : 'border-primary bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-[0_0_20px_rgba(0,158,227,0.35)]'
                 }`}
             >
               Browse Products
@@ -113,7 +113,7 @@ export default function Navbar() {
             <Link
               href={ROUTES.PRODUCTS}
               onClick={() => setMobileOpen(false)}
-              className="block w-full text-center py-3 border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 text-sm font-black font-heading tracking-widest uppercase rounded-xl shadow-sm transition-all duration-200"
+              className="btn-premium-shine block w-full text-center py-3 border border-primary bg-primary text-white hover:bg-primary-hover text-sm font-black font-heading tracking-widest uppercase rounded-xl shadow-md transition-all duration-200"
             >
               Browse Products
             </Link>
