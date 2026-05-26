@@ -1,7 +1,7 @@
 import { Product } from '@/types/product';
 import { Review, CreateReviewInput } from '@/types/review';
-import { CreateOrderInput } from '@/types/order';
-import { CreateTicketInput } from '@/types/ticket';
+import { Order, CreateOrderInput } from '@/types/order';
+import { Ticket, CreateTicketInput } from '@/types/ticket';
 import { AdminLoginInput } from '@/types/admin';
 
 export type ApiResponse<T> = {
@@ -38,6 +38,14 @@ export async function fetchProductBySlug(slug: string): Promise<Product> {
 
 export async function fetchReviews(): Promise<Review[]> {
   return fetchApi<Review[]>('/api/reviews');
+}
+
+export async function fetchOrders(): Promise<Order[]> {
+  return fetchApi<Order[]>('/api/orders');
+}
+
+export async function fetchTickets(): Promise<Ticket[]> {
+  return fetchApi<Ticket[]>('/api/tickets');
 }
 
 export async function createOrder(payload: CreateOrderInput): Promise<any> {
