@@ -30,23 +30,20 @@ export default function Navbar() {
   const isTransparent = isHome && !scrolled;
 
   return (
-    <header 
-      className={`z-50 transition-all duration-300 ${
-        isHome ? 'fixed top-0 left-0 right-0' : 'sticky top-0'
-      } ${
-        isTransparent 
-          ? 'bg-transparent border-b border-white/10' 
+    <header
+      className={`z-50 transition-all duration-300 ${isHome ? 'fixed top-0 left-0 right-0' : 'sticky top-0'
+        } ${isTransparent
+          ? 'bg-transparent border-b border-white/10'
           : 'bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm'
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          
+
           {/* Clean Logo */}
           <Link href={ROUTES.HOME} className="flex items-center gap-2 flex-shrink-0 group">
-            <span className={`text-xl font-black font-heading tracking-widest uppercase transition-all duration-300 ${
-              isTransparent ? 'text-white' : 'text-slate-800'
-            }`}>
+            <span className={`text-xl font-black font-heading tracking-widest uppercase transition-all duration-300 ${isTransparent ? 'text-white' : 'text-slate-800'
+              }`}>
               APEX<span className={isTransparent ? 'text-[#fff159]' : 'text-primary'}> DIGITAL</span>
             </span>
           </Link>
@@ -57,11 +54,10 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-[13px] sm:text-sm font-black font-heading tracking-widest uppercase transition-colors duration-200 ${
-                  isTransparent 
-                    ? 'text-white/80 hover:text-[#fff159]' 
+                className={`text-[13px] sm:text-sm font-black font-heading tracking-widest uppercase transition-colors duration-200 ${isTransparent
+                    ? 'text-white/80 hover:text-[#fff159]'
                     : 'text-slate-600 hover:text-primary'
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>
@@ -72,11 +68,10 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href={ROUTES.PRODUCTS}
-              className={`inline-flex items-center justify-center py-2.5 px-6 rounded-xl text-sm font-black font-heading tracking-widest uppercase border transition-all duration-300 ${
-                isTransparent
+              className={`inline-flex items-center justify-center py-2.5 px-6 rounded-xl text-sm font-black font-heading tracking-widest uppercase border transition-all duration-300 ${isTransparent
                   ? 'border-white/25 bg-white/5 text-white hover:bg-white/15 hover:border-white/40'
                   : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm'
-              }`}
+                }`}
             >
               Browse Products
             </Link>
@@ -85,11 +80,10 @@ export default function Navbar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className={`md:hidden p-2.5 rounded-xl border transition-colors focus:outline-none ${
-              isTransparent
+            className={`md:hidden p-2.5 rounded-xl border transition-colors focus:outline-none ${isTransparent
                 ? 'border-white/10 bg-white/5 text-white/80 hover:text-white hover:border-white/25'
                 : 'border-slate-200 bg-slate-50 text-slate-600 hover:text-slate-900 hover:border-slate-300'
-            }`}
+              }`}
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -98,12 +92,11 @@ export default function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      <div 
-        className={`md:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md absolute w-full left-0 z-40 transition-all duration-300 ease-out origin-top ${
-          mobileOpen 
-            ? 'opacity-100 translate-y-0 scale-y-100 visible' 
+      <div
+        className={`md:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md absolute w-full left-0 z-40 transition-all duration-300 ease-out origin-top ${mobileOpen
+            ? 'opacity-100 translate-y-0 scale-y-100 visible'
             : 'opacity-0 -translate-y-2 scale-y-95 invisible pointer-events-none'
-        }`}
+          }`}
       >
         <div className="px-4 pt-4 pb-6 space-y-2.5 shadow-md">
           {navLinks.map((link) => (

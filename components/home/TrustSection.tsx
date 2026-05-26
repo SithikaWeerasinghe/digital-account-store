@@ -1,107 +1,107 @@
 'use client';
 
-import { Zap, Shield, Users, CheckCircle, Database } from 'lucide-react';
+import { Zap, Shield, Users, CheckCircle } from 'lucide-react';
 
-const benefits = [
+const features = [
   {
+    badge: 'P-01',
     icon: Shield,
-    title: 'COVERT ENCRYPTION',
-    statName: 'SECURE_TUNNEL',
-    statValue: 'AES_256_ACTIVE',
-    description: 'All network transactions are routed through fully encrypted gateways with tokenized authorization protocols, keeping billing logs safe.',
-    percentage: '100% Secure',
-    color: 'text-primary'
+    iconAnim: 'animate-shield-shine',
+    title: 'Secure Checkout',
+    description: 'All transactions are encrypted end-to-end with tokenized authorization. Your payment data stays safe at every step.',
+    stat: '100% Secure',
+    color: 'text-primary',
+    iconBg: 'bg-primary/8 border-primary/20 group-hover:bg-primary/12 group-hover:border-primary/40 group-hover:shadow-[0_0_20px_rgba(0,158,227,0.15)]',
+    borderHover: 'group-hover:border-primary/35 group-hover:shadow-[0_8px_30px_rgba(0,158,227,0.08)]',
   },
   {
+    badge: 'P-02',
     icon: Zap,
-    title: 'ULTRA LATENCY DROP',
-    statName: 'DROP_TIME',
-    statValue: '1.2s_AVERAGE',
-    description: 'Bypass all delivery waiting times. Keys and file downloads are decrypted and dropped directly to your client terminal and inbox instantly.',
-    percentage: 'Instant Drop',
-    color: 'text-primary'
+    iconAnim: 'animate-zap-bolt',
+    title: 'Instant Delivery',
+    description: 'Receive your digital product details directly to your inbox moments after payment confirmation. No waiting.',
+    stat: 'In Seconds',
+    color: 'text-primary',
+    iconBg: 'bg-primary/8 border-primary/20 group-hover:bg-primary/12 group-hover:border-primary/40 group-hover:shadow-[0_0_20px_rgba(0,158,227,0.15)]',
+    borderHover: 'group-hover:border-primary/35 group-hover:shadow-[0_8px_30px_rgba(0,158,227,0.08)]',
   },
   {
-    icon: Users,
-    title: 'LIVE LOBBY COMMS',
-    statName: 'AGENT_PING',
-    statValue: '14min_RESPONSE',
-    description: 'Connect immediately to technical alignment team logs. Get detailed setup help, optimization support, and key decryption assistance.',
-    percentage: '24/7 Online',
-    color: 'text-primary'
-  },
-  {
+    badge: 'P-03',
     icon: CheckCircle,
-    title: 'INTEGRITY ASSURED',
-    statName: 'KEY_CHECK',
-    statValue: '0_VALIDATION_ERR',
-    description: 'Every software license key and overlay asset is pre-verified on our sandbox nodes before list activation to ensure full system compliance.',
-    percentage: '100% Verified',
-    color: 'text-emerald-500'
+    iconAnim: 'animate-check-pop',
+    title: 'Verified Products',
+    description: 'Every product listing is pre-verified on our validation systems before going live. Zero tolerance for invalid keys.',
+    stat: '100% Verified',
+    color: 'text-emerald-500',
+    iconBg: 'bg-emerald-50 border-emerald-100 group-hover:bg-emerald-100/60 group-hover:border-emerald-300/60 group-hover:shadow-[0_0_20px_rgba(34,197,94,0.12)]',
+    borderHover: 'group-hover:border-emerald-200 group-hover:shadow-[0_8px_30px_rgba(34,197,94,0.06)]',
+  },
+  {
+    badge: 'P-04',
+    icon: Users,
+    iconAnim: 'animate-users-hug',
+    title: 'Support Ticket System',
+    description: 'Submit a support ticket any time and our team will respond with detailed help for setup, activation, and more.',
+    stat: '24/7 Online',
+    color: 'text-primary',
+    iconBg: 'bg-primary/8 border-primary/20 group-hover:bg-primary/12 group-hover:border-primary/40 group-hover:shadow-[0_0_20px_rgba(0,158,227,0.15)]',
+    borderHover: 'group-hover:border-primary/35 group-hover:shadow-[0_8px_30px_rgba(0,158,227,0.08)]',
   },
 ];
 
 export default function TrustSection() {
   return (
-    <section className="py-24 bg-secondary-background border-y border-border relative overflow-hidden">
-      {/* Background Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,158,227,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(0,158,227,0.012)_1px,transparent_1px)] bg-[size:25px_25px] pointer-events-none"></div>
+    <section className="py-16 sm:py-20 bg-background border-y border-border relative overflow-hidden">
+      {/* Background grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(0,158,227,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(0,158,227,0.012)_1px,transparent_1px)] bg-[size:28px_28px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
-        {/* Header section */}
-        <div className="text-center mb-20">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-sm border border-border bg-slate-100 font-mono text-xs font-black tracking-widest text-text-secondary uppercase">
-            <Database size={10} className="text-primary animate-pulse" />
-            DIAGNOSTICS PROTOCOL :: SECURE CORE INTEGRITY
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black font-heading uppercase tracking-wider text-text-primary mb-4">
-            SYSTEM DIAGNOSTIC <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500 drop-shadow-[0_0_10px_rgba(0,158,227,0.2)]">INTEL</span>
+
+        {/* Section Header */}
+        <div className="text-center mb-12">
+          <p className="text-primary font-bold text-sm tracking-widest uppercase mb-3">Why Apex Digital</p>
+          <h2 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight mb-4">
+            Built Around Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">Trust</span>
           </h2>
-          <p className="text-sm font-mono text-text-secondary tracking-widest uppercase max-w-xl mx-auto">
-            OPERATING PARAMETERS DESIGNED TO ENSURE PRECISE AND SECURE DIGITAL TRANSACTIONS
+          <p className="text-text-secondary text-base max-w-lg mx-auto leading-relaxed">
+            Every feature of Apex Digital is designed to give you a fast, safe, and reliable experience.
           </p>
-          <div className="w-16 h-[2px] bg-primary mx-auto mt-6 shadow-[0_0_10px_rgba(0,158,227,0.4)]"></div>
+          <div className="w-12 h-1 bg-primary rounded-full mx-auto mt-6" />
         </div>
 
-        {/* Benefits Grid */}
+        {/* Feature Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {benefits.map(({ icon: Icon, title, statName, statValue, description, percentage, color }) => (
-            <div 
-              key={title} 
-              className="group relative p-6 rounded-sm bg-card border border-border hover:border-primary/45 transition-all duration-300 flex flex-col justify-between cyber-corners shadow-sm hover:shadow-md"
+          {features.map(({ badge, icon: Icon, iconAnim, title, description, stat, color, iconBg, borderHover }) => (
+            <div
+              key={title}
+              className={`group relative flex flex-col p-6 rounded-2xl bg-white border border-border ${borderHover} hover:-translate-y-1 transition-all duration-300 shadow-sm`}
             >
-              <div className="relative z-10">
-                {/* Tech icon wrap */}
-                <div className="w-12 h-12 rounded-sm bg-slate-50 border border-border flex items-center justify-center mb-6 group-hover:scale-105 group-hover:border-primary/50 group-hover:shadow-[0_0_15px_rgba(0,158,227,0.15)] transition-all duration-300">
-                  <Icon size={20} className={`${color} transition-colors`} />
-                </div>
-                
-                {/* Title */}
-                <h3 className="text-base font-extrabold font-heading tracking-wider uppercase text-text-primary mb-3 group-hover:text-primary transition-colors">
-                  {title}
-                </h3>
-                
-                {/* Description */}
-                <p className="text-sm sm:text-base text-text-secondary leading-relaxed font-medium mb-6">
-                  {description}
-                </p>
+              {/* Badge label */}
+              <span className="absolute top-4 right-4 text-[10px] font-bold text-text-secondary/30 font-mono">{badge}</span>
+
+              {/* Animated Icon */}
+              <div className={`w-12 h-12 rounded-xl border flex items-center justify-center mb-5 transition-all duration-300 ${iconBg}`}>
+                <Icon size={22} className={`${color} ${iconAnim}`} />
               </div>
 
-              {/* Dynamic telemetry footer info */}
-              <div className="border-t border-slate-100 pt-4 mt-auto font-mono text-xs font-bold">
-                <div className="flex justify-between items-center text-text-secondary/60 mb-1.5">
-                  <span>{statName}</span>
-                  <span className="text-emerald-600">{statValue}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-text-secondary/40">INTEGRITY_INDEX:</span>
-                  <span className="text-text-secondary/80">{percentage}</span>
-                </div>
+              {/* Title */}
+              <h3 className="text-base font-bold text-text-primary mb-2.5 group-hover:text-primary transition-colors duration-200">
+                {title}
+              </h3>
+
+              {/* Description */}
+              <p className="text-sm text-text-secondary leading-relaxed flex-grow mb-5">
+                {description}
+              </p>
+
+              {/* Stat Footer */}
+              <div className="border-t border-border pt-4">
+                <span className={`text-sm font-bold ${color}`}>{stat}</span>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

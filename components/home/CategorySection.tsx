@@ -387,11 +387,11 @@ export default function CategorySection() {
               <Link
                 key={cat.name}
                 href={`${ROUTES.PRODUCTS}?category=${encodeURIComponent(cat.query)}`}
-                className={`group flex items-center cursor-pointer relative overflow-hidden bg-card border border-border hover:bg-slate-50/50 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) shadow-sm hover:shadow-[0_8px_25px_rgba(0,158,227,0.08)] ${
+                className={`group flex items-center cursor-pointer relative overflow-hidden bg-card border hover:bg-slate-50/50 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) shadow-sm hover:shadow-[0_8px_25px_rgba(0,158,227,0.15)] ${
                   isVisible ? 'animate-fade-in-up' : 'opacity-0'
                 } ${
                   isRectangular 
-                    ? 'w-full max-w-4xl rounded-[32px] p-5 sm:p-6 border-primary/20 h-[132px] sm:h-[148px]' 
+                    ? 'w-full max-w-4xl rounded-[32px] p-5 sm:p-6 border-primary/60 hover:border-primary h-[132px] sm:h-[148px]' 
                     : 'is-square w-36 h-36 sm:w-44 sm:h-44 rounded-[44px] p-0 border-white/10 mx-auto'
                 }`}
                 style={{ animationDelay: isVisible ? `${index * 120}ms` : '0ms' }}
