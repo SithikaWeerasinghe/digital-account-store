@@ -7,10 +7,14 @@ import { ROUTES } from '@/lib/constants';
 import { Menu, X } from 'lucide-react';
 
 export default function Navbar() {
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const pathname = usePathname();
   const isHome = pathname === '/';
+
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
 
   // Scroll effect
   useEffect(() => {

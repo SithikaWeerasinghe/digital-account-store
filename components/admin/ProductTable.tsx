@@ -1,53 +1,82 @@
 import { Product } from '@/types/product';
 import { formatCurrency } from '@/lib/utils';
-import { Edit, Trash2, MoreVertical } from 'lucide-react';
+import { Edit, Trash2, MoreVertical, Star } from 'lucide-react';
 
 export default function ProductTable({ products }: { products: Product[] }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-text-secondary font-medium border-b border-border">
+          <thead className="bg-slate-50 text-slate-500 font-mono text-[10px] tracking-widest uppercase border-b border-slate-200/80">
             <tr>
-              <th className="px-6 py-4">Product</th>
-              <th className="px-6 py-4">Category</th>
-              <th className="px-6 py-4">Price</th>
-              <th className="px-6 py-4">Stock</th>
-              <th className="px-6 py-4">Rating</th>
-              <th className="px-6 py-4 text-right">Actions</th>
+              <th className="px-6 py-4.5">Product Details</th>
+              <th className="px-6 py-4.5">Category</th>
+              <th className="px-6 py-4.5">Price</th>
+              <th className="px-6 py-4.5">Stock State</th>
+              <th className="px-6 py-4.5">Rating Metrics</th>
+              <th className="px-6 py-4.5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-slate-150">
             {products.map((product) => (
-              <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+              <tr key={product.id} className="hover:bg-slate-50/50 transition-colors">
                 <td className="px-6 py-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded bg-gray-100 overflow-hidden flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-150 overflow-hidden flex-shrink-0">
                     <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <div className="font-medium text-text-primary line-clamp-1">{product.name}</div>
-                    <div className="text-xs text-text-muted">{product.id}</div>
+                    <div className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-1">{product.name}</div>
+                    <div className="text-[10px] font-mono text-slate-400 mt-0.5">ID: {product.id}</div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="bg-gray-100 text-text-secondary px-2.5 py-0.5 rounded-full text-xs">
+                  <span className="bg-[#fff159]/15 text-amber-700 border border-[#fff159]/25 px-2.5 py-0.5 rounded-lg text-[9px] font-black font-mono tracking-widest uppercase">
                     {product.category}
                   </span>
                 </td>
-                <td className="px-6 py-4 font-medium">{formatCurrency(product.price)}</td>
+                <td className="px-6 py-4 font-mono font-black text-slate-800">{formatCurrency(product.price)}</td>
                 <td className="px-6 py-4">
                   {product.inStock ? (
-                    <span className="text-success flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success"></span> In Stock</span>
+                    <span className="bg-emerald-50 text-emerald-700 border border-emerald-250/50 px-2.5 py-0.5 rounded-lg text-[9px] font-black tracking-widest uppercase inline-flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> 
+                      IN STOCK
+                    </span>
                   ) : (
-                    <span className="text-danger flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger"></span> Out of Stock</span>
+                    <span className="bg-rose-50 text-rose-700 border border-rose-250/50 px-2.5 py-0.5 rounded-lg text-[9px] font-black tracking-widest uppercase inline-flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> 
+                      OUT OF STOCK
+                    </span>
                   )}
                 </td>
-                <td className="px-6 py-4">{product.rating} ({product.reviewsCount})</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-0.5 bg-amber-50 border border-amber-250/50 px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold text-amber-700">
+                      <Star size={10} className="fill-[#fff159] text-amber-500" />
+                      {product.rating.toFixed(1)}
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-400">({product.reviewsCount} logs)</span>
+                  </div>
+                </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button className="p-1.5 text-text-muted hover:text-primary transition-colors"><Edit size={16} /></button>
-                    <button className="p-1.5 text-text-muted hover:text-danger transition-colors"><Trash2 size={16} /></button>
-                    <button className="p-1.5 text-text-muted hover:text-text-primary transition-colors"><MoreVertical size={16} /></button>
+                    <button 
+                      className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-350 text-slate-400 hover:text-slate-700 transition-all duration-200 cursor-pointer"
+                      title="Edit Product"
+                    >
+                      <Edit size={14} />
+                    </button>
+                    <button 
+                      className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-rose-500/30 text-slate-400 hover:text-rose-600 transition-all duration-200 cursor-pointer"
+                      title="Delete Product"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                    <button 
+                      className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-350 text-slate-400 hover:text-slate-700 transition-all duration-200 cursor-pointer"
+                      title="More Options"
+                    >
+                      <MoreVertical size={14} />
+                    </button>
                   </div>
                 </td>
               </tr>
