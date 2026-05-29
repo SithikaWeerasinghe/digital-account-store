@@ -79,3 +79,20 @@ export async function adminLogin(payload: AdminLoginInput): Promise<any> {
     body: JSON.stringify(payload),
   });
 }
+
+export async function fetchAdminProducts(): Promise<Product[]> {
+  return fetchApi<Product[]>('/api/products');
+}
+
+export async function fetchAdminOrders(): Promise<Order[]> {
+  return fetchApi<Order[]>('/api/orders');
+}
+
+export async function fetchAdminTickets(): Promise<Ticket[]> {
+  return fetchApi<Ticket[]>('/api/tickets');
+}
+
+export async function fetchAdminReviews(): Promise<Review[]> {
+  return fetchApi<Review[]>('/api/reviews');
+}
+

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ReviewTable from '@/components/admin/ReviewTable';
-import { fetchReviews } from '@/lib/api';
+import { fetchAdminReviews } from '@/lib/api';
 import { Review } from '@/types/review';
 
 export default function AdminReviewsPage() {
@@ -14,7 +14,7 @@ export default function AdminReviewsPage() {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const data = await fetchReviews();
+        const data = await fetchAdminReviews();
         setReviews(data);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch reviews');

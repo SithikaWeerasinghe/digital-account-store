@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import StatCard from '@/components/admin/StatCard';
-import { DollarSign, ShoppingCart, Ticket, Users, RefreshCw, Layers, Radio, Activity, ArrowRight, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, Ticket, RefreshCw, Layers, Radio, Activity, ArrowRight, ShieldCheck, Package, Star } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
-import { fetchOrders, fetchTickets, fetchProducts, fetchReviews } from '@/lib/api';
+import { fetchAdminOrders, fetchAdminTickets, fetchAdminProducts, fetchAdminReviews } from '@/lib/api';
 import { Order } from '@/types/order';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
 }
 
-// Custom mock chart data for the interactive sales area chart
 const chartData = [
   { label: 'May 20', revenue: 1420, orders: 12 },
   { label: 'May 21', revenue: 2150, orders: 19 },
@@ -25,10 +24,10 @@ const chartData = [
 export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState({
-    totalRevenue: 0,
-    totalOrders: 0,
-    activeTickets: 0,
-    newCustomers: 0
+    totalProducts: 5,
+    totalOrders: 3,
+    activeTickets: 2,
+    totalReviews: 4
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -38,33 +37,27 @@ export default function AdminDashboard() {
   const loadData = async () => {
     try {
       if (!isRefreshing) setIsLoading(true);
-      const [ordersData, ticketsData] = await Promise.allSettled([
-        fetchOrders(),
-        fetchTickets(),
-        fetchProducts(),
-        fetchReviews()
+      const [ordersRes, ticketsRes, productsRes, reviewsRes] = await Promise.allSettled([
+        fetchAdminOrders(),
+        fetchAdminTickets(),
+        fetchAdminProducts(),
+        fetchAdminReviews()
       ]);
 
-      const loadedOrders = ordersData.status === 'fulfilled' ? ordersData.value : [];
-      const loadedTickets = ticketsData.status === 'fulfilled' ? ticketsData.value : [];
-      
-      const totalRevenue = loadedOrders
-        .filter(o => o.status === 'completed')
-        .reduce((sum, o) => sum + o.totalAmount, 0);
-      
-      const activeTickets = loadedTickets
-        .filter(t => t.status === 'open' || t.status === 'in_progress').length;
-      
-      const uniqueCustomers = new Set(loadedOrders.map(o => o.userId)).size;
+      const loadedOrders = ordersRes.status === 'fulfilled' ? ordersRes.value : [];
+      const loadedTickets = ticketsRes.status === 'fulfilled' ? ticketsRes.value : [];
+      const loadedProducts = productsRes.status === 'fulfilled' ? productsRes.value : [];
+      const loadedReviews = reviewsRes.status === 'fulfilled' ? reviewsRes.value : [];
 
       setOrders(loadedOrders);
-      setStats({
-        totalRevenue,
-        totalOrders: loadedOrders.length,
-        activeTickets,
-        newCustomers: uniqueCustomers
-      });
-
+      setStats(prev => ({
+        totalProducts: productsRes.status === 'fulfilled' ? loadedProducts.length : prev.totalProducts,
+        totalOrders: ordersRes.status === 'fulfilled' ? loadedOrders.length : prev.totalOrders,
+        activeTickets: ticketsRes.status === 'fulfilled'
+          ? loadedTickets.filter(t => t.status === 'open' || t.status === 'in_progress').length
+          : prev.activeTickets,
+        totalReviews: reviewsRes.status === 'fulfilled' ? loadedReviews.length : prev.totalReviews,
+      }));
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
     } finally {
@@ -101,7 +94,7 @@ export default function AdminDashboard() {
     return i === 0 ? `M ${p.x},${p.y}` : `${acc} L ${p.x},${p.y}`;
   }, '');
 
-  const areaD = points.length > 0 
+  const areaD = points.length > 0
     ? `${pathD} L ${points[points.length - 1].x},${chartHeight - paddingBottom} L ${points[0].x},${chartHeight - paddingBottom} Z`
     : '';
 
@@ -118,7 +111,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={handleRefresh}
             disabled={isRefreshing}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:border-slate-350 text-xs font-black font-heading tracking-widest uppercase text-slate-650 hover:text-slate-900 transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-sm"
@@ -128,7 +121,7 @@ export default function AdminDashboard() {
           </button>
         </div>
       </div>
-      
+
       {isLoading ? (
         <div className="flex justify-center items-center py-24">
           <div className="relative w-12 h-12">
@@ -140,53 +133,53 @@ export default function AdminDashboard() {
         <>
           {/* Stats Cards Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard 
-              title="Total Revenue" 
-              value={formatCurrency(stats.totalRevenue)} 
-              icon={DollarSign} 
-              trend={{ value: 12.5, isPositive: true }} 
+            <StatCard
+              title="Total Products"
+              value={stats.totalProducts.toString()}
+              icon={Package}
+              trend={{ value: 12.5, isPositive: true }}
             />
-            <StatCard 
-              title="Total Orders" 
-              value={stats.totalOrders.toString()} 
-              icon={ShoppingCart} 
-              trend={{ value: 5.2, isPositive: true }} 
+            <StatCard
+              title="Total Orders"
+              value={stats.totalOrders.toString()}
+              icon={ShoppingCart}
+              trend={{ value: 5.2, isPositive: true }}
             />
-            <StatCard 
-              title="Active Tickets" 
-              value={stats.activeTickets.toString()} 
-              icon={Ticket} 
-              trend={{ value: 2.4, isPositive: false }} 
+            <StatCard
+              title="Active Tickets"
+              value={stats.activeTickets.toString()}
+              icon={Ticket}
+              trend={{ value: 2.4, isPositive: false }}
             />
-            <StatCard 
-              title="New Customers" 
-              value={stats.newCustomers.toString()} 
-              icon={Users} 
-              trend={{ value: 8.1, isPositive: true }} 
+            <StatCard
+              title="Total Reviews"
+              value={stats.totalReviews.toString()}
+              icon={Star}
+              trend={{ value: 8.1, isPositive: true }}
             />
           </div>
-          
+
           {/* Main Visual Panels Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
-            
+
             {/* Sales Area SVG Chart (8 Cols) */}
             <div className="lg:col-span-8 bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm relative overflow-hidden group">
               <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#009ee3]/20 to-transparent"></div>
-              
+
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h3 className="text-sm font-black tracking-widest uppercase font-mono text-slate-600">Revenue Performance</h3>
                   <p className="text-[10px] text-slate-400 font-mono mt-0.5">DAILY INGESTION LOGS</p>
                 </div>
-                
+
                 <div className="flex items-center gap-1.5 bg-slate-100 border border-slate-200 p-1 rounded-xl">
                   {['7D', '30D', '90D'].map((t) => (
                     <button
                       key={t}
                       onClick={() => setActiveTab(t)}
                       className={`px-3 py-1 rounded-lg text-[9px] font-black tracking-widest uppercase transition-all ${
-                        activeTab === t 
-                          ? 'bg-[#009ee3] text-white shadow-[0_3px_8px_rgba(0,158,227,0.25)]' 
+                        activeTab === t
+                          ? 'bg-[#009ee3] text-white shadow-[0_3px_8px_rgba(0,158,227,0.25)]'
                           : 'text-slate-500 hover:text-slate-800'
                       }`}
                     >
@@ -217,14 +210,14 @@ export default function AdminDashboard() {
                   {[0, 1, 2, 3].map((g) => {
                     const y = paddingTop + (g / 3) * (chartHeight - paddingTop - paddingBottom);
                     return (
-                      <line 
-                        key={g} 
-                        x1={paddingLeft} 
-                        y1={y} 
-                        x2={chartWidth - paddingRight} 
-                        y2={y} 
-                        stroke="#f1f5f9" 
-                        strokeWidth="1.2" 
+                      <line
+                        key={g}
+                        x1={paddingLeft}
+                        y1={y}
+                        x2={chartWidth - paddingRight}
+                        y2={y}
+                        stroke="#f1f5f9"
+                        strokeWidth="1.2"
                       />
                     );
                   })}
@@ -236,26 +229,26 @@ export default function AdminDashboard() {
 
                   {/* Chart Stroke Path with glow */}
                   {pathD && (
-                    <path 
-                      d={pathD} 
-                      fill="none" 
-                      stroke="#009ee3" 
-                      strokeWidth="2.2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
+                    <path
+                      d={pathD}
+                      fill="none"
+                      stroke="#009ee3"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       filter="url(#line-glow)"
                     />
                   )}
 
                   {/* X-Axis labels */}
                   {points.map((p, i) => (
-                    <text 
-                      key={i} 
-                      x={p.x} 
-                      y={chartHeight - 6} 
-                      fill="#94a3b8" 
-                      fontSize="9" 
-                      textAnchor="middle" 
+                    <text
+                      key={i}
+                      x={p.x}
+                      y={chartHeight - 6}
+                      fill="#94a3b8"
+                      fontSize="9"
+                      textAnchor="middle"
                       fontFamily="monospace"
                       fontWeight="bold"
                     >
@@ -268,12 +261,12 @@ export default function AdminDashboard() {
                     const val = maxVal - (g / 3) * maxVal;
                     const y = paddingTop + (g / 3) * (chartHeight - paddingTop - paddingBottom);
                     return (
-                      <text 
-                        key={i} 
-                        x={paddingLeft - 8} 
-                        y={y + 3} 
-                        fill="#94a3b8" 
-                        fontSize="9" 
+                      <text
+                        key={i}
+                        x={paddingLeft - 8}
+                        y={y + 3}
+                        fill="#94a3b8"
+                        fontSize="9"
                         textAnchor="end"
                         fontFamily="monospace"
                         fontWeight="bold"
@@ -285,12 +278,12 @@ export default function AdminDashboard() {
 
                   {/* Interactive Vertical Lines on Hover */}
                   {hoveredIdx !== null && points[hoveredIdx] && (
-                    <line 
-                      x1={points[hoveredIdx].x} 
-                      y1={paddingTop} 
-                      x2={points[hoveredIdx].x} 
-                      y2={chartHeight - paddingBottom} 
-                      stroke="rgba(0, 158, 227, 0.2)" 
+                    <line
+                      x1={points[hoveredIdx].x}
+                      y1={paddingTop}
+                      x2={points[hoveredIdx].x}
+                      y2={chartHeight - paddingBottom}
+                      stroke="rgba(0, 158, 227, 0.2)"
                       strokeWidth="1.5"
                     />
                   )}
@@ -332,9 +325,9 @@ export default function AdminDashboard() {
 
                 {/* Floating tooltip box */}
                 {hoveredIdx !== null && points[hoveredIdx] && (
-                  <div 
+                  <div
                     className="absolute bg-white/95 border border-slate-200 rounded-xl p-3 shadow-xl z-20 pointer-events-none text-xs font-mono w-[140px] backdrop-blur-md"
-                    style={{ 
+                    style={{
                       left: `${(points[hoveredIdx].x / chartWidth) * 100}%`,
                       top: `${Math.max(0, (points[hoveredIdx].y / chartHeight) * 100 - 45)}%`,
                       transform: 'translateX(-50%)'
@@ -350,12 +343,12 @@ export default function AdminDashboard() {
 
             {/* Quick operations log sidebar (4 Cols) */}
             <div className="lg:col-span-4 flex flex-col gap-6">
-              
+
               {/* Operations Health */}
               <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
                 <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#fff159]/30 to-transparent"></div>
                 <h3 className="text-xs font-black tracking-widest uppercase font-mono text-slate-500 mb-4">Operations Console</h3>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2">
@@ -364,7 +357,7 @@ export default function AdminDashboard() {
                     </div>
                     <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-200/60 px-2 py-0.5 rounded font-mono uppercase">ONLINE</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                     <div className="flex items-center gap-2">
                       <Layers className="w-4 h-4 text-slate-400" />
@@ -372,7 +365,7 @@ export default function AdminDashboard() {
                     </div>
                     <span className="text-[10px] font-black text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded font-mono uppercase">98.6ms</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between pb-1">
                     <div className="flex items-center gap-2">
                       <Activity className="w-4 h-4 text-[#009ee3]" />
@@ -389,13 +382,13 @@ export default function AdminDashboard() {
                   <h3 className="text-xs font-black tracking-widest uppercase font-mono text-slate-500 mb-3">Core Node Actions</h3>
                   <p className="text-[11px] text-slate-400">Fast path actions directly modify database records.</p>
                 </div>
-                
+
                 <div className="space-y-2 mt-4">
                   <a href="/admin/products" className="flex items-center justify-between p-3 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-350 group transition-all">
                     <span className="text-xs font-bold text-slate-650 group-hover:text-slate-800">Product Manager</span>
                     <ArrowRight size={14} className="text-slate-400 group-hover:text-[#009ee3] transition-transform group-hover:translate-x-1" />
                   </a>
-                  
+
                   <a href="/admin/tickets" className="flex items-center justify-between p-3 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-350 group transition-all">
                     <span className="text-xs font-bold text-slate-650 group-hover:text-slate-800">Support Queue</span>
                     <ArrowRight size={14} className="text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
@@ -406,7 +399,7 @@ export default function AdminDashboard() {
             </div>
 
           </div>
-          
+
           {/* Recent Orders Section */}
           <div className="mt-10 border-t border-slate-200/80 pt-8">
             <div className="flex items-center justify-between mb-5">
