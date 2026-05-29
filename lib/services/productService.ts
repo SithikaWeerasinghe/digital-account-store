@@ -1,30 +1,19 @@
-import { Product } from '@/types/product';
+import { Product, ProductVariant } from '@/types/product';
 import { sampleProducts } from '@/data/sampleProducts';
+import { supabase } from '@/lib/supabase';
 
-/**
- * Maps a database row using snake_case columns from the 'products' table
- * to the frontend camelCase 'Product' model.
- * 
- * Column mapping strategy:
- * - id -> id
- * - name -> name
- * - slug -> slug
- * - category -> category
- * - description -> description (defaults to '')
- * - price -> price (cast to Number)
- * - original_price -> originalPrice (cast to Number if present)
- * - image_url -> imageUrl (defaults to '')
- * - features -> features (defaults to empty array)
- * - stock_count -> inStock (boolean check stock_count > 0)
- * - is_instant_delivery -> isInstantDelivery (defaults to true)
- * - rating -> rating (cast to Number)
- * - reviews_count -> reviewsCount (calculated or set, defaults to 0)
- * - created_at -> createdAt
- */
 export function mapDatabaseProduct(dbRow: any): Product {
-  if (!dbRow) {
-    throw new Error('Database product row is null or undefined');
-  }
+  if (!dbRow) throw new Error('Database product row is null or undefined');
+
+  const variants: ProductVariant[] | undefined =
+    Array.isArray(dbRow.variants) && dbRow.variants.length > 0
+      ? dbRow.variants.map((v: any) => ({
+          id: v.id,
+          label: v.label,
+          price: Number(v.price),
+          originalPrice: v.original_price ? Number(v.original_price) : undefined,
+        }))
+      : undefined;
 
   return {
     id: dbRow.id,
@@ -41,43 +30,49 @@ export function mapDatabaseProduct(dbRow: any): Product {
     rating: dbRow.rating !== undefined ? Number(dbRow.rating) : 0,
     reviewsCount: dbRow.reviews_count !== undefined ? Number(dbRow.reviews_count) : 0,
     createdAt: dbRow.created_at || new Date().toISOString(),
+    variants,
   };
 }
 
-/**
- * Fetches all products.
- * Falls back to the standard sampleProducts mock data.
- */
 export async function getProducts(): Promise<Product[]> {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  return sampleProducts;
+  if (!supabase) return sampleProducts;
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error || !data) return sampleProducts;
+  return data.map(mapDatabaseProduct);
 }
 
-/**
- * Fetches all active products.
- * Currently filters the mock catalog.
- */
 export async function getActiveProducts(): Promise<Product[]> {
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  // In the future, this will run: select * from products where is_active = true
-  return sampleProducts;
+  if (!supabase) return sampleProducts;
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .gt('stock_count', 0)
+    .order('created_at', { ascending: false });
+  if (error || !data) return sampleProducts;
+  return data.map(mapDatabaseProduct);
 }
 
-/**
- * Fetches a single product by its unique slug.
- */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  const product = sampleProducts.find((p) => p.slug === slug);
-  return product || null;
+  if (!supabase) return sampleProducts.find((p) => p.slug === slug) ?? null;
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+  if (error || !data) return sampleProducts.find((p) => p.slug === slug) ?? null;
+  return mapDatabaseProduct(data);
 }
 
-/**
- * Fetches a single product by its unique ID.
- */
 export async function getProductById(id: string): Promise<Product | null> {
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  const product = sampleProducts.find((p) => p.id === id);
-  return product || null;
+  if (!supabase) return sampleProducts.find((p) => p.id === id) ?? null;
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error || !data) return sampleProducts.find((p) => p.id === id) ?? null;
+  return mapDatabaseProduct(data);
 }

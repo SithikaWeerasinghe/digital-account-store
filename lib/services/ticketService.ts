@@ -1,4 +1,5 @@
 import { Ticket, CreateTicketInput } from '@/types/ticket';
+import { supabase } from '@/lib/supabase';
 
 export interface DatabaseTicketRow {
   id: string;
@@ -14,7 +15,6 @@ export interface DatabaseTicketRow {
   updated_at: string;
 }
 
-// Module-scoped in-memory store for support tickets
 let inMemoryTickets: DatabaseTicketRow[] = [
   {
     id: 'TKT-001',
@@ -27,7 +27,7 @@ let inMemoryTickets: DatabaseTicketRow[] = [
     status: 'open',
     admin_reply: null,
     created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-    updated_at: new Date(Date.now() - 3600000 * 2).toISOString()
+    updated_at: new Date(Date.now() - 3600000 * 2).toISOString(),
   },
   {
     id: 'TKT-002',
@@ -40,56 +40,39 @@ let inMemoryTickets: DatabaseTicketRow[] = [
     status: 'in_progress',
     admin_reply: 'Our team is reviewing this case.',
     created_at: new Date(Date.now() - 3600000).toISOString(),
-    updated_at: new Date().toISOString()
-  }
+    updated_at: new Date().toISOString(),
+  },
 ];
 
-/**
- * Maps a database ticket row to the frontend camelCase 'Ticket' type.
- * Incorporates priority defaults based on issue types and matches userId with email.
- */
 export function mapDatabaseTicket(row: DatabaseTicketRow): Ticket {
-  // Deduce priority dynamically for front-end rendering compatibility
   let priority: 'low' | 'medium' | 'high' | 'urgent' = 'medium';
-  if (row.issue_type.toLowerCase().includes('payment') || row.issue_type.toLowerCase().includes('refund')) {
-    priority = 'urgent';
-  } else if (row.issue_type.toLowerCase().includes('not working') || row.issue_type.toLowerCase().includes('not received')) {
-    priority = 'high';
-  }
+  if (row.issue_type.toLowerCase().includes('payment') || row.issue_type.toLowerCase().includes('refund')) priority = 'urgent';
+  else if (row.issue_type.toLowerCase().includes('not working') || row.issue_type.toLowerCase().includes('not received')) priority = 'high';
 
   return {
     id: row.id,
-    userId: row.email, // Map email address as unique userId
+    userId: row.email,
     subject: row.subject,
     message: row.message,
     status: row.status,
     priority,
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
   };
 }
 
-/**
- * Creates a new support ticket.
- * Performs rigorous validations on mandatory input parameters.
- */
 export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
-  await new Promise((resolve) => setTimeout(resolve, 50));
-
   const orderId = input.orderId || input.order_id;
   const issueType = input.issueType || input.issue_type;
 
-  // Required Field Validations
-  if (!input.name || !input.name.trim()) throw new Error('Name is required');
-  if (!input.email || !input.email.trim() || !input.email.includes('@')) throw new Error('A valid email address is required');
-  if (!issueType || !issueType.trim()) throw new Error('Issue Type is required');
-  if (!input.subject || !input.subject.trim()) throw new Error('Subject is required');
-  if (!input.message || !input.message.trim() || input.message.trim().length < 20) {
-    throw new Error('Message is required and must be at least 20 characters long');
-  }
+  if (!input.name?.trim()) throw new Error('Name is required');
+  if (!input.email?.trim() || !input.email.includes('@')) throw new Error('A valid email address is required');
+  if (!issueType?.trim()) throw new Error('Issue Type is required');
+  if (!input.subject?.trim()) throw new Error('Subject is required');
+  if (!input.message?.trim() || input.message.trim().length < 20) throw new Error('Message must be at least 20 characters');
 
   const newRow: DatabaseTicketRow = {
-    id: `TKT-${Math.floor(100 + Math.random() * 900)}`, // Standardized ticket tracking tag
+    id: `TKT-${Math.floor(100 + Math.random() * 900)}`,
     name: input.name.trim(),
     email: input.email.trim(),
     order_id: orderId?.trim() || null,
@@ -99,42 +82,55 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
     status: 'open',
     admin_reply: null,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    updated_at: new Date().toISOString(),
   };
+
+  if (supabase) {
+    const { data, error } = await supabase.from('tickets').insert(newRow).select().single();
+    if (!error && data) return mapDatabaseTicket(data as DatabaseTicketRow);
+  }
 
   inMemoryTickets.push(newRow);
   return mapDatabaseTicket(newRow);
 }
 
-/**
- * Fetches all tickets.
- */
 export async function getTickets(): Promise<Ticket[]> {
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  return inMemoryTickets.map(mapDatabaseTicket);
+  if (!supabase) return inMemoryTickets.map(mapDatabaseTicket);
+  const { data, error } = await supabase
+    .from('tickets')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error || !data) return inMemoryTickets.map(mapDatabaseTicket);
+  return data.map((row) => mapDatabaseTicket(row as DatabaseTicketRow));
 }
 
-/**
- * Fetches a single ticket by its unique ID.
- */
 export async function getTicketById(id: string): Promise<Ticket | null> {
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  const row = inMemoryTickets.find((t) => t.id === id);
-  return row ? mapDatabaseTicket(row) : null;
+  if (!supabase) {
+    const row = inMemoryTickets.find((t) => t.id === id);
+    return row ? mapDatabaseTicket(row) : null;
+  }
+  const { data, error } = await supabase.from('tickets').select('*').eq('id', id).single();
+  if (error || !data) return null;
+  return mapDatabaseTicket(data as DatabaseTicketRow);
 }
 
-/**
- * Updates a ticket status.
- */
 export async function updateTicketStatus(
   id: string,
   status: 'open' | 'in_progress' | 'resolved' | 'closed'
 ): Promise<Ticket | null> {
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  const row = inMemoryTickets.find((t) => t.id === id);
-  if (!row) return null;
-
-  row.status = status;
-  row.updated_at = new Date().toISOString();
-  return mapDatabaseTicket(row);
+  if (!supabase) {
+    const row = inMemoryTickets.find((t) => t.id === id);
+    if (!row) return null;
+    row.status = status;
+    row.updated_at = new Date().toISOString();
+    return mapDatabaseTicket(row);
+  }
+  const { data, error } = await supabase
+    .from('tickets')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error || !data) return null;
+  return mapDatabaseTicket(data as DatabaseTicketRow);
 }
