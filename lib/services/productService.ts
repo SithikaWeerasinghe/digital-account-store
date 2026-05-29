@@ -1,4 +1,4 @@
-import { Product } from '@/types/product';
+import { Product, ProductVariant } from '@/types/product';
 import { sampleProducts } from '@/data/sampleProducts';
 
 /**
@@ -20,11 +20,21 @@ import { sampleProducts } from '@/data/sampleProducts';
  * - rating -> rating (cast to Number)
  * - reviews_count -> reviewsCount (calculated or set, defaults to 0)
  * - created_at -> createdAt
+ * - variants -> variants (array of {id, label, price, original_price?})
  */
 export function mapDatabaseProduct(dbRow: any): Product {
   if (!dbRow) {
     throw new Error('Database product row is null or undefined');
   }
+
+  const variants: ProductVariant[] | undefined = Array.isArray(dbRow.variants) && dbRow.variants.length > 0
+    ? dbRow.variants.map((v: any) => ({
+        id: v.id,
+        label: v.label,
+        price: Number(v.price),
+        originalPrice: v.original_price ? Number(v.original_price) : undefined,
+      }))
+    : undefined;
 
   return {
     id: dbRow.id,
@@ -41,6 +51,7 @@ export function mapDatabaseProduct(dbRow: any): Product {
     rating: dbRow.rating !== undefined ? Number(dbRow.rating) : 0,
     reviewsCount: dbRow.reviews_count !== undefined ? Number(dbRow.reviews_count) : 0,
     createdAt: dbRow.created_at || new Date().toISOString(),
+    variants,
   };
 }
 

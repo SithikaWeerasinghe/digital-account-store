@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/lib/constants';
 import { Menu, X } from 'lucide-react';
+import ApexFledLogo from '@/components/ui/ApexFledLogo';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -44,11 +45,13 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
 
-          {/* Clean Logo */}
-          <Link href={ROUTES.HOME} className="flex items-center gap-2 flex-shrink-0 group">
-            <span className={`text-xl font-black font-heading tracking-widest uppercase transition-all duration-300 ${isTransparent ? 'text-white' : 'text-slate-800'
-              }`}>
-              APEX<span className={isTransparent ? 'text-[#fff159]' : 'text-primary'}> DIGITAL</span>
+          {/* Logo */}
+          <Link href={ROUTES.HOME} className="flex items-center gap-2.5 flex-shrink-0 group">
+            <div className={`transition-all duration-300 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)] group-hover:drop-shadow-[0_0_16px_rgba(59,130,246,0.75)] group-hover:scale-105`}>
+              <ApexFledLogo size={38} id="nav" />
+            </div>
+            <span className={`text-xl font-black font-heading tracking-widest uppercase transition-all duration-300 ${isTransparent ? 'text-white' : 'text-slate-800'}`}>
+              APEX<span className={isTransparent ? 'text-[#60a5fa]' : 'text-primary'}>FLED</span>
             </span>
           </Link>
 

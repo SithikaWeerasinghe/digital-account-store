@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { fetchProductBySlug, fetchReviews } from '@/lib/api';
-import { Product } from '@/types/product';
+import { Product, ProductVariant } from '@/types/product';
 import { Review } from '@/types/review';
 import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
@@ -40,6 +40,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -51,6 +52,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         ]);
         setProduct(productData);
         setReviews(reviewsData.slice(0, 3));
+        if (productData?.variants?.length) {
+          setSelectedVariant(productData.variants[0]);
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to load product details');
       } finally {
@@ -66,7 +70,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [emailError, setEmailError] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const total = product ? product.price * quantity : 0;
+  const activePrice = product ? (selectedVariant?.price ?? product.price) : 0;
+  const total = activePrice * quantity;
 
   const handleCheckout = () => {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -171,7 +176,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 </div>
 
                 <div className="flex items-end gap-4 mb-10 pb-10 border-b border-border">
-                  <span className="text-5xl font-black font-heading text-text-primary tracking-wider">{formatCurrency(product.price)}</span>
+                  <div>
+                    {product.variants?.length ? (
+                      <p className="text-xs font-black font-heading tracking-widest uppercase text-text-secondary mb-1">From</p>
+                    ) : null}
+                    <span className="text-5xl font-black font-heading text-text-primary tracking-wider">{formatCurrency(product.price)}</span>
+                  </div>
                   {product.originalPrice && product.originalPrice > product.price && (
                     <div className="mb-2">
                       <span className="text-xl text-text-secondary line-through mr-3 font-medium">{formatCurrency(product.originalPrice)}</span>
@@ -340,6 +350,34 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       {emailError && <p className="text-xs font-black tracking-wide text-hazard mt-2">{emailError}</p>}
                     </div>
 
+                    {/* Variant picker */}
+                    {product.variants?.length ? (
+                      <div>
+                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Subscription Plan</label>
+                        <div className="flex flex-wrap gap-2">
+                          {product.variants.map((v) => (
+                            <button
+                              key={v.id}
+                              type="button"
+                              onClick={() => setSelectedVariant(v)}
+                              className={`flex-1 min-w-[90px] flex flex-col items-center px-3 py-3 rounded-xl border text-center transition-all ${
+                                selectedVariant?.id === v.id
+                                  ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(0,158,227,0.1)]'
+                                  : 'border-border bg-white hover:border-primary/50'
+                              }`}
+                            >
+                              <span className={`text-xs font-black font-heading tracking-widest uppercase mb-1 ${selectedVariant?.id === v.id ? 'text-primary' : 'text-text-secondary'}`}>
+                                {v.label}
+                              </span>
+                              <span className={`text-base font-black font-heading ${selectedVariant?.id === v.id ? 'text-text-primary' : 'text-text-secondary'}`}>
+                                {formatCurrency(v.price)}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
                     {/* Quantity */}
                     <div>
                       <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Quantity</label>
@@ -393,9 +431,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     {/* Order Summary */}
                     <div className="bg-slate-50 border border-border rounded-xl p-5 space-y-3 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-[20px]"></div>
+                      {selectedVariant && (
+                        <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
+                          <span>Plan</span>
+                          <span>{selectedVariant.label}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
                         <span>Unit Price</span>
-                        <span>{formatCurrency(product.price)}</span>
+                        <span>{formatCurrency(activePrice)}</span>
                       </div>
                       <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
                         <span>Quantity</span>

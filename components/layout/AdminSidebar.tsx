@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Package, ShoppingCart, Ticket, Star, LogOut, X } from 'lucide-react';
 import { ROUTES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import ApexFledLogo from '@/components/ui/ApexFledLogo';
 
 export default function AdminSidebar({ 
   isOpen, 
@@ -31,8 +32,11 @@ export default function AdminSidebar({
       )}
     >
       <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200/80 relative">
-        <Link href={ROUTES.ADMIN.DASHBOARD} className="text-lg font-black tracking-widest uppercase font-heading text-slate-800">
-          APEX<span className="text-primary font-bold">_ADMIN</span>
+        <Link href={ROUTES.ADMIN.DASHBOARD} className="flex items-center gap-2 text-lg font-black tracking-widest uppercase font-heading text-slate-800">
+          <div className="drop-shadow-[0_0_6px_rgba(59,130,246,0.4)]">
+            <ApexFledLogo size={26} id="sidebar" />
+          </div>
+          APEX<span className="text-primary font-bold">FLED</span>
         </Link>
         <button 
           className="md:hidden p-1.5 text-slate-500 hover:text-slate-800 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors"

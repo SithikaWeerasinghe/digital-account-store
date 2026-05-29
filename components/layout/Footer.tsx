@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ROUTES, APP_NAME } from '@/lib/constants';
 import { Terminal } from 'lucide-react';
+import ApexFledLogo from '@/components/ui/ApexFledLogo';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -25,9 +26,12 @@ export default function Footer() {
           {/* Column 1: Brand & Social Media Links */}
           <div className="lg:col-span-4 space-y-6">
             <div>
-              <Link href={ROUTES.HOME} className="inline-block group mb-3">
+              <Link href={ROUTES.HOME} className="inline-flex items-center gap-3 group mb-3">
+                <div className="drop-shadow-[0_0_10px_rgba(59,130,246,0.45)] group-hover:drop-shadow-[0_0_18px_rgba(59,130,246,0.7)] transition-all duration-300 group-hover:scale-105">
+                  <ApexFledLogo size={44} id="footer" />
+                </div>
                 <span className="text-xl sm:text-2xl font-black font-heading text-white tracking-widest uppercase group-hover:text-primary transition-colors">
-                  APEX<span className="text-primary group-hover:text-white transition-colors">_DIGITAL</span>
+                  APEX<span className="text-primary group-hover:text-white transition-colors">FLED</span>
                 </span>
               </Link>
             </div>
@@ -142,10 +146,10 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: Why Apex Digital */}
+          {/* Column 4: Why ApexFled */}
           <div className="lg:col-span-4">
             <h3 className="text-white text-sm sm:text-base font-extrabold font-heading uppercase tracking-widest mb-6 pb-2 border-b border-slate-800/80">
-              WHY APEX DIGITAL
+              WHY APEXFLED
             </h3>
             <ul className="space-y-3.5 text-xs sm:text-sm font-bold text-slate-400">
               <li className="flex items-center gap-2"><span className="text-primary font-black">✓</span> Verified products only</li>

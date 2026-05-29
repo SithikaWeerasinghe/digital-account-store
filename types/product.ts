@@ -1,3 +1,10 @@
+export interface ProductVariant {
+  id: string;
+  label: string;
+  price: number;
+  originalPrice?: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -13,4 +20,5 @@ export interface Product {
   rating: number;
   reviewsCount: number;
   createdAt: string;
+  variants?: ProductVariant[];
 }

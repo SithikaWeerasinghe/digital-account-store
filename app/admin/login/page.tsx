@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ROUTES, APP_NAME } from '@/lib/constants';
 import { adminLogin } from '@/lib/api';
 import { Radio } from 'lucide-react';
+import ApexFledLogo from '@/components/ui/ApexFledLogo';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -46,9 +47,14 @@ export default function AdminLogin() {
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 border border-slate-200 text-[9px] font-black tracking-widest text-[#009ee3] rounded-full font-mono uppercase mb-4 shadow-inner">
             <Radio className="w-3 h-3 animate-pulse" /> ADMIN CONSOLE
           </div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-widest uppercase font-heading">
-            APEX<span className="text-primary font-bold">_ADMIN</span>
-          </h1>
+          <div className="flex items-center justify-center gap-3 mb-1">
+            <div className="drop-shadow-[0_0_10px_rgba(59,130,246,0.45)]">
+              <ApexFledLogo size={40} id="login" />
+            </div>
+            <h1 className="text-2xl font-black text-slate-800 tracking-widest uppercase font-heading">
+              APEX<span className="text-primary font-bold">FLED</span>
+            </h1>
+          </div>
           <p className="text-[10px] text-slate-400 font-mono uppercase tracking-widest mt-1">Sign in to initialize session</p>
         </div>
         

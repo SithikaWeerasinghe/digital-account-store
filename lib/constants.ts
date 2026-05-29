@@ -1,5 +1,5 @@
-export const APP_NAME = 'Apex Digital';
-export const APP_DESCRIPTION = 'A modern digital products store built for fast delivery, secure checkout, and reliable support.';
+export const APP_NAME = 'ApexFled';
+export const APP_DESCRIPTION = 'ApexFled — premium digital products with instant delivery, secure checkout, and reliable support.';
 
 export const ROUTES = {
   HOME: '/',

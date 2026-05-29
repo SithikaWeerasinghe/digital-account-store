@@ -59,12 +59,12 @@ export default function TrustSection() {
 
         {/* Section Header */}
         <div className="text-center mb-12">
-          <p className="text-primary font-bold text-sm tracking-widest uppercase mb-3">Why Apex Digital</p>
+          <p className="text-primary font-bold text-sm tracking-widest uppercase mb-3">Why ApexFled</p>
           <h2 className="text-3xl sm:text-4xl font-black text-text-primary tracking-tight mb-4">
             Built Around Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-500">Trust</span>
           </h2>
           <p className="text-text-secondary text-base max-w-lg mx-auto leading-relaxed">
-            Every feature of Apex Digital is designed to give you a fast, safe, and reliable experience.
+            Every feature of ApexFled is designed to give you a fast, safe, and reliable experience.
           </p>
           <div className="w-12 h-1 bg-primary rounded-full mx-auto mt-6" />
         </div>
