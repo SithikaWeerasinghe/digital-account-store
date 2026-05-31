@@ -22,7 +22,7 @@ export default function ProductTable({ products }: { products: Product[] }) {
               <tr key={product.id} className="hover:bg-slate-50/50 transition-colors">
                 <td className="px-6 py-4 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-150 overflow-hidden flex-shrink-0">
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain p-1" />
                   </div>
                   <div>
                     <div className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-1">{product.name}</div>

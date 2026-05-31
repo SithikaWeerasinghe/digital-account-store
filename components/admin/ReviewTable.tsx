@@ -39,7 +39,7 @@ export default function ReviewTable({ reviews }: { reviews: Review[] }) {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-xs text-slate-600 italic truncate max-w-xs" title={review.comment}>
-                  "{review.comment}"
+                  &ldquo;{review.comment}&rdquo;
                 </td>
                 <td className="px-6 py-4 text-xs font-mono text-slate-500">{formatDate(review.createdAt)}</td>
                 <td className="px-6 py-4 text-right">

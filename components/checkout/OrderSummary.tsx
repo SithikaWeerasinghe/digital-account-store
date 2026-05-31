@@ -21,7 +21,7 @@ export default function OrderSummary() {
         {cartItems.map((item, index) => (
           <div key={index} className="flex gap-4">
             <div className="w-16 h-16 bg-gray-100 rounded flex-shrink-0 overflow-hidden">
-              <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
+              <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-contain p-2" />
             </div>
             <div className="flex-grow">
               <h3 className="text-sm font-medium text-text-primary line-clamp-2">{item.product.name}</h3>

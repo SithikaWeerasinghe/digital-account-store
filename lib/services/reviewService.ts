@@ -13,7 +13,7 @@ export interface DatabaseReviewRow {
   created_at: string;
 }
 
-let inMemoryReviews: DatabaseReviewRow[] = sampleReviews.map((r) => ({
+const inMemoryReviews: DatabaseReviewRow[] = sampleReviews.map((r) => ({
   id: r.id,
   order_id: null,
   product_id: r.productId,

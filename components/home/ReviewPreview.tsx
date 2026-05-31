@@ -66,7 +66,7 @@ export default function ReviewPreview() {
                 className="mp-card p-8 flex flex-col group relative"
               >
                 {/* Quote Mark Decoration */}
-                <div className="absolute top-6 right-6 text-6xl text-slate-200/50 font-serif leading-none group-hover:text-primary/10 transition-colors">"</div>
+                <div className="absolute top-6 right-6 text-6xl text-slate-200/50 font-serif leading-none group-hover:text-primary/10 transition-colors">&rdquo;</div>
 
                 <div className="flex items-start justify-between mb-6 relative z-10">
                   <StarRating rating={review.rating} />

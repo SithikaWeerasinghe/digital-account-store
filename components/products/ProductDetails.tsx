@@ -12,7 +12,7 @@ export default function ProductDetails({ product }: { product: Product }) {
           <img 
             src={product.imageUrl} 
             alt={product.name} 
-            className="w-full max-w-md rounded-lg shadow-lg object-cover aspect-video"
+            className="w-full max-w-md rounded-lg object-contain aspect-video p-4"
           />
         </div>
         
@@ -45,11 +45,6 @@ export default function ProductDetails({ product }: { product: Product }) {
           
           <div className="mb-6 flex items-end gap-3">
             <span className="text-4xl font-bold text-text-primary">{formatCurrency(product.price)}</span>
-            {product.originalPrice && (
-              <span className="text-xl text-text-muted line-through mb-1">
-                {formatCurrency(product.originalPrice)}
-              </span>
-            )}
           </div>
           
           <p className="text-text-secondary mb-8">{product.description}</p>

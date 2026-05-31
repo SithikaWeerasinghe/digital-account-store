@@ -74,7 +74,7 @@ export default function FeaturedProducts() {
         {/* Footer CTAs */}
         <div className="mt-12 flex justify-between items-center border-t border-border/60 pt-6">
           <span className="font-mono text-[11px] text-slate-300 font-black tracking-widest uppercase hidden md:inline">
-            // ALL KEYS CRYPTOGRAPHICALLY SECURED IN ISOLATED DATABASE NODE
+            {"// ALL KEYS CRYPTOGRAPHICALLY SECURED IN ISOLATED DATABASE NODE"}
           </span>
           <Link
             href={ROUTES.PRODUCTS}

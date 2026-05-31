@@ -21,8 +21,11 @@ export async function mockAdminLogin(email: string, password: string): Promise<M
 
   const cleanEmail = email?.trim().toLowerCase();
 
+  const allowedEmail = (process.env.ADMIN_EMAIL || 'admin@example.com').trim().toLowerCase();
+  const allowedPassword = process.env.ADMIN_PASSWORD || 'password123';
+
   // Development mock validation checks matching app/api/admin/login/route.ts credentials
-  if (cleanEmail === 'admin@example.com' && password === 'password123') {
+  if (cleanEmail === allowedEmail && password === allowedPassword) {
     return {
       success: true,
       email: cleanEmail,

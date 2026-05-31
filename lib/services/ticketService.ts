@@ -15,7 +15,7 @@ export interface DatabaseTicketRow {
   updated_at: string;
 }
 
-let inMemoryTickets: DatabaseTicketRow[] = [
+const inMemoryTickets: DatabaseTicketRow[] = [
   {
     id: 'TKT-001',
     name: 'John Doe',

@@ -15,14 +15,6 @@ export function mapDatabaseProduct(dbRow: any): Product {
         }))
       : undefined;
 
-  const variants: ProductVariant[] | undefined = Array.isArray(dbRow.variants) && dbRow.variants.length > 0
-    ? dbRow.variants.map((v: any) => ({
-        id: v.id,
-        label: v.label,
-        price: Number(v.price),
-        originalPrice: v.original_price ? Number(v.original_price) : undefined,
-      }))
-    : undefined;
 
   return {
     id: dbRow.id,
@@ -49,7 +41,7 @@ export async function getProducts(): Promise<Product[]> {
     .from('products')
     .select('*')
     .order('created_at', { ascending: false });
-  if (error || !data) return sampleProducts;
+  if (error || !data || data.length === 0) return sampleProducts;
   return data.map(mapDatabaseProduct);
 }
 
@@ -60,7 +52,7 @@ export async function getActiveProducts(): Promise<Product[]> {
     .select('*')
     .gt('stock_count', 0)
     .order('created_at', { ascending: false });
-  if (error || !data) return sampleProducts;
+  if (error || !data || data.length === 0) return sampleProducts;
   return data.map(mapDatabaseProduct);
 }
 

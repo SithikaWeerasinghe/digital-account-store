@@ -13,10 +13,6 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const isHome = pathname === '/';
 
-  if (pathname.startsWith('/admin')) {
-    return null;
-  }
-
   // Scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +21,11 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
+
 
   const navLinks = [
     { label: 'HOME', href: ROUTES.HOME },

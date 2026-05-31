@@ -8,7 +8,7 @@ import { fetchAdminOrders, fetchAdminTickets, fetchAdminProducts, fetchAdminRevi
 import { Order } from '@/types/order';
 
 function formatCurrency(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
 }
 
 const chartData = [
