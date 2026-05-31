@@ -12,7 +12,10 @@ export type ApiResponse<T> = {
 
 async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
   try {
-    const response = await fetch(url, options);
+    const response = await fetch(url, {
+      ...options,
+      cache: 'no-store',
+    });
     const data = await response.json();
     
     if (!response.ok || !data.success) {

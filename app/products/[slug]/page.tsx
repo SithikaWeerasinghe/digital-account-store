@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 function formatCurrency(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
 }
 
 function StarRating({ rating }: { rating: number }) {
@@ -131,12 +131,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           <div className="lg:col-span-2 space-y-8">
             {/* Product Header Card */}
             <div className="bg-card border border-border shadow-2xl rounded-3xl overflow-hidden">
-              <div className="aspect-[21/9] relative overflow-hidden group bg-slate-900 border-b border-border">
+              <div className="aspect-[21/9] relative overflow-hidden group bg-slate-50 border-b border-slate-100 flex items-center justify-center p-6">
                 {product.imageUrl ? (
                   <img 
                     src={product.imageUrl} 
                     alt={product.name} 
-                    className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-103" 
+                    className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-103" 
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-850 to-slate-800 relative z-10">
@@ -182,14 +182,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     ) : null}
                     <span className="text-5xl font-black font-heading text-text-primary tracking-wider">{formatCurrency(product.price)}</span>
                   </div>
-                  {product.originalPrice && product.originalPrice > product.price && (
-                    <div className="mb-2">
-                      <span className="text-xl text-text-secondary line-through mr-3 font-medium">{formatCurrency(product.originalPrice)}</span>
-                      <span className="text-xs sm:text-sm font-black font-heading tracking-widest uppercase text-hazard bg-hazard/10 border border-hazard/20 px-2 py-1 rounded-sm shadow-sm">
-                        -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                      </span>
-                    </div>
-                  )}
                 </div>
 
                 {/* Product Description */}
@@ -297,7 +289,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                         </span>
                       )}
                     </div>
-                    <p className="text-[15px] sm:text-base text-text-secondary leading-relaxed font-medium">"{review.comment}"</p>
+                    <p className="text-[15px] sm:text-base text-text-secondary leading-relaxed font-medium">&ldquo;{review.comment}&rdquo;</p>
                   </div>
                 ))}
               </div>

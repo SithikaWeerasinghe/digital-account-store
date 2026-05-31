@@ -28,13 +28,20 @@ function ProductsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Sync activeCategory when the URL category search parameter changes
+  useEffect(() => {
+    setActiveCategory(categoryParam || 'All Products');
+  }, [categoryParam]);
+
   useEffect(() => {
     const loadProducts = async () => {
       try {
         setIsLoading(true);
         const data = await fetchProducts();
+        console.log('DEBUG Client - Loaded data:', data);
         setProducts(data);
       } catch (err: any) {
+        console.error('DEBUG Client - Load error:', err);
         setError(err.message || 'Failed to load products');
       } finally {
         setIsLoading(false);
@@ -79,7 +86,14 @@ function ProductsContent() {
     }
 
     return result;
-  }, [search, activeCategory, sort]);
+  }, [products, search, activeCategory, sort]);
+
+  console.log('DEBUG Client - Render state:', {
+    productsCount: products.length,
+    activeCategory,
+    search,
+    filteredCount: filtered?.length
+  });
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">

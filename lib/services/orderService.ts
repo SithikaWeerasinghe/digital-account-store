@@ -16,7 +16,7 @@ export interface DatabaseOrderRow {
 }
 
 // In-memory fallback used when Supabase is not configured
-let inMemoryOrders: DatabaseOrderRow[] = [
+const inMemoryOrders: DatabaseOrderRow[] = [
   {
     id: 'e39c4d92-284f-464a-a92c-15ba8051db21',
     invoice_number: 'INV-20260525-2849',

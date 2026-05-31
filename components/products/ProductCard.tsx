@@ -4,13 +4,11 @@ import { ROUTES } from '@/lib/constants';
 import { Star, Zap, Package, BadgeCheck, ArrowRight } from 'lucide-react';
 
 function formatCurrency(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
 }
 
 export default function ProductCard({ product }: { product: Product }) {
-  const discountPercent = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-    : null;
+  const discountPercent = null;
 
   return (
     // ── Entire card is a link ──
@@ -34,7 +32,7 @@ export default function ProductCard({ product }: { product: Product }) {
           <img
             src={product.imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-104"
+            className="w-full h-full object-contain p-6 transition-transform duration-500 ease-out group-hover:scale-104"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-900 via-slate-850 to-slate-800 relative">
@@ -123,11 +121,6 @@ export default function ProductCard({ product }: { product: Product }) {
             <span className="text-2xl font-black text-slate-900 tracking-tight">
               {formatCurrency(product.price)}
             </span>
-            {product.originalPrice && (
-              <span className="text-xs sm:text-sm text-slate-400 line-through font-medium">
-                {formatCurrency(product.originalPrice)}
-              </span>
-            )}
           </div>
 
           {/* View Details button */}
