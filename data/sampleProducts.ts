@@ -50,7 +50,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "Watch Netflix movies, series, and documentaries in Ultra HD 4K. Stream on multiple screens with a personalized dedicated profile.",
     "price": 1,
-    "imageUrl": "/images/logos/netflix.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/fcecd9ea-80ff-4205-777c-bcd25639a500/public",
     "features": [
       "Ultra HD 4K resolution",
       "Shared profile access",
@@ -357,7 +357,7 @@ export const sampleProducts: Product[] = [
     "category": "Software",
     "description": "Immediately level up your Discord server to Level 3. Provides 14 distinct Nitro boosts for 1 or 3 months.",
     "price": 5,
-    "imageUrl": "/images/logos/discord.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/95a6f830-a478-4ce8-f13c-0ab488193400/public",
     "features": [
       "Custom server URL banner access",
       "1080p 60fps streaming",
@@ -389,7 +389,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "Full access profile to Amazon Prime Video. Stream exclusive series, popular movies, and Amazon Originals.",
     "price": 2,
-    "imageUrl": "/images/logos/prime-video.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/eb00b6e0-3469-4bef-0670-0a998dcb6b00/public",
     "features": [
       "Ultra HD streaming support",
       "Watch offline via download",
@@ -421,7 +421,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "Enjoy ad-free YouTube videos and YouTube Music. Supports background play on mobile and offline video downloads.",
     "price": 2.35,
-    "imageUrl": "/images/logos/youtube.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/d89fdce5-0d38-4e8f-6eac-05718caed600/public",
     "features": [
       "Zero ads on video/music",
       "Background play support",
@@ -453,7 +453,7 @@ export const sampleProducts: Product[] = [
     "category": "Productivity",
     "description": "Encrypted, fast, and anonymous internet browsing with NordVPN. Protect multiple devices with a single account.",
     "price": 2.5,
-    "imageUrl": "/images/logos/nordvpn.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/7eb48f59-5308-4d48-0a9c-a22a3638b000/public",
     "features": [
       "Military-grade encryption",
       "No logs database architecture",
@@ -513,7 +513,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "Stream Disney, Pixar, Marvel, Star Wars, and National Geographic movies and series. Ad-free profile setup.",
     "price": 1,
-    "imageUrl": "/images/logos/disney-plus.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/35d5f0ed-5bfe-4865-05b3-5655479f6100/public",
     "features": [
       "Full HD streaming capacity",
       "GroupWatch compatible",
@@ -533,7 +533,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "Unlock ad-free anime streams, including simulcast episodes direct from Japan. Read digital manga volumes.",
     "price": 1,
-    "imageUrl": "/images/logos/crunchyroll.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/09793c50-9b8f-47d9-9eeb-bd9d5a40f900/public",
     "features": [
       "No ads on stream catalogs",
       "Simulcast episodes release access",
@@ -553,7 +553,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "Activate lifetime Premium benefits on Spotify. Play any song, enjoy ad-free playback, and download tracks offline.",
     "price": 7.6,
-    "imageUrl": "/images/logos/spotify.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/79e88273-0f52-46a3-acca-958d9ded4500/public",
     "features": [
       "Ad-free music player",
       "Download music offline",
@@ -573,7 +573,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "Access premium Max Originals, Warner Bros. films, and sports channels on your Smart TV or mobile profile.",
     "price": 1,
-    "imageUrl": "/images/logos/hbo-max.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/e1bb54ba-f900-49ea-1d1d-2c10e7fd1600/public",
     "features": [
       "Access to HBO library",
       "High definition streams",
@@ -593,7 +593,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "Stream thousands of movie titles, UEFA Champions League live feeds, and CBS news channels.",
     "price": 1,
-    "imageUrl": "/images/logos/paramount-plus.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/3803fce7-c56e-45ed-cb6b-61223a11ae00/public",
     "features": [
       "Live sports streaming feed",
       "Paramount+ originals unlocked",
@@ -613,7 +613,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "NBA League Pass lifetime access. Stream live matches, classic games, and pre-season metrics in HD.",
     "price": 1,
-    "imageUrl": "/images/logos/nba.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/535dd82e-47fb-404a-1430-917b55773f00/public",
     "features": [
       "Live game streaming feed",
       "Classic games and archives",
@@ -653,7 +653,7 @@ export const sampleProducts: Product[] = [
     "category": "Streaming",
     "description": "Watch live boxing matches, UEFA women's champions league feeds, and sports documentaries with DAZN.",
     "price": 1,
-    "imageUrl": "/images/logos/dazn.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/39dfadbe-c313-4336-06db-9522820d1800/public",
     "features": [
       "Live sports channel feeds",
       "On-demand recordings and clips",
@@ -685,7 +685,7 @@ export const sampleProducts: Product[] = [
     "category": "AI Tools",
     "description": "Get full access to OpenAI's ChatGPT Plus. Experience GPT-4o, DALL-E, advanced voice mode, and coding assistants.",
     "price": 3.5,
-    "imageUrl": "/images/logos/chatgpt.svg",
+    "imageUrl": "https://imagedelivery.net/HL_Fwm__tlvUGLZF2p74xw/27379712-c8e1-4b33-4582-504034b66b00/public",
     "features": [
       "Access to GPT-4o and advanced models",
       "Create custom GPT instances",

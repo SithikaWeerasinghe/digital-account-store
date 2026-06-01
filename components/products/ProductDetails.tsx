@@ -8,11 +8,16 @@ export default function ProductDetails({ product }: { product: Product }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-        <div className="bg-gray-50 p-8 flex items-center justify-center">
+        <div className="relative overflow-hidden w-full h-full min-h-[250px] md:min-h-0 flex items-center justify-center bg-white p-4">
+          <img 
+            src={product.imageUrl} 
+            alt="" 
+            className="absolute inset-0 w-full h-full object-cover blur-xl opacity-35 scale-110 pointer-events-none"
+          />
           <img 
             src={product.imageUrl} 
             alt={product.name} 
-            className="w-full max-w-md rounded-lg object-contain aspect-video p-4"
+            className="relative w-full h-full object-contain z-10"
           />
         </div>
         

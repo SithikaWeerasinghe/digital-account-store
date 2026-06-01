@@ -131,13 +131,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           <div className="lg:col-span-2 space-y-8">
             {/* Product Header Card */}
             <div className="bg-card border border-border shadow-2xl rounded-3xl overflow-hidden">
-              <div className="aspect-[21/9] relative overflow-hidden group bg-slate-50 border-b border-slate-100 flex items-center justify-center p-6">
+              <div className="aspect-[21/9] relative overflow-hidden group border-b border-slate-100 flex items-center justify-center bg-white p-4">
                 {product.imageUrl ? (
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name} 
-                    className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-103" 
-                  />
+                  <>
+                    <img 
+                      src={product.imageUrl} 
+                      alt="" 
+                      className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-35 scale-110 pointer-events-none" 
+                    />
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.name} 
+                      className="relative w-full h-full object-contain z-10 transition-transform duration-500 ease-out group-hover:scale-103" 
+                    />
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-850 to-slate-800 relative z-10">
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(0,158,227,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,158,227,0.03)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />

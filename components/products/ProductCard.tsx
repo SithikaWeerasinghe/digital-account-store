@@ -26,14 +26,20 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-primary/5 via-white/20 via-primary/5 to-transparent -skew-x-20 -translate-x-[150%] group-hover:animate-card-shine" />
       </div>
 
-      {/* ── Image Area (45-50% of the card height) ── */}
-      <div className="relative overflow-hidden bg-slate-50 border-b border-slate-100" style={{ aspectRatio: '1.35/1' }}>
+      <div className="relative overflow-hidden bg-white border-b border-slate-100" style={{ aspectRatio: '1.35/1' }}>
         {product.imageUrl ? (
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-full object-contain p-6 transition-transform duration-500 ease-out group-hover:scale-104"
-          />
+          <div className="w-full h-full relative overflow-hidden flex items-center justify-center p-3">
+            <img
+              src={product.imageUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover blur-xl opacity-35 scale-110 pointer-events-none"
+            />
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="relative w-full h-full object-contain z-10 transition-transform duration-500 ease-out group-hover:scale-105"
+            />
+          </div>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-900 via-slate-850 to-slate-800 relative">
             <div className="absolute inset-0 bg-[linear-gradient(rgba(0,158,227,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,158,227,0.03)_1px,transparent_1px)] bg-[size:12px_12px] pointer-events-none" />
@@ -45,25 +51,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Subtle gradient overlay at the bottom for blending */}
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/15 to-transparent pointer-events-none" />
 
-        {/* Top badges */}
-        <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2 z-10">
-          {product.isInstantDelivery ? (
-            <span className="inline-flex items-center gap-1 bg-white/95 backdrop-blur-sm border border-primary/20 text-primary text-[10px] font-extrabold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
-              <Zap size={9} className="fill-primary stroke-none animate-pulse" />
-              Instant Delivery
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 bg-white/95 backdrop-blur-sm border border-emerald-500/20 text-emerald-600 text-[10px] font-extrabold tracking-wide px-2.5 py-1 rounded-full shadow-sm">
-              <BadgeCheck size={9} className="text-emerald-500" />
-              Secure Drop
-            </span>
-          )}
-          {discountPercent && discountPercent > 0 && (
-            <span className="ml-auto inline-flex items-center bg-[#FF5500] text-white text-[10px] font-black px-2 py-1 rounded-full shadow-sm">
-              -{discountPercent}%
-            </span>
-          )}
-        </div>
+
 
         {/* Out of stock overlay */}
         {!product.inStock && (
@@ -97,15 +85,11 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.description}
         </p>
 
-        {/* Cleaner Metadata Box with two small columns */}
-        <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 pb-3 text-[10px] font-bold text-slate-500 font-mono uppercase tracking-wider">
-          <div className="flex items-center gap-1.5 bg-slate-50/50 border border-slate-100 rounded-lg p-1.5 justify-center">
-            <Zap size={11} className="text-primary fill-primary/10 animate-pulse" />
-            <span className="truncate">DELIVERY: {product.isInstantDelivery ? 'INSTANT' : 'SECURE'}</span>
-          </div>
+        {/* Cleaner Metadata Box */}
+        <div className="border-t border-slate-100 pt-3 pb-3 text-[10px] font-bold text-slate-500 font-mono uppercase tracking-wider">
           <div className="flex items-center gap-1.5 bg-slate-50/50 border border-slate-100 rounded-lg p-1.5 justify-center">
             <BadgeCheck size={11} className="text-emerald-500" />
-            <span className="truncate">SECURITY: 100%</span>
+            <span className="truncate">SECURITY: 100% GUARANTEED</span>
           </div>
         </div>
 
