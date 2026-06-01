@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { ROUTES } from '@/lib/constants';
-import { Star, Zap, Package, BadgeCheck, ArrowRight } from 'lucide-react';
+import { Star, Zap, Package, ArrowRight } from 'lucide-react';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
@@ -85,13 +85,7 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.description}
         </p>
 
-        {/* Cleaner Metadata Box */}
-        <div className="border-t border-slate-100 pt-3 pb-3 text-[10px] font-bold text-slate-500 font-mono uppercase tracking-wider">
-          <div className="flex items-center gap-1.5 bg-slate-50/50 border border-slate-100 rounded-lg p-1.5 justify-center">
-            <BadgeCheck size={11} className="text-emerald-500" />
-            <span className="truncate">SECURITY: 100% GUARANTEED</span>
-          </div>
-        </div>
+
 
         {/* Footer: Price + CTA */}
         <div className="border-t border-slate-100 pt-3.5 mt-auto">
