@@ -7,7 +7,7 @@ import { Product } from '@/types/product';
 import ProductCard from '@/components/products/ProductCard';
 import { Search, SlidersHorizontal, Zap, Shield, Package, HeadphonesIcon } from 'lucide-react';
 
-const CATEGORIES = ['All Products', 'Gaming', 'Streaming', 'AI Tools', 'Software', 'Productivity', 'Gift Cards'];
+const CATEGORIES = ['All Products', 'Gaming', 'Streaming', 'AI Tools', 'Software', 'Productivity'];
 const SORT_OPTIONS = [
   { label: 'Newest Releases', value: 'newest' },
   { label: 'Price: Low to High', value: 'price_asc' },

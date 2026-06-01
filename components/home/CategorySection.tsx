@@ -306,16 +306,6 @@ const categories = [
     borderColor: 'group-hover:border-primary/40 group-hover:shadow-[0_0_12px_rgba(0,158,227,0.2)]',
     iconAnimClass: ''
   },
-  {
-    name: 'Gift Cards',
-    description: 'Digital gift codes for popular platforms',
-    icon: GiftCardsIcon,
-    query: 'Gift Cards',
-    color: 'text-primary',
-    bgColor: 'bg-primary/5',
-    borderColor: 'group-hover:border-primary/40 group-hover:shadow-[0_0_12px_rgba(0,158,227,0.2)]',
-    iconAnimClass: ''
-  },
 ];
 
 export default function CategorySection() {

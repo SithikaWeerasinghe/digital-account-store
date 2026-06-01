@@ -158,10 +158,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               </div>
 
               <div className="p-8 sm:p-10 relative z-10 -mt-10 bg-card rounded-t-3xl border-t border-border">
-                <div className="flex items-start justify-between gap-4 mb-6">
-                  <span className="inline-flex items-center text-xs font-black font-heading tracking-widest uppercase text-primary border border-primary/20 bg-primary/5 px-3 py-1.5 rounded-sm shadow-sm">
-                    {product.category}
-                  </span>
+                <div className="flex items-start justify-end gap-4 mb-6">
                   <span className={`text-sm font-black font-heading tracking-widest uppercase px-3 py-1.5 rounded-sm border ${product.inStock ? 'text-success border-success/20 bg-success/5' : 'text-hazard border-hazard/20 bg-hazard/5'}`}>
                     {product.inStock ? 'In Stock' : 'Out of Stock'}
                   </span>

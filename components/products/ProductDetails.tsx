@@ -18,9 +18,6 @@ export default function ProductDetails({ product }: { product: Product }) {
         
         <div className="p-8 lg:p-12 flex flex-col">
           <div className="mb-2 flex items-center gap-2">
-            <span className="bg-blue-100 text-blue-700 text-sm px-2.5 py-0.5 rounded-full font-medium">
-              {product.category}
-            </span>
             {product.inStock ? (
               <span className="flex items-center gap-1 text-success text-sm font-medium">
                 <Check size={14} /> In Stock

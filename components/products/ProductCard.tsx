@@ -78,12 +78,8 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* ── Card Body ── */}
       <div className="flex flex-col flex-grow p-4 sm:p-5">
 
-        {/* Category & Rating */}
-        <div className="flex items-center justify-between mb-2">
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/6 border border-primary/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-            <BadgeCheck size={9} />
-            {product.category}
-          </span>
+        {/* Rating */}
+        <div className="flex items-center justify-end mb-2">
           <div className="flex items-center gap-1">
             <Star size={11} className="fill-amber-500 text-amber-500" />
             <span className="text-xs font-bold text-slate-800">{product.rating.toFixed(1)}</span>
