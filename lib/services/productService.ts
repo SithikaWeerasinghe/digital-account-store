@@ -36,12 +36,25 @@ export function mapDatabaseProduct(dbRow: any): Product {
 }
 
 export async function getProducts(): Promise<Product[]> {
-  if (!supabase) return sampleProducts;
+  console.log('DEBUG: getProducts called. Supabase client initialized:', !!supabase);
+  if (!supabase) {
+    console.log('DEBUG: Supabase is null, using local sampleProducts');
+    return sampleProducts;
+  }
   const { data, error } = await supabase
     .from('products')
     .select('*')
     .order('created_at', { ascending: false });
-  if (error || !data || data.length === 0) return sampleProducts;
+  
+  if (error) {
+    console.error('DEBUG: Supabase query error:', error);
+  }
+  if (!data || data.length === 0) {
+    console.log('DEBUG: Supabase returned empty data, using local sampleProducts');
+    return sampleProducts;
+  }
+  
+  console.log(`DEBUG: Supabase returned ${data.length} products successfully.`);
   return data.map(mapDatabaseProduct);
 }
 

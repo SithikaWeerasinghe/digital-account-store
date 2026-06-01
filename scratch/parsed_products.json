@@ -16,8 +16,8 @@
     "inStock": true,
     "stock_count": 8,
     "isInstantDelivery": false,
-    "rating": 4.861458249982846,
-    "reviews_count": 13
+    "rating": 4.9251267466443505,
+    "reviews_count": 42
   },
   {
     "id": "prod-2",
@@ -36,8 +36,8 @@
     "inStock": true,
     "stock_count": 12,
     "isInstantDelivery": false,
-    "rating": 4.9098019321960615,
-    "reviews_count": 40
+    "rating": 4.858940654516206,
+    "reviews_count": 49
   },
   {
     "id": "prod-3",
@@ -56,8 +56,8 @@
     "inStock": true,
     "stock_count": 12,
     "isInstantDelivery": false,
-    "rating": 4.827662001449106,
-    "reviews_count": 14
+    "rating": 4.814590016615895,
+    "reviews_count": 20
   },
   {
     "id": "prod-4",
@@ -76,8 +76,8 @@
     "inStock": true,
     "stock_count": 9,
     "isInstantDelivery": false,
-    "rating": 4.842700553766795,
-    "reviews_count": 35
+    "rating": 4.947694442741188,
+    "reviews_count": 41
   },
   {
     "id": "prod-5",
@@ -97,8 +97,8 @@
     "inStock": true,
     "stock_count": 1,
     "isInstantDelivery": true,
-    "rating": 4.873254079958115,
-    "reviews_count": 14
+    "rating": 4.925975079894165,
+    "reviews_count": 22
   },
   {
     "id": "prod-6",
@@ -117,8 +117,8 @@
     "inStock": true,
     "stock_count": 3,
     "isInstantDelivery": false,
-    "rating": 4.860860754049412,
-    "reviews_count": 44
+    "rating": 4.992171741084032,
+    "reviews_count": 20
   },
   {
     "id": "prod-7",
@@ -138,8 +138,8 @@
     "inStock": true,
     "stock_count": 2,
     "isInstantDelivery": true,
-    "rating": 4.8210693486817595,
-    "reviews_count": 25
+    "rating": 4.973779807407392,
+    "reviews_count": 28
   },
   {
     "id": "prod-8",
@@ -159,8 +159,8 @@
     "inStock": true,
     "stock_count": 5,
     "isInstantDelivery": false,
-    "rating": 4.9664677778841035,
-    "reviews_count": 18
+    "rating": 4.817543619641008,
+    "reviews_count": 37
   },
   {
     "id": "prod-9",
@@ -179,8 +179,8 @@
     "inStock": true,
     "stock_count": 1,
     "isInstantDelivery": false,
-    "rating": 4.9042515134542,
-    "reviews_count": 14
+    "rating": 4.8610571851465245,
+    "reviews_count": 11
   },
   {
     "id": "prod-10",
@@ -200,8 +200,8 @@
     "inStock": true,
     "stock_count": 1,
     "isInstantDelivery": false,
-    "rating": 4.97623504397057,
-    "reviews_count": 26
+    "rating": 4.884623531057307,
+    "reviews_count": 43
   },
   {
     "id": "prod-11",
@@ -221,8 +221,8 @@
     "inStock": true,
     "stock_count": 1,
     "isInstantDelivery": false,
-    "rating": 4.937472895269256,
-    "reviews_count": 34
+    "rating": 4.930447271202111,
+    "reviews_count": 47
   },
   {
     "id": "prod-12",
@@ -242,8 +242,8 @@
     "inStock": true,
     "stock_count": 5,
     "isInstantDelivery": false,
-    "rating": 4.944961632299371,
-    "reviews_count": 18
+    "rating": 4.882452016929705,
+    "reviews_count": 28
   },
   {
     "id": "prod-13",
@@ -263,8 +263,8 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.844834869035169,
-    "reviews_count": 33
+    "rating": 4.8589327652769425,
+    "reviews_count": 45
   },
   {
     "id": "prod-14",
@@ -283,8 +283,8 @@
     "inStock": true,
     "stock_count": 4,
     "isInstantDelivery": false,
-    "rating": 4.993569883221255,
-    "reviews_count": 41
+    "rating": 4.8088459879509795,
+    "reviews_count": 12
   },
   {
     "id": "prod-15",
@@ -303,8 +303,8 @@
     "inStock": true,
     "stock_count": 2,
     "isInstantDelivery": false,
-    "rating": 4.856989465995818,
-    "reviews_count": 45
+    "rating": 4.8789537308063196,
+    "reviews_count": 44
   },
   {
     "id": "prod-16",
@@ -323,8 +323,8 @@
     "inStock": true,
     "stock_count": 2,
     "isInstantDelivery": false,
-    "rating": 4.8658971308480865,
-    "reviews_count": 46
+    "rating": 4.811776487684974,
+    "reviews_count": 14
   },
   {
     "id": "prod-17",
@@ -343,8 +343,8 @@
     "inStock": true,
     "stock_count": 4,
     "isInstantDelivery": false,
-    "rating": 4.940792204093596,
-    "reviews_count": 29
+    "rating": 4.9332675867010245,
+    "reviews_count": 35
   },
   {
     "id": "prod-18",
@@ -363,8 +363,8 @@
     "inStock": true,
     "stock_count": 6,
     "isInstantDelivery": false,
-    "rating": 4.805183739797661,
-    "reviews_count": 46
+    "rating": 4.843633657049492,
+    "reviews_count": 47
   },
   {
     "id": "prod-19",
@@ -383,8 +383,8 @@
     "inStock": true,
     "stock_count": 9,
     "isInstantDelivery": false,
-    "rating": 4.994801785489256,
-    "reviews_count": 10
+    "rating": 4.893066589402501,
+    "reviews_count": 27
   },
   {
     "id": "prod-20",
@@ -403,8 +403,8 @@
     "inStock": true,
     "stock_count": 61,
     "isInstantDelivery": false,
-    "rating": 4.84367463098047,
-    "reviews_count": 22
+    "rating": 4.935095136355325,
+    "reviews_count": 25
   },
   {
     "id": "prod-21",
@@ -424,8 +424,8 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.908425949589968,
-    "reviews_count": 38
+    "rating": 4.861652076403829,
+    "reviews_count": 37
   },
   {
     "id": "prod-22",
@@ -445,8 +445,8 @@
     "inStock": true,
     "stock_count": 2,
     "isInstantDelivery": false,
-    "rating": 4.897688396219594,
-    "reviews_count": 20
+    "rating": 4.857629316160269,
+    "reviews_count": 24
   },
   {
     "id": "prod-23",
@@ -466,8 +466,8 @@
     "inStock": true,
     "stock_count": 4,
     "isInstantDelivery": false,
-    "rating": 4.883937700578727,
-    "reviews_count": 13
+    "rating": 4.949362555923922,
+    "reviews_count": 25
   },
   {
     "id": "prod-24",
@@ -483,11 +483,11 @@
       "Customer support access",
       "Secure warranty"
     ],
-    "inStock": true,
-    "stock_count": 1,
+    "inStock": false,
+    "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.855138020656121,
-    "reviews_count": 31
+    "rating": 4.999648669511053,
+    "reviews_count": 17
   },
   {
     "id": "prod-25",
@@ -506,8 +506,8 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.824535484734439,
-    "reviews_count": 19
+    "rating": 4.9618361025506585,
+    "reviews_count": 31
   },
   {
     "id": "prod-26",
@@ -526,7 +526,7 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.968490790165295,
+    "rating": 4.814904554594047,
     "reviews_count": 41
   },
   {
@@ -546,8 +546,8 @@
     "inStock": true,
     "stock_count": 12,
     "isInstantDelivery": true,
-    "rating": 4.893913373664669,
-    "reviews_count": 13
+    "rating": 4.869178045464234,
+    "reviews_count": 39
   },
   {
     "id": "prod-28",
@@ -566,8 +566,8 @@
     "inStock": true,
     "stock_count": 14,
     "isInstantDelivery": true,
-    "rating": 4.911875984485771,
-    "reviews_count": 31
+    "rating": 4.924153148413886,
+    "reviews_count": 19
   },
   {
     "id": "prod-29",
@@ -587,8 +587,8 @@
     "inStock": true,
     "stock_count": 32,
     "isInstantDelivery": true,
-    "rating": 4.870046481156205,
-    "reviews_count": 27
+    "rating": 4.863496040300267,
+    "reviews_count": 45
   },
   {
     "id": "prod-30",
@@ -607,8 +607,8 @@
     "inStock": true,
     "stock_count": 6,
     "isInstantDelivery": true,
-    "rating": 4.87511544914993,
-    "reviews_count": 31
+    "rating": 4.999223644523415,
+    "reviews_count": 12
   },
   {
     "id": "prod-31",
@@ -627,8 +627,8 @@
     "inStock": true,
     "stock_count": 4,
     "isInstantDelivery": true,
-    "rating": 4.942440040463362,
-    "reviews_count": 42
+    "rating": 4.869399658812245,
+    "reviews_count": 10
   },
   {
     "id": "prod-32",
@@ -647,8 +647,8 @@
     "inStock": true,
     "stock_count": 1,
     "isInstantDelivery": true,
-    "rating": 4.843446214828864,
-    "reviews_count": 39
+    "rating": 4.93885392929991,
+    "reviews_count": 41
   },
   {
     "id": "prod-33",
@@ -667,8 +667,8 @@
     "inStock": true,
     "stock_count": 6,
     "isInstantDelivery": true,
-    "rating": 4.8129737443991605,
-    "reviews_count": 34
+    "rating": 4.946739624160092,
+    "reviews_count": 46
   },
   {
     "id": "prod-34",
@@ -688,8 +688,8 @@
     "inStock": true,
     "stock_count": 13,
     "isInstantDelivery": true,
-    "rating": 4.994751440194299,
-    "reviews_count": 22
+    "rating": 4.922929163078105,
+    "reviews_count": 49
   },
   {
     "id": "prod-35",
@@ -707,10 +707,10 @@
       "Secure warranty"
     ],
     "inStock": true,
-    "stock_count": 1,
+    "stock_count": 5,
     "isInstantDelivery": false,
-    "rating": 4.944768787866556,
-    "reviews_count": 46
+    "rating": 4.818623768427638,
+    "reviews_count": 11
   },
   {
     "id": "prod-36",
@@ -729,8 +729,8 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.840801129405422,
-    "reviews_count": 30
+    "rating": 4.9785216324367045,
+    "reviews_count": 26
   },
   {
     "id": "prod-37",
@@ -750,8 +750,8 @@
     "inStock": true,
     "stock_count": 2,
     "isInstantDelivery": true,
-    "rating": 4.819836894462331,
-    "reviews_count": 15
+    "rating": 4.966256745983327,
+    "reviews_count": 40
   },
   {
     "id": "prod-38",
@@ -771,8 +771,8 @@
     "inStock": true,
     "stock_count": 5,
     "isInstantDelivery": false,
-    "rating": 4.922408333837908,
-    "reviews_count": 27
+    "rating": 4.968282097777503,
+    "reviews_count": 15
   },
   {
     "id": "prod-39",
@@ -791,8 +791,8 @@
     "inStock": true,
     "stock_count": 1,
     "isInstantDelivery": false,
-    "rating": 4.897090901708129,
-    "reviews_count": 32
+    "rating": 4.907489025386134,
+    "reviews_count": 38
   },
   {
     "id": "prod-40",
@@ -812,8 +812,8 @@
     "inStock": true,
     "stock_count": 1,
     "isInstantDelivery": false,
-    "rating": 4.959614566012838,
-    "reviews_count": 34
+    "rating": 4.886492285092238,
+    "reviews_count": 24
   },
   {
     "id": "prod-41",
@@ -833,8 +833,8 @@
     "inStock": true,
     "stock_count": 1,
     "isInstantDelivery": false,
-    "rating": 4.811658415093099,
-    "reviews_count": 13
+    "rating": 4.946678461046507,
+    "reviews_count": 34
   },
   {
     "id": "prod-42",
@@ -854,8 +854,8 @@
     "inStock": true,
     "stock_count": 5,
     "isInstantDelivery": false,
-    "rating": 4.883612215182399,
-    "reviews_count": 22
+    "rating": 4.852248105963981,
+    "reviews_count": 49
   },
   {
     "id": "prod-43",
@@ -875,8 +875,8 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.971643805464009,
-    "reviews_count": 29
+    "rating": 4.968837580658904,
+    "reviews_count": 18
   },
   {
     "id": "prod-44",
@@ -895,8 +895,8 @@
     "inStock": true,
     "stock_count": 4,
     "isInstantDelivery": false,
-    "rating": 4.927532077362146,
-    "reviews_count": 21
+    "rating": 4.9934834982382945,
+    "reviews_count": 37
   },
   {
     "id": "prod-45",
@@ -915,8 +915,8 @@
     "inStock": true,
     "stock_count": 61,
     "isInstantDelivery": false,
-    "rating": 4.991337682345675,
-    "reviews_count": 32
+    "rating": 4.828906640701134,
+    "reviews_count": 35
   },
   {
     "id": "prod-46",
@@ -936,8 +936,8 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.8442313520727,
-    "reviews_count": 32
+    "rating": 4.8332406919663615,
+    "reviews_count": 43
   },
   {
     "id": "prod-47",
@@ -957,8 +957,8 @@
     "inStock": true,
     "stock_count": 2,
     "isInstantDelivery": false,
-    "rating": 4.878443141650653,
-    "reviews_count": 33
+    "rating": 4.825347372619948,
+    "reviews_count": 41
   },
   {
     "id": "prod-48",
@@ -978,8 +978,8 @@
     "inStock": true,
     "stock_count": 4,
     "isInstantDelivery": false,
-    "rating": 4.876858987410028,
-    "reviews_count": 26
+    "rating": 4.935839826331371,
+    "reviews_count": 13
   },
   {
     "id": "prod-49",
@@ -995,11 +995,11 @@
       "Customer support access",
       "Secure warranty"
     ],
-    "inStock": true,
-    "stock_count": 1,
+    "inStock": false,
+    "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.923588909251296,
-    "reviews_count": 29
+    "rating": 4.979401120154895,
+    "reviews_count": 42
   },
   {
     "id": "prod-50",
@@ -1018,8 +1018,8 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.894432940702484,
-    "reviews_count": 10
+    "rating": 4.86196705031921,
+    "reviews_count": 23
   },
   {
     "id": "prod-51",
@@ -1038,8 +1038,8 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.907903169795768,
-    "reviews_count": 35
+    "rating": 4.841583613985952,
+    "reviews_count": 13
   },
   {
     "id": "prod-52",
@@ -1058,8 +1058,8 @@
     "inStock": true,
     "stock_count": 12,
     "isInstantDelivery": true,
-    "rating": 4.941162171296461,
-    "reviews_count": 10
+    "rating": 4.819787460186847,
+    "reviews_count": 28
   },
   {
     "id": "prod-53",
@@ -1078,8 +1078,8 @@
     "inStock": true,
     "stock_count": 14,
     "isInstantDelivery": true,
-    "rating": 4.918183162913125,
-    "reviews_count": 41
+    "rating": 4.958600941892453,
+    "reviews_count": 40
   },
   {
     "id": "prod-54",
@@ -1099,8 +1099,8 @@
     "inStock": true,
     "stock_count": 32,
     "isInstantDelivery": true,
-    "rating": 4.971734297864709,
-    "reviews_count": 32
+    "rating": 4.977599189881905,
+    "reviews_count": 38
   },
   {
     "id": "prod-55",
@@ -1119,8 +1119,8 @@
     "inStock": true,
     "stock_count": 6,
     "isInstantDelivery": true,
-    "rating": 4.928842256805064,
-    "reviews_count": 25
+    "rating": 4.983948939929677,
+    "reviews_count": 37
   },
   {
     "id": "prod-56",
@@ -1139,8 +1139,8 @@
     "inStock": true,
     "stock_count": 4,
     "isInstantDelivery": true,
-    "rating": 4.985258249508499,
-    "reviews_count": 25
+    "rating": 4.901915928259531,
+    "reviews_count": 24
   },
   {
     "id": "prod-57",
@@ -1159,8 +1159,8 @@
     "inStock": true,
     "stock_count": 1,
     "isInstantDelivery": true,
-    "rating": 4.999161015530172,
-    "reviews_count": 14
+    "rating": 4.885294573287299,
+    "reviews_count": 12
   },
   {
     "id": "prod-58",
@@ -1179,8 +1179,8 @@
     "inStock": true,
     "stock_count": 6,
     "isInstantDelivery": true,
-    "rating": 4.8635164190855935,
-    "reviews_count": 44
+    "rating": 4.896004869871973,
+    "reviews_count": 25
   },
   {
     "id": "prod-59",
@@ -1200,8 +1200,8 @@
     "inStock": true,
     "stock_count": 13,
     "isInstantDelivery": true,
-    "rating": 4.951678115987351,
-    "reviews_count": 31
+    "rating": 4.964198083773145,
+    "reviews_count": 19
   },
   {
     "id": "prod-60",
@@ -1219,10 +1219,10 @@
       "Secure warranty"
     ],
     "inStock": true,
-    "stock_count": 1,
+    "stock_count": 5,
     "isInstantDelivery": false,
-    "rating": 4.976993767410461,
-    "reviews_count": 42
+    "rating": 4.983120751968569,
+    "reviews_count": 11
   },
   {
     "id": "prod-61",
@@ -1241,7 +1241,7 @@
     "inStock": false,
     "stock_count": 0,
     "isInstantDelivery": false,
-    "rating": 4.935824599653161,
-    "reviews_count": 48
+    "rating": 4.987447667974912,
+    "reviews_count": 38
   }
 ]
