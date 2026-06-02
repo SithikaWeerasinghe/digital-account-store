@@ -136,6 +136,34 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
             <span className="text-2xl font-black text-primary">{formatCurrency(order.totalAmount)}</span>
           </div>
 
+          {/* Mercado Pago gateway details (only shown when present) */}
+          {(order.mercadopago_payment_id ||
+            order.mercadopago_preference_id ||
+            order.mercadopago_merchant_order_id ||
+            order.mercadopago_status ||
+            order.paid_at) && (
+            <div className="bg-slate-50 rounded-xl px-4">
+              <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 pt-3 -mb-1">
+                Mercado Pago
+              </p>
+              {order.mercadopago_payment_id && (
+                <InfoRow icon={CreditCard} label="Payment ID" value={order.mercadopago_payment_id} />
+              )}
+              {order.mercadopago_status && (
+                <InfoRow icon={CreditCard} label="MP Status" value={order.mercadopago_status} />
+              )}
+              {order.mercadopago_preference_id && (
+                <InfoRow icon={Hash} label="Preference ID" value={order.mercadopago_preference_id} />
+              )}
+              {order.mercadopago_merchant_order_id && (
+                <InfoRow icon={Hash} label="Merchant Order ID" value={order.mercadopago_merchant_order_id} />
+              )}
+              {order.paid_at && (
+                <InfoRow icon={Calendar} label="Paid At" value={formatDate(order.paid_at)} />
+              )}
+            </div>
+          )}
+
           {/* Actions */}
           <div className="space-y-3">
             <p className="text-[10px] font-black tracking-widest uppercase text-slate-400">Admin Actions</p>

@@ -8,9 +8,12 @@ import { ROUTES } from '@/lib/constants';
 
 function CheckoutFailedContent() {
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('order_id');
+  const orderId = searchParams.get('order_id') || searchParams.get('external_reference');
   const reason = searchParams.get('reason');
-  const sessionId = searchParams.get('session_id');
+
+  // Mercado Pago failure/cancel params.
+  const mpStatus = searchParams.get('status') || searchParams.get('collection_status');
+  const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id');
 
   const failureMessage = reason
     ? `Payment processing failed: ${reason}`
@@ -33,16 +36,24 @@ function CheckoutFailedContent() {
           {failureMessage}
         </p>
 
-        {orderId && (
+        {(orderId || paymentId || mpStatus) && (
           <div className="bg-slate-50 border border-border rounded-xl p-5 mb-6 text-left text-sm font-mono space-y-2">
-            <div className="flex justify-between">
-              <span className="text-text-secondary/70">Order ID:</span>
-              <span className="font-bold text-text-primary">{orderId}</span>
-            </div>
-            {sessionId && (
-              <div className="flex justify-between">
-                <span className="text-text-secondary/70">Session ID:</span>
-                <span className="font-bold text-text-primary font-xs truncate max-w-[150px]">{sessionId}</span>
+            {orderId && (
+              <div className="flex justify-between gap-3">
+                <span className="text-text-secondary/70">Order ID:</span>
+                <span className="font-bold text-text-primary truncate max-w-[170px]">{orderId}</span>
+              </div>
+            )}
+            {paymentId && (
+              <div className="flex justify-between gap-3">
+                <span className="text-text-secondary/70">Payment ID:</span>
+                <span className="font-bold text-text-primary truncate max-w-[170px]">{paymentId}</span>
+              </div>
+            )}
+            {mpStatus && (
+              <div className="flex justify-between gap-3">
+                <span className="text-text-secondary/70">MP Status:</span>
+                <span className="font-bold text-text-primary">{mpStatus}</span>
               </div>
             )}
           </div>
