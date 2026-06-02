@@ -29,6 +29,36 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
+const formatDate = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    });
+  } catch (e) {
+    return dateString;
+  }
+};
+
+const getAvatarGradient = (name: string) => {
+  const gradients = [
+    'from-blue-500 to-indigo-600',
+    'from-purple-500 to-pink-500',
+    'from-emerald-400 to-teal-600',
+    'from-amber-400 to-orange-500',
+    'from-rose-500 to-red-600',
+    'from-cyan-500 to-blue-600'
+  ];
+  let hash = 0;
+  const cleanName = name || 'Anonymous';
+  for (let i = 0; i < cleanName.length; i++) {
+    hash = cleanName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return gradients[Math.abs(hash) % gradients.length];
+};
+
 const PAYMENT_METHODS = [
   { id: 'card', label: 'Card Payment', desc: 'Visa, Mastercard, AMEX', icon: CreditCard },
   { id: 'crypto', label: 'Crypto Payment', desc: 'BTC, ETH, USDT', icon: Bitcoin },
@@ -51,14 +81,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const [productData, reviewsData] = await Promise.all([
-          fetchProductBySlug(slug),
-          fetchReviews()
-        ]);
+        const productData = await fetchProductBySlug(slug);
         setProduct(productData);
-        setReviews(reviewsData.slice(0, 3));
         if (productData?.variants?.length) {
           setSelectedVariant(productData.variants[0]);
+        }
+        
+        if (productData) {
+          const reviewsData = await fetchReviews({ productId: productData.id });
+          setReviews(reviewsData);
         }
       } catch (err: any) {
         setError(err.message || 'Failed to load product details');
@@ -289,21 +320,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               <div className="space-y-6 relative z-10">
                 {reviews.map((review) => (
                   <div key={review.id} className="p-6 bg-secondary-background border border-border rounded-xl">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center text-primary font-black font-heading text-lg shadow-sm">
-                          {review.userName.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-base font-black font-heading text-text-primary tracking-wide uppercase mb-1">{review.userName}</p>
-                          <StarRating rating={review.rating} />
-                        </div>
-                      </div>
-                      {review.verifiedPurchase && (
-                        <span className="flex items-center gap-1.5 text-success text-xs font-black tracking-widest uppercase bg-success/5 border border-success/20 px-2.5 py-1 rounded-sm">
-                          <ShieldCheck size={12} /> Verified Purchase
-                        </span>
-                      )}
+                    <div className="flex items-center justify-between mb-4">
+                      <StarRating rating={review.rating} />
+                      <span className="text-xs text-text-secondary font-semibold">
+                        {formatDate(review.createdAt)}
+                      </span>
                     </div>
                     <p className="text-[15px] sm:text-base text-text-secondary leading-relaxed font-medium">&ldquo;{review.comment}&rdquo;</p>
                   </div>

@@ -39,8 +39,15 @@ export async function fetchProductBySlug(slug: string): Promise<Product> {
   return fetchApi<Product>(`/api/products/${slug}`);
 }
 
-export async function fetchReviews(): Promise<Review[]> {
-  return fetchApi<Review[]>('/api/reviews');
+export async function fetchReviews(params?: { type?: 'website' | 'product'; productId?: string }): Promise<Review[]> {
+  let url = '/api/reviews';
+  if (params) {
+    const query = new URLSearchParams();
+    if (params.type) query.append('type', params.type);
+    if (params.productId) query.append('productId', params.productId);
+    url += `?${query.toString()}`;
+  }
+  return fetchApi<Review[]>(url);
 }
 
 export async function fetchOrders(): Promise<Order[]> {
