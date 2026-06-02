@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as orderService from '@/lib/services/orderService';
 import { sendOrderConfirmation, isEmailConfigured } from '@/lib/services/emailService';
+import { requireAdminAuth } from '@/lib/apiAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAdminAuth();
+  if (authError) return authError;
+
   try {
     if (!isEmailConfigured()) {
       return NextResponse.json(

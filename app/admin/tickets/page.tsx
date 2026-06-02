@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import AdminProtected from '@/components/admin/AdminProtected';
 import TicketTable from '@/components/admin/TicketTable';
 import { fetchAdminTickets } from '@/lib/api';
 import { Ticket } from '@/types/ticket';
 
-export default function AdminTicketsPage() {
+function AdminTicketsContent() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -49,5 +50,13 @@ export default function AdminTicketsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminTicketsPage() {
+  return (
+    <AdminProtected>
+      <AdminTicketsContent />
+    </AdminProtected>
   );
 }

@@ -1,14 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, Menu, Search, User, LogOut } from 'lucide-react';
+import { signOutAdmin } from '@/lib/adminAuth';
 
-export default function AdminHeader({ 
-  onMenuClick 
-}: { 
-  onMenuClick: () => void 
+export default function AdminHeader({
+  onMenuClick
+}: {
+  onMenuClick: () => void
 }) {
+  const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
@@ -83,15 +87,22 @@ export default function AdminHeader({
                   </div>
                 </div>
 
-                <button 
-                  className="flex items-center justify-center gap-2.5 px-4 py-2.5 w-full mt-4 rounded-xl text-xs font-black font-heading tracking-widest uppercase text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:bg-rose-100/50 hover:border-rose-200 transition-all duration-200 cursor-pointer"
-                  onClick={() => {
-                    setProfileOpen(false);
-                    window.location.href = '/admin/login';
+                <button
+                  className="flex items-center justify-center gap-2.5 px-4 py-2.5 w-full mt-4 rounded-xl text-xs font-black font-heading tracking-widest uppercase text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:bg-rose-100/50 hover:border-rose-200 transition-all duration-200 cursor-pointer disabled:opacity-50"
+                  onClick={async () => {
+                    setIsLoggingOut(true);
+                    try {
+                      await signOutAdmin();
+                      router.push('/admin/login');
+                    } catch (error) {
+                      console.error('Logout error:', error);
+                      router.push('/admin/login');
+                    }
                   }}
+                  disabled={isLoggingOut}
                 >
                   <LogOut size={13} />
-                  Logout Session
+                  {isLoggingOut ? 'Logging out...' : 'Logout Session'}
                 </button>
               </div>
             </>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import AdminProtected from '@/components/admin/AdminProtected';
 import OrderTable from '@/components/admin/OrderTable';
 import OrderDetail from '@/components/admin/OrderDetail';
 import { fetchAdminOrders, updateOrderStatus, OrderStatusUpdate } from '@/lib/api';
@@ -14,7 +15,7 @@ const FILTERS = [
   { label: 'Delivered', value: 'delivered' },
 ];
 
-export default function AdminOrdersPage() {
+function AdminOrdersContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -125,5 +126,13 @@ export default function AdminOrdersPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function AdminOrdersPage() {
+  return (
+    <AdminProtected>
+      <AdminOrdersContent />
+    </AdminProtected>
   );
 }

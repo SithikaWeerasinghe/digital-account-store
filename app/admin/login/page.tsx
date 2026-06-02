@@ -4,14 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ROUTES, APP_NAME } from '@/lib/constants';
-import { adminLogin } from '@/lib/api';
+import { signInAdmin } from '@/lib/adminAuth';
 import { Radio } from 'lucide-react';
 import ApexFledLogo from '@/components/ui/ApexFledLogo';
 
 export default function AdminLogin() {
   const router = useRouter();
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,10 +21,16 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      await adminLogin({ email, password });
+      if (!email || !password) {
+        setError('Email and password are required');
+        setIsLoading(false);
+        return;
+      }
+
+      await signInAdmin(email, password);
       router.push(ROUTES.ADMIN.DASHBOARD);
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials');
+      setError(err.message || 'Invalid credentials or not authorized as admin');
     } finally {
       setIsLoading(false);
     }

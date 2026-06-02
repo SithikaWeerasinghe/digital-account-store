@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as orderService from '@/lib/services/orderService';
+import { requireAdminAuth } from '@/lib/apiAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAdminAuth();
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     const order = await orderService.getOrderById(id);
@@ -33,6 +37,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAdminAuth();
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     const body = await request.json();

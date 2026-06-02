@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import AdminProtected from '@/components/admin/AdminProtected';
 import ProductTable from '@/components/admin/ProductTable';
 import ProductForm from '@/components/admin/ProductForm';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
@@ -14,7 +15,7 @@ import {
 } from '@/lib/api';
 import { Product } from '@/types/product';
 
-export default function AdminProductsPage() {
+function AdminProductsContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -140,5 +141,13 @@ export default function AdminProductsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function AdminProductsPage() {
+  return (
+    <AdminProtected>
+      <AdminProductsContent />
+    </AdminProtected>
   );
 }
