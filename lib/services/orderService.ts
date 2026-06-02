@@ -13,6 +13,10 @@ export interface DatabaseOrderRow {
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   delivery_status: 'pending' | 'delivered' | 'failed';
   created_at: string;
+  // Stripe integration fields
+  stripe_session_id?: string | null;
+  stripe_payment_intent_id?: string | null;
+  paid_at?: string | null;
 }
 
 // In-memory fallback used when Supabase is not configured
@@ -91,6 +95,9 @@ export function mapDatabaseOrder(row: DatabaseOrderRow): Order {
     payment_status: row.payment_status,
     delivery_status: row.delivery_status,
     created_at: row.created_at,
+    stripe_session_id: row.stripe_session_id || null,
+    stripe_payment_intent_id: row.stripe_payment_intent_id || null,
+    paid_at: row.paid_at || null,
   };
 }
 

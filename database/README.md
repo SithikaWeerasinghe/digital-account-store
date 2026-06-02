@@ -42,6 +42,14 @@ This folder contains the database foundation files for the Digital Account Store
 3. Click **Run**.
 4. This seeds safe, realistic placeholder products, reviews, and mock digital delivery content without compromising security or storing credentials.
 
+### Step D: (Optional) Add Stripe Integration Fields
+When preparing for Stripe payment integration:
+1. Click **New Query** again in the SQL Editor.
+2. Copy the entire contents of the `database/migration_stripe_fields.sql` file and paste it into the editor.
+3. Click **Run**.
+4. This adds Stripe-ready columns to the orders table: `stripe_session_id`, `stripe_payment_intent_id`, and `paid_at`.
+5. Verify the columns exist: Run `SELECT * FROM orders LIMIT 1;` and check for the new columns.
+
 ---
 
 ## 3. Database Schema Overview
