@@ -238,36 +238,62 @@ export default function CheckoutPage() {
                 Order Summary
               </h3>
 
-              <div className="flex gap-4 mb-6">
-                <div className="w-16 h-16 bg-slate-50 border border-border rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-bold text-primary tracking-widest uppercase">GAME</span>
-                </div>
-                <div className="flex-1">
-                  <span className="text-xs font-bold tracking-widest uppercase text-primary border border-primary/20 px-2 py-0.5 rounded-md bg-primary/5 inline-block mb-1">
-                    Gaming
-                  </span>
-                  <h4 className="font-bold text-text-primary leading-tight mb-1">Gaming Digital Bundle</h4>
-                  <p className="text-text-secondary text-sm sm:text-base">${price.toFixed(2)}</p>
-                </div>
-              </div>
+              {items.length > 0 && (
+                <>
+                  {items.map((item) => {
+                    const itemPrice = item.selectedVariant?.price ?? item.product.price;
+                    return (
+                      <div key={item.id} className="flex gap-4 mb-6">
+                        <div className="w-16 h-16 bg-slate-50 border border-border rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {item.product.imageUrl?.startsWith('http') ? (
+                            <img
+                              src={item.product.imageUrl}
+                              alt={item.product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-xs font-bold text-primary tracking-widest uppercase">
+                              {item.product.category.substring(0, 3)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <span className="text-xs font-bold tracking-widest uppercase text-primary border border-primary/20 px-2 py-0.5 rounded-md bg-primary/5 inline-block mb-1">
+                            {item.product.category}
+                          </span>
+                          <h4 className="font-bold text-text-primary leading-tight mb-1 line-clamp-2">
+                            {item.product.name}
+                          </h4>
+                          {item.selectedVariant && (
+                            <p className="text-xs text-text-secondary mb-1">{item.selectedVariant.label}</p>
+                          )}
+                          <p className="text-text-secondary text-sm sm:text-base font-semibold">
+                            €{(itemPrice * item.quantity).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
 
-              <div className="space-y-3 mb-6 pb-6 border-b border-border text-sm sm:text-base">
-                <div className="flex justify-between text-text-secondary">
-                  <span>Price</span>
-                  <span>${price.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-text-secondary">
-                  <span>Quantity</span>
-                  <span>{quantity}</span>
-                </div>
-              </div>
+                  <div className="space-y-3 mb-6 pb-6 border-b border-border text-sm sm:text-base">
+                    <div className="flex justify-between text-text-secondary">
+                      <span>Items</span>
+                      <span>{items.reduce((sum, i) => sum + i.quantity, 0)}</span>
+                    </div>
+                    <div className="flex justify-between text-text-secondary">
+                      <span>Subtotal</span>
+                      <span>€{cartTotal.toFixed(2)}</span>
+                    </div>
+                  </div>
 
-              <div className="flex justify-between items-center mb-6">
-                <span className="font-bold text-text-primary text-lg sm:text-xl">Total</span>
-                <span className="font-black text-primary text-2xl drop-shadow-[0_0_8px_rgba(0,158,227,0.15)]">
-                  ${(price * quantity).toFixed(2)}
-                </span>
-              </div>
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="font-bold text-text-primary text-lg sm:text-xl">Total</span>
+                    <span className="font-black text-primary text-2xl drop-shadow-[0_0_8px_rgba(0,158,227,0.15)]">
+                      €{cartTotal.toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
 
               <div className="space-y-2 mb-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-text-secondary">
