@@ -77,6 +77,7 @@ export function buildOrderConfirmationEmail(order: Order, options: OrderEmailOpt
   const quantity = order.quantity ?? order.items?.[0]?.quantity ?? 1;
   const method = (order.payment_method || order.paymentMethod || 'card').toUpperCase();
   const paymentStatus = order.payment_status || (order.status === 'completed' ? 'paid' : order.status);
+  const deliveryStatus = order.delivery_status || 'pending';
   const paid = paymentStatus === 'paid';
 
   const paymentBadge = paid
@@ -122,6 +123,14 @@ export function buildOrderConfirmationEmail(order: Order, options: OrderEmailOpt
         <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${method}</td>
       </tr>
       <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Payment Status</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:700;color:${paid ? '#047857' : '#b45309'};border-bottom:1px solid #e2e8f0;text-align:right;text-transform:uppercase;">${paymentStatus}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Delivery Status</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:700;color:${deliveryStatus === 'delivered' ? '#047857' : '#b45309'};border-bottom:1px solid #e2e8f0;text-align:right;text-transform:uppercase;">${deliveryStatus}</td>
+      </tr>
+      <tr>
         <td style="padding:16px;font-size:14px;font-weight:800;color:#0f172a;background-color:#f8fafc;">Total</td>
         <td style="padding:16px;font-size:20px;font-weight:900;color:${BRAND_COLOR};background-color:#f8fafc;text-align:right;">${formatEUR(order.totalAmount)}</td>
       </tr>
@@ -152,6 +161,8 @@ export function buildAdminNotificationEmail(order: Order, adminEmail: string) {
   const email = order.customer_email || order.userId;
   const productName = order.items?.[0]?.product?.name || order.product_id || 'Digital Product';
   const method = (order.payment_method || order.paymentMethod || 'card').toUpperCase();
+  const paymentStatus = order.payment_status || (order.status === 'completed' ? 'paid' : order.status);
+  const paid = paymentStatus === 'paid';
 
   const inner = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;">🔔 New Order Received</h1>
@@ -175,6 +186,10 @@ export function buildAdminNotificationEmail(order: Order, adminEmail: string) {
       <tr>
         <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Payment Method</td>
         <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${method}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Payment Status</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:700;color:${paid ? '#047857' : '#b45309'};border-bottom:1px solid #e2e8f0;text-align:right;text-transform:uppercase;">${paymentStatus}</td>
       </tr>
       <tr>
         <td style="padding:16px;font-size:14px;font-weight:800;color:#0f172a;background-color:#f8fafc;">Amount</td>
