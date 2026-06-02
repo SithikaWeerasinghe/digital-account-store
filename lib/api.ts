@@ -59,6 +59,44 @@ export async function createOrder(payload: CreateOrderInput): Promise<any> {
   });
 }
 
+// ── Mercado Pago Checkout Pro ──
+
+export type MercadoPagoCheckoutResult = {
+  success: boolean;
+  code?: string;
+  message?: string;
+  data?: {
+    preference_id: string;
+    init_point: string;
+    sandbox_init_point?: string;
+  };
+};
+
+/**
+ * Starts a Mercado Pago Checkout Pro session for the given order(s).
+ * Does NOT throw on "not configured" — returns the raw response so the
+ * checkout page can fall back to the manual/pending flow gracefully.
+ */
+export async function startMercadoPagoCheckout(payload: {
+  order_id: string;
+  order_ids?: string[];
+}): Promise<MercadoPagoCheckoutResult> {
+  try {
+    const response = await fetch('/api/checkout/mercadopago', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify(payload),
+    });
+    return (await response.json()) as MercadoPagoCheckoutResult;
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to start Mercado Pago checkout',
+    };
+  }
+}
+
 export async function createTicket(payload: CreateTicketInput): Promise<any> {
   return fetchApi('/api/tickets', {
     method: 'POST',

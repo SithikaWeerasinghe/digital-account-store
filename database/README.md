@@ -42,13 +42,25 @@ This folder contains the database foundation files for the Digital Account Store
 3. Click **Run**.
 4. This seeds safe, realistic placeholder products, reviews, and mock digital delivery content without compromising security or storing credentials.
 
-### Step D: (Optional) Add Stripe Integration Fields
+### Step D: (Optional) Add Stripe Integration Fields — DEPRECATED
+> Stripe is no longer the active gateway (see Step E). These columns are kept but unused.
+
 When preparing for Stripe payment integration:
 1. Click **New Query** again in the SQL Editor.
 2. Copy the entire contents of the `database/migration_stripe_fields.sql` file and paste it into the editor.
 3. Click **Run**.
 4. This adds Stripe-ready columns to the orders table: `stripe_session_id`, `stripe_payment_intent_id`, and `paid_at`.
 5. Verify the columns exist: Run `SELECT * FROM orders LIMIT 1;` and check for the new columns.
+
+### Step E: Add Mercado Pago Integration Fields — ACTIVE
+Mercado Pago (Checkout Pro) is the active payment gateway. To enable payment tracking:
+1. Click **New Query** again in the SQL Editor.
+2. Copy the entire contents of the `database/migration_mercadopago_fields.sql` file and paste it into the editor.
+3. Click **Run**.
+4. This adds Mercado Pago columns to the orders table: `mercadopago_preference_id`, `mercadopago_payment_id`, `mercadopago_merchant_order_id`, `mercadopago_status`, and `paid_at` (created if it does not already exist).
+5. Verify the columns exist: Run `SELECT * FROM orders LIMIT 1;` and check for the new columns.
+
+> **Note:** This migration is safe to run even if you already ran the Stripe migration — it does not touch or remove the Stripe columns, and `paid_at` is created only if missing.
 
 ---
 
