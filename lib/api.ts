@@ -145,6 +145,14 @@ export async function updateOrderStatus(id: string, payload: OrderStatusUpdate):
   });
 }
 
+export async function resendOrderEmail(id: string, credentials?: string): Promise<{ id?: string }> {
+  return fetchApi<{ id?: string }>(`/api/admin/orders/${id}/resend-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ credentials }),
+  });
+}
+
 export async function fetchAdminTickets(): Promise<Ticket[]> {
   return fetchApi<Ticket[]>('/api/tickets');
 }

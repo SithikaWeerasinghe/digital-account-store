@@ -1,20 +1,24 @@
 "use client";
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Package, ShoppingCart, Ticket, Star, LogOut, X } from 'lucide-react';
 import { ROUTES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import ApexFledLogo from '@/components/ui/ApexFledLogo';
+import { signOutAdmin } from '@/lib/adminAuth';
 
-export default function AdminSidebar({ 
-  isOpen, 
-  setIsOpen 
-}: { 
-  isOpen: boolean; 
-  setIsOpen: (open: boolean) => void; 
+export default function AdminSidebar({
+  isOpen,
+  setIsOpen
+}: {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const navItems = [
     { href: ROUTES.ADMIN.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
@@ -82,9 +86,22 @@ export default function AdminSidebar({
 
       <div className="p-4 border-t border-slate-200/80 relative">
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
-        <button className="flex items-center justify-center gap-2.5 px-4 py-3 w-full rounded-xl text-xs font-black font-heading tracking-widest uppercase text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:bg-rose-100/50 hover:border-rose-200 transition-all duration-200 cursor-pointer">
+        <button
+          onClick={async () => {
+            setIsLoggingOut(true);
+            try {
+              await signOutAdmin();
+              router.push('/admin/login');
+            } catch (error) {
+              console.error('Logout error:', error);
+              router.push('/admin/login');
+            }
+          }}
+          disabled={isLoggingOut}
+          className="flex items-center justify-center gap-2.5 px-4 py-3 w-full rounded-xl text-xs font-black font-heading tracking-widest uppercase text-rose-600 hover:text-rose-700 bg-rose-50 border border-rose-100 hover:bg-rose-100/50 hover:border-rose-200 transition-all duration-200 cursor-pointer disabled:opacity-50"
+        >
           <LogOut size={15} />
-          Logout System
+          {isLoggingOut ? 'Logging out...' : 'Logout System'}
         </button>
       </div>
     </aside>

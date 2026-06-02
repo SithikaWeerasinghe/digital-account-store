@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import * as orderService from '@/lib/services/orderService';
+import { sendOrderConfirmation, sendAdminNotification } from '@/lib/services/emailService';
 
 export async function GET() {
   try {
@@ -19,6 +20,17 @@ export async function POST(request: Request) {
     
     // Create new order using order service layer
     const newOrder = await orderService.createOrder(body);
+
+    // Fire confirmation + admin notification emails (best-effort, never blocks
+    // or fails the order if email is not yet configured).
+    try {
+      await Promise.all([
+        sendOrderConfirmation(newOrder),
+        sendAdminNotification(newOrder),
+      ]);
+    } catch (emailErr) {
+      console.error('[orders] Email dispatch failed (order still created):', emailErr);
+    }
 
     return NextResponse.json({ success: true, data: newOrder }, { status: 201 });
   } catch (error: any) {

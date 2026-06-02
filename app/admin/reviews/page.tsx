@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import AdminProtected from '@/components/admin/AdminProtected';
 import ReviewTable from '@/components/admin/ReviewTable';
 import { fetchAdminReviews } from '@/lib/api';
 import { Review } from '@/types/review';
 
-export default function AdminReviewsPage() {
+function AdminReviewsContent() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -48,5 +49,13 @@ export default function AdminReviewsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminReviewsPage() {
+  return (
+    <AdminProtected>
+      <AdminReviewsContent />
+    </AdminProtected>
   );
 }

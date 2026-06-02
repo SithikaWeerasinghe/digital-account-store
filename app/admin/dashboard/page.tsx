@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import AdminProtected from '@/components/admin/AdminProtected';
 import StatCard from '@/components/admin/StatCard';
 import { ShoppingCart, Ticket, RefreshCw, Layers, Radio, Activity, ArrowRight, ShieldCheck, Package, Star } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
@@ -21,7 +22,7 @@ const chartData = [
   { label: 'May 26', revenue: 3450, orders: 30 },
 ];
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState({
     totalProducts: 5,
@@ -422,5 +423,13 @@ export default function AdminDashboard() {
         </>
       )}
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <AdminProtected>
+      <AdminDashboardContent />
+    </AdminProtected>
   );
 }
