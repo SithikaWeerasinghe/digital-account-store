@@ -18,10 +18,10 @@ export default function HeroSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
 
           {/* LEFT WING: Precise copy and CTA nodes */}
-          <div className="lg:col-span-6 flex flex-col items-start text-left">
+          <div className="lg:col-span-6 flex flex-col items-center text-center lg:items-start lg:text-left">
 
             {/* Glitch-free high-conversion heading */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[3.75rem] xl:text-[4.25rem] font-black leading-[1.1] mb-10 font-heading uppercase tracking-wide text-white">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[3.75rem] xl:text-[4.25rem] font-black leading-[1.1] mb-8 sm:mb-10 font-heading uppercase tracking-wide text-white">
               Premium Digital <br />
               Products, <span className="text-[#fff159] drop-shadow-[0_0_12px_rgba(255,241,89,0.45)]">Delivered</span> <br />
               <span className="text-[#fff159] drop-shadow-[0_0_12px_rgba(255,241,89,0.45)]">Instantly.</span>
@@ -46,7 +46,7 @@ export default function HeroSection() {
           </div>
 
           {/* RIGHT WING: Overlapping glassmorphism cards & rotating circular radar */}
-          <div className="lg:col-span-6 flex justify-center items-center relative h-[460px] sm:h-[500px] lg:h-[520px] w-full">
+          <div className="lg:col-span-6 flex justify-center items-center relative h-[420px] sm:h-[500px] lg:h-[520px] w-full">
 
             {/* Concentric Spinning Radar Circles backdrop (6 Concentric Rings) */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
@@ -75,7 +75,7 @@ export default function HeroSection() {
 
               {/* Card 1: Netflix Premium (Top-Left) */}
               <div
-                className="absolute top-0 left-2 z-10 w-[260px] sm:w-[290px] md:w-[300px] animate-float"
+                className="absolute top-0 left-0 sm:left-2 z-10 w-[240px] sm:w-[290px] md:w-[300px] animate-float"
                 style={{ animationDuration: '6s' }}
               >
                 <div className="w-full h-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:scale-[1.03] transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out">
@@ -98,7 +98,7 @@ export default function HeroSection() {
 
               {/* Card 2: Xbox Game Pass Ultimate (Middle) */}
               <div
-                className="absolute top-[125px] left-[50px] sm:left-[80px] md:left-[90px] z-20 w-[260px] sm:w-[290px] md:w-[300px] animate-float"
+                className="absolute top-[120px] left-[40px] sm:left-[80px] md:left-[90px] z-20 w-[240px] sm:w-[290px] md:w-[300px] animate-float"
                 style={{ animationDuration: '7s', animationDelay: '1.5s' }}
               >
                 <div className="w-full h-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:scale-[1.03] transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out">
@@ -121,7 +121,7 @@ export default function HeroSection() {
 
               {/* Card 3: ChatGPT Plus (Bottom-Right) */}
               <div
-                className="absolute top-[250px] left-[100px] sm:left-[160px] md:left-[180px] z-30 w-[260px] sm:w-[290px] md:w-[300px] animate-float"
+                className="absolute top-[240px] left-[70px] sm:left-[160px] md:left-[180px] z-30 w-[240px] sm:w-[290px] md:w-[300px] animate-float"
                 style={{ animationDuration: '8s', animationDelay: '3s' }}
               >
                 <div className="w-full h-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 shadow-[0_12px_40px_rgba(0,0,0,0.15)] hover:bg-white/20 hover:border-white/30 hover:scale-[1.03] transition-[transform,background-color,border-color,box-shadow] duration-300 ease-out">
