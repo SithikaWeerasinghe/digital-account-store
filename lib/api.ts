@@ -87,6 +87,43 @@ export async function fetchAdminProducts(): Promise<Product[]> {
   return fetchApi<Product[]>('/api/products');
 }
 
+// ── Admin Product CRUD ──
+
+export type ProductFormInput = {
+  name: string;
+  category: string;
+  description?: string;
+  price: number;
+  originalPrice?: number | null;
+  imageUrl?: string;
+  features?: string[];
+  inStock?: boolean;
+  isInstantDelivery?: boolean;
+  variants?: { id: string; label: string; price: number; originalPrice?: number }[] | null;
+};
+
+export async function createProduct(payload: ProductFormInput): Promise<Product> {
+  return fetchApi<Product>('/api/products', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateProduct(id: string, payload: ProductFormInput): Promise<Product> {
+  return fetchApi<Product>(`/api/admin/products/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteProduct(id: string): Promise<{ id: string }> {
+  return fetchApi<{ id: string }>(`/api/admin/products/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 export async function fetchAdminOrders(): Promise<Order[]> {
   return fetchApi<Order[]>('/api/orders');
 }

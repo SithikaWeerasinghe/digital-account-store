@@ -1,8 +1,14 @@
 import { Product } from '@/types/product';
 import { formatCurrency } from '@/lib/utils';
-import { Edit, Trash2, MoreVertical, Star } from 'lucide-react';
+import { Edit, Trash2, Star } from 'lucide-react';
 
-export default function ProductTable({ products }: { products: Product[] }) {
+interface ProductTableProps {
+  products: Product[];
+  onEdit: (product: Product) => void;
+  onDelete: (product: Product) => void;
+}
+
+export default function ProductTable({ products, onEdit, onDelete }: ProductTableProps) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
       <div className="overflow-x-auto">
@@ -59,23 +65,19 @@ export default function ProductTable({ products }: { products: Product[] }) {
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button 
+                    <button
+                      onClick={() => onEdit(product)}
                       className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-350 text-slate-400 hover:text-slate-700 transition-all duration-200 cursor-pointer"
                       title="Edit Product"
                     >
                       <Edit size={14} />
                     </button>
-                    <button 
+                    <button
+                      onClick={() => onDelete(product)}
                       className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-rose-500/30 text-slate-400 hover:text-rose-600 transition-all duration-200 cursor-pointer"
                       title="Delete Product"
                     >
                       <Trash2 size={14} />
-                    </button>
-                    <button 
-                      className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-350 text-slate-400 hover:text-slate-700 transition-all duration-200 cursor-pointer"
-                      title="More Options"
-                    >
-                      <MoreVertical size={14} />
                     </button>
                   </div>
                 </td>
