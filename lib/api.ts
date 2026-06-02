@@ -128,6 +128,23 @@ export async function fetchAdminOrders(): Promise<Order[]> {
   return fetchApi<Order[]>('/api/orders');
 }
 
+export async function fetchAdminOrderById(id: string): Promise<Order> {
+  return fetchApi<Order>(`/api/admin/orders/${id}`);
+}
+
+export type OrderStatusUpdate = {
+  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+  delivery_status?: 'pending' | 'delivered' | 'failed';
+};
+
+export async function updateOrderStatus(id: string, payload: OrderStatusUpdate): Promise<Order> {
+  return fetchApi<Order>(`/api/admin/orders/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function fetchAdminTickets(): Promise<Ticket[]> {
   return fetchApi<Ticket[]>('/api/tickets');
 }
