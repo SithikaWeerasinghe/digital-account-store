@@ -21,7 +21,7 @@ export default function ProductDetails({ product }: { product: Product }) {
           />
         </div>
         
-        <div className="p-8 lg:p-12 flex flex-col">
+        <div className="p-6 sm:p-8 lg:p-12 flex flex-col">
           <div className="mb-2 flex items-center gap-2">
             {product.inStock ? (
               <span className="flex items-center gap-1 text-success text-sm font-medium">
@@ -32,7 +32,7 @@ export default function ProductDetails({ product }: { product: Product }) {
             )}
           </div>
           
-          <h1 className="text-3xl font-bold text-text-primary mb-4 leading-tight">{product.name}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mb-4 leading-tight">{product.name}</h1>
           
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-border">
             <div className="flex items-center gap-1 text-sm sm:text-base">
@@ -63,17 +63,17 @@ export default function ProductDetails({ product }: { product: Product }) {
             </ul>
           </div>
           
-          <div className="mt-auto pt-6 flex gap-4">
-            <button 
+          <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <button
               disabled={!product.inStock}
-              className="mp-button-primary flex-1 flex justify-center items-center gap-2 py-3 text-lg"
+              className="mp-button-primary w-full sm:flex-1 flex justify-center items-center gap-2 py-3 text-base sm:text-lg"
             >
               <ShoppingCart size={20} />
               Add to Cart
             </button>
-            <Link 
+            <Link
               href={product.inStock ? ROUTES.CHECKOUT : '#'}
-              className={`mp-button-secondary flex-1 flex justify-center items-center py-3 text-lg ${!product.inStock ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+              className={`mp-button-secondary w-full sm:flex-1 flex justify-center items-center py-3 text-base sm:text-lg ${!product.inStock ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
             >
               Buy Now
             </Link>

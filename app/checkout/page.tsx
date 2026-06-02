@@ -134,7 +134,7 @@ export default function CheckoutPage() {
 
           {/* Left Column: Form */}
           <div className="flex-1 space-y-6">
-            <div className="bg-card border border-border rounded-3xl p-8 relative overflow-hidden shadow-2xl">
+            <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
               {/* Decorative top border glow */}
               <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
 
@@ -233,7 +233,7 @@ export default function CheckoutPage() {
 
           {/* Right Column: Summary */}
           <div className="lg:w-96 space-y-6">
-            <div className="bg-card border border-border rounded-3xl p-8 relative overflow-hidden shadow-2xl">
+            <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-2xl">
               <h3 className="font-bold font-heading text-text-primary text-xl uppercase tracking-wider mb-6 pb-4 border-b border-border">
                 Order Summary
               </h3>
@@ -308,7 +308,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-3xl p-8 shadow-2xl">
+            <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl">
               <h4 className="font-bold text-text-primary text-base uppercase tracking-wider mb-4">Important Before Purchase</h4>
               <ul className="space-y-3 text-sm sm:text-base text-text-secondary">
                 <li className="flex gap-2">

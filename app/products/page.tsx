@@ -102,11 +102,11 @@ function ProductsContent() {
 
       {/* Page Header */}
       <div className="bg-secondary border-b border-border relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h1 className="text-4xl sm:text-5xl font-black font-heading uppercase tracking-widest text-text-primary mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+          <h1 className="text-3xl sm:text-5xl font-black font-heading uppercase tracking-widest text-text-primary mb-4 sm:mb-6">
             Browse Digital <span className="text-primary drop-shadow-[0_0_10px_rgba(0,158,227,0.2)]">Products</span>
           </h1>
-          <p className="text-text-secondary max-w-2xl mx-auto text-lg font-medium tracking-wide">
+          <p className="text-text-secondary max-w-2xl mx-auto text-base sm:text-lg font-medium tracking-wide">
             Explore gaming, streaming, AI, software, and productivity products with fast delivery and simple checkout.
           </p>
         </div>

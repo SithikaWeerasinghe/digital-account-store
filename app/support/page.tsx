@@ -143,8 +143,8 @@ export default function SupportPage() {
 
       {/* Header */}
       <div className="bg-secondary border-b border-border relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h1 className="text-4xl sm:text-5xl font-black font-heading uppercase tracking-widest text-text-primary mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+          <h1 className="text-3xl sm:text-5xl font-black font-heading uppercase tracking-widest text-text-primary mb-4 sm:mb-6">
             Need <span className="text-primary drop-shadow-[0_0_10px_rgba(0,158,227,0.2)]">Support?</span>
           </h1>
           <p className="text-text-secondary max-w-2xl mx-auto text-lg font-medium tracking-wide">
@@ -153,9 +153,9 @@ export default function SupportPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 relative z-10">
         {/* Contact Options */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 sm:mb-16">
           {CONTACT_OPTIONS.map(({ icon: Icon, title, desc, detail, color }) => (
             <div key={title} className="mp-card p-6 flex flex-col group relative overflow-hidden bg-card">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -169,17 +169,17 @@ export default function SupportPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Support Ticket Form */}
           <div className="mp-card overflow-hidden h-fit">
-            <div className="bg-secondary border-b border-border px-8 py-6 relative overflow-hidden">
+            <div className="bg-secondary border-b border-border px-6 sm:px-8 py-6 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent"></div>
               <h2 className="text-lg font-bold font-heading uppercase tracking-widest text-text-primary mb-1">Submit a Ticket</h2>
               <p className="text-primary text-xs font-bold tracking-widest uppercase">We respond within 24 hours</p>
             </div>
 
             {submitted ? (
-              <div className="p-10 text-center border-success/50 relative overflow-hidden">
+              <div className="p-6 sm:p-10 text-center border-success/50 relative overflow-hidden">
                 <div className="absolute inset-0 bg-success/5"></div>
                 <div className="w-20 h-20 bg-success/10 border border-success/30 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10 shadow-[0_0_20px_rgba(34,197,94,0.15)]">
                   <Check size={32} className="text-success drop-shadow-[0_0_5px_rgba(34,197,94,0.3)]" />
@@ -196,7 +196,7 @@ export default function SupportPage() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="p-8 space-y-6">
+              <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Full Name */}
                   <div>

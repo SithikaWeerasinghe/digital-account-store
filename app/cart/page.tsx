@@ -16,13 +16,13 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-black text-slate-900 font-heading tracking-wide uppercase mb-2">
+        <div className="mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 font-heading tracking-wide uppercase mb-2">
             Shopping Cart
           </h1>
-          <p className="text-slate-600">Review your items and proceed to checkout</p>
+          <p className="text-sm sm:text-base text-slate-600">Review your items and proceed to checkout</p>
         </div>
 
         {items.length === 0 ? (
@@ -49,11 +49,11 @@ export default function CartPage() {
                   return (
                     <div
                       key={item.id}
-                      className="border-b border-slate-100 last:border-b-0 p-6 hover:bg-slate-50/50 transition-colors duration-200"
+                      className="border-b border-slate-100 last:border-b-0 p-4 sm:p-6 hover:bg-slate-50/50 transition-colors duration-200"
                     >
-                      <div className="flex gap-6">
+                      <div className="flex gap-4 sm:gap-6">
                         {/* Product Image */}
-                        <div className="flex-shrink-0 w-24 h-24 bg-slate-100 rounded-lg overflow-hidden">
+                        <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 bg-slate-100 rounded-lg overflow-hidden">
                           {item.product.imageUrl?.startsWith('http') ? (
                             <img
                               src={item.product.imageUrl}
@@ -68,10 +68,10 @@ export default function CartPage() {
                         </div>
 
                         {/* Product Details */}
-                        <div className="flex-grow">
+                        <div className="flex-grow min-w-0">
                           <Link
                             href={`/products/${item.product.slug}`}
-                            className="block text-lg font-black text-slate-900 hover:text-primary transition-colors font-heading"
+                            className="block text-base sm:text-lg font-black text-slate-900 hover:text-primary transition-colors font-heading line-clamp-2"
                           >
                             {item.product.name}
                           </Link>
@@ -82,11 +82,11 @@ export default function CartPage() {
                             </p>
                           )}
 
-                          <p className="text-sm text-slate-600 mt-2">{item.product.category}</p>
+                          <p className="text-xs sm:text-sm text-slate-600 mt-1 sm:mt-2">{item.product.category}</p>
 
-                          <div className="flex items-center justify-between mt-4">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-3 mt-3 sm:mt-4">
                             {/* Price */}
-                            <div className="text-xl font-black text-primary">
+                            <div className="text-lg sm:text-xl font-black text-primary mr-auto">
                               €{itemTotal.toFixed(2)}
                             </div>
 
