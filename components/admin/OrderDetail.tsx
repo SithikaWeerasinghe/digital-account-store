@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Order } from '@/types/order';
-import { OrderStatusUpdate } from '@/lib/api';
+import { OrderStatusUpdate, resendOrderEmail } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import {
   X, Mail, Package, CreditCard, Hash, Calendar, Loader2,
@@ -32,6 +32,7 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
   const [order, setOrder] = useState<Order>(initialOrder);
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
 
   const paymentStatus = order.payment_status || 'pending';
   const deliveryStatus = order.delivery_status || 'pending';
@@ -45,6 +46,21 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
       setOrder(updated);
     } catch (err: any) {
       setError(err.message || 'Failed to update order');
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    try {
+      setBusyAction('email');
+      setError('');
+      setEmailSent(false);
+      await resendOrderEmail(order.id);
+      setEmailSent(true);
+      setTimeout(() => setEmailSent(false), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to send email');
     } finally {
       setBusyAction(null);
     }
@@ -148,14 +164,22 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
               </button>
             )}
 
-            {/* Resend email (placeholder until Resend key is added) */}
+            {/* Resend confirmation email */}
             <button
-              disabled
-              title="Email sending will be enabled once the Resend API key is configured"
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200 text-slate-400 font-black font-heading tracking-widest uppercase text-sm cursor-not-allowed"
+              onClick={handleResendEmail}
+              disabled={!!busyAction}
+              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border font-black font-heading tracking-widest uppercase text-sm transition-all disabled:opacity-50 ${
+                emailSent
+                  ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                  : 'border-slate-200 text-slate-600 hover:border-primary hover:text-primary'
+              }`}
             >
-              <Send size={16} />
-              Resend Email (soon)
+              {busyAction === 'email' ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <Send size={16} />
+              )}
+              {emailSent ? 'Email Sent!' : 'Resend Confirmation Email'}
             </button>
 
             {/* Secondary status controls */}
