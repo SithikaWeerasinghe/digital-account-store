@@ -19,6 +19,10 @@ export interface Order {
   payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
   delivery_status?: 'pending' | 'delivered' | 'failed';
   created_at?: string;
+  // Stripe integration fields
+  stripe_session_id?: string | null;
+  stripe_payment_intent_id?: string | null;
+  paid_at?: string | null;
 }
 
 export interface OrderItem {
