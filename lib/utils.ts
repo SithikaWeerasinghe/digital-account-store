@@ -19,3 +19,17 @@ export function formatDate(dateString: string): string {
     day: 'numeric',
   }).format(new Date(dateString));
 }
+
+/**
+ * Converts a product name into a URL-friendly slug.
+ * e.g. "Netflix Premium [4K]" -> "netflix-premium-4k"
+ */
+export function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')   // remove non-word chars
+    .replace(/[\s_-]+/g, '-')   // collapse whitespace/underscores to single dash
+    .replace(/^-+|-+$/g, '');   // trim leading/trailing dashes
+}

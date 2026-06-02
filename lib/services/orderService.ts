@@ -168,3 +168,50 @@ export async function getOrderByInvoiceNumber(invoiceNumber: string): Promise<Or
   if (error || !data) return null;
   return mapDatabaseOrder(data as DatabaseOrderRow);
 }
+
+// ============================================================
+// ADMIN: UPDATE ORDER STATUS
+// ============================================================
+
+export interface OrderStatusUpdate {
+  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+  delivery_status?: 'pending' | 'delivered' | 'failed';
+}
+
+export async function updateOrderStatus(
+  id: string,
+  update: OrderStatusUpdate
+): Promise<Order | null> {
+  const allowedPayment = ['pending', 'paid', 'failed', 'refunded'];
+  const allowedDelivery = ['pending', 'delivered', 'failed'];
+
+  if (update.payment_status && !allowedPayment.includes(update.payment_status)) {
+    throw new Error('Invalid payment status');
+  }
+  if (update.delivery_status && !allowedDelivery.includes(update.delivery_status)) {
+    throw new Error('Invalid delivery status');
+  }
+
+  const patch: Record<string, any> = {};
+  if (update.payment_status) patch.payment_status = update.payment_status;
+  if (update.delivery_status) patch.delivery_status = update.delivery_status;
+  if (Object.keys(patch).length === 0) throw new Error('No status fields provided');
+
+  if (!supabase) {
+    const row = inMemoryOrders.find((o) => o.id === id);
+    if (!row) return null;
+    Object.assign(row, patch);
+    return mapDatabaseOrder(row);
+  }
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update(patch)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error || !data) {
+    throw new Error(error?.message || 'Failed to update order');
+  }
+  return mapDatabaseOrder(data as DatabaseOrderRow);
+}

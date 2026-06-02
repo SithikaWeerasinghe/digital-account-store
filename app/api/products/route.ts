@@ -18,11 +18,8 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    // In the future, this will run: productService.createProduct(body)
-    return NextResponse.json(
-      { success: true, data: { message: 'Product creation placeholder', product: body } },
-      { status: 201 }
-    );
+    const product = await productService.createProduct(body);
+    return NextResponse.json({ success: true, data: product }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message || 'Failed to create product' },
