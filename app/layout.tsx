@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import { CartProvider } from '@/lib/contexts/CartContext';
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants';
 
 const geistSans = Geist({
@@ -28,9 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className={`${geistSans.className} min-h-screen flex flex-col bg-background text-foreground`} suppressHydrationWarning>
-        <Navbar />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+        <CartProvider>
+          <Navbar />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

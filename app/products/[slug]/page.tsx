@@ -5,10 +5,12 @@ import { fetchProductBySlug, fetchReviews } from '@/lib/api';
 import { Product, ProductVariant } from '@/types/product';
 import { Review } from '@/types/review';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/lib/constants';
+import { useCart } from '@/lib/contexts/CartContext';
 import {
   Star, ShieldCheck, Zap, Shield, Package,
-  ChevronRight, Mail, CreditCard, Bitcoin, Banknote, Check, AlertCircle
+  ChevronRight, Mail, CreditCard, Bitcoin, Banknote, Check, AlertCircle, ShoppingCart
 } from 'lucide-react';
 
 function formatCurrency(n: number) {
@@ -36,11 +38,14 @@ const PAYMENT_METHODS = [
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
+  const router = useRouter();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -80,6 +85,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     }
     setEmailError('');
     setSubmitted(true);
+  };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    addToCart(product, quantity, selectedVariant || undefined);
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
   };
 
   if (isLoading) {
@@ -447,14 +459,28 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       </div>
                     </div>
 
-                    {/* CTA */}
-                    <button
-                      onClick={handleCheckout}
-                      disabled={!product.inStock}
-                      className="w-full py-4 rounded-xl bg-primary text-white font-black font-heading tracking-widest uppercase hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_15px_rgba(0,158,227,0.15)] hover:shadow-[0_0_25px_rgba(0,158,227,0.3)] hover:-translate-y-0.5 active:translate-y-0"
-                    >
-                      Continue to Checkout
-                    </button>
+                    {/* CTAs */}
+                    <div className="space-y-3">
+                      <button
+                        onClick={handleCheckout}
+                        disabled={!product.inStock}
+                        className="w-full py-4 rounded-xl bg-primary text-white font-black font-heading tracking-widest uppercase hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_15px_rgba(0,158,227,0.15)] hover:shadow-[0_0_25px_rgba(0,158,227,0.3)] hover:-translate-y-0.5 active:translate-y-0"
+                      >
+                        Continue to Checkout
+                      </button>
+                      <button
+                        onClick={handleAddToCart}
+                        disabled={!product.inStock}
+                        className={`w-full py-3 rounded-xl border-2 font-black font-heading tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 ${
+                          addedToCart
+                            ? 'border-green-500 bg-green-50 text-green-700'
+                            : 'border-slate-300 bg-white text-slate-700 hover:border-primary hover:text-primary'
+                        }`}
+                      >
+                        <ShoppingCart size={18} />
+                        {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+                      </button>
+                    </div>
 
                     <div className="flex items-center justify-center gap-2 text-xs font-black font-heading tracking-widest uppercase text-text-secondary/50">
                       <Shield size={12} className="text-primary" />

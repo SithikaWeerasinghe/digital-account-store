@@ -4,14 +4,21 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/lib/constants';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ShoppingCart } from 'lucide-react';
 import ApexFledLogo from '@/components/ui/ApexFledLogo';
+import { useCart } from '@/lib/contexts/CartContext';
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { cartCount } = useCart();
   const isHome = pathname === '/';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Scroll effect
   useEffect(() => {
@@ -72,8 +79,23 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Simple Desktop CTA */}
+          {/* Desktop CTA + Cart */}
           <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/cart"
+              className={`relative inline-flex items-center justify-center p-2.5 rounded-xl border transition-all duration-300 ${isTransparent
+                  ? 'border-white/25 bg-white/10 text-white hover:bg-white/20'
+                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:text-slate-900 hover:border-slate-300'
+                }`}
+              title="Shopping Cart"
+            >
+              <ShoppingCart size={20} />
+              {mounted && cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
             <Link
               href={ROUTES.PRODUCTS}
               className={`btn-premium-shine inline-flex items-center justify-center py-2.5 px-6 rounded-xl text-sm font-black font-heading tracking-widest uppercase border transition-all duration-300 ${isTransparent
@@ -117,7 +139,20 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="pt-4">
+          <div className="pt-4 space-y-2">
+            <Link
+              href="/cart"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center gap-2 py-3 px-4 border border-slate-200 bg-slate-50 text-slate-600 hover:text-slate-900 text-sm font-black font-heading tracking-widest uppercase rounded-xl transition-all duration-200"
+            >
+              <ShoppingCart size={16} />
+              Shopping Cart
+              {mounted && cartCount > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
             <Link
               href={ROUTES.PRODUCTS}
               onClick={() => setMobileOpen(false)}

@@ -1,46 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CreditCard, Bitcoin, Banknote, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { createOrder } from '@/lib/api';
+import { useCart } from '@/lib/contexts/CartContext';
+import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
+  const router = useRouter();
+  const { items, cartTotal, clearCart } = useCart();
   const [email, setEmail] = useState('');
-  const [quantity, setQuantity] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto' | 'manual'>('card');
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const price = 9.99;
+  useEffect(() => {
+    if (items.length === 0 && !isSuccess) {
+      router.push('/cart');
+    }
+  }, [items, isSuccess, router]);
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (!email) {
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError('Please enter a valid email address.');
       return;
     }
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-    if (quantity < 1) {
-      setError('Quantity must be at least 1.');
+
+    if (items.length === 0) {
+      setError('Your cart is empty.');
       return;
     }
 
     setIsLoading(true);
     try {
-      await createOrder({
-        customerEmail: email,
-        productId: 'prod-1',
-        quantity: quantity,
-        amount: price * quantity,
-        paymentMethod: paymentMethod
-      });
+      for (const item of items) {
+        const amount = (item.selectedVariant?.price ?? item.product.price) * item.quantity;
+        await createOrder({
+          customerEmail: email,
+          productId: item.product.id,
+          quantity: item.quantity,
+          amount: amount,
+          paymentMethod: paymentMethod
+        });
+      }
+      clearCart();
       setIsSuccess(true);
     } catch (err: any) {
       setError(err.message || 'Failed to process checkout. Please try again.');
@@ -93,16 +101,45 @@ export default function CheckoutPage() {
           </p>
         </div>
 
+        {/* Order Items Summary */}
+        {items.length > 0 && (
+          <div className="bg-card border border-border rounded-3xl p-6 mb-8 shadow-2xl">
+            <h2 className="text-xl font-black font-heading uppercase tracking-widest text-text-primary mb-4">Order Summary</h2>
+            <div className="space-y-3">
+              {items.map((item) => {
+                const itemPrice = item.selectedVariant?.price ?? item.product.price;
+                return (
+                  <div key={item.id} className="flex justify-between items-center pb-3 border-b border-border last:border-0">
+                    <div>
+                      <p className="font-semibold text-text-primary">{item.product.name}</p>
+                      {item.selectedVariant && (
+                        <p className="text-xs text-text-secondary">{item.selectedVariant.label}</p>
+                      )}
+                    </div>
+                    <p className="font-black text-text-primary">
+                      €{(itemPrice * item.quantity).toFixed(2)}
+                    </p>
+                  </div>
+                );
+              })}
+              <div className="pt-3 border-t-2 border-primary flex justify-between items-center">
+                <span className="text-lg font-black text-text-primary font-heading uppercase">Total</span>
+                <span className="text-3xl font-black text-primary">€{cartTotal.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-8">
-          
+
           {/* Left Column: Form */}
           <div className="flex-1 space-y-6">
             <div className="bg-card border border-border rounded-3xl p-8 relative overflow-hidden shadow-2xl">
               {/* Decorative top border glow */}
               <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
-              
+
               <form onSubmit={handleCheckout} className="space-y-6">
-                
+
                 {/* Email */}
                 <div>
                   <label htmlFor="email" className="block text-sm sm:text-base font-bold text-text-secondary mb-2 uppercase tracking-wider">Email Address</label>
@@ -113,19 +150,6 @@ export default function CheckoutPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email for delivery"
                     className="w-full bg-white border border-border rounded-xl px-4 py-3.5 text-text-primary text-base placeholder:text-text-secondary/40 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm"
-                  />
-                </div>
-
-                {/* Quantity */}
-                <div>
-                  <label htmlFor="quantity" className="block text-sm sm:text-base font-bold text-text-secondary mb-2 uppercase tracking-wider">Quantity</label>
-                  <input
-                    type="number"
-                    id="quantity"
-                    min="1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                    className="w-full bg-white border border-border rounded-xl px-4 py-3.5 text-text-primary text-base focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm"
                   />
                 </div>
 

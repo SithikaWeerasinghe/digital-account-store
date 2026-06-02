@@ -1,14 +1,28 @@
+'use client';
+
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { ROUTES } from '@/lib/constants';
-import { Star, Zap, Package, ArrowRight } from 'lucide-react';
+import { Star, Zap, Package, ArrowRight, ShoppingCart } from 'lucide-react';
+import { useCart } from '@/lib/contexts/CartContext';
+import { useState } from 'react';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
 }
 
 export default function ProductCard({ product }: { product: Product }) {
+  const { addToCart } = useCart();
+  const [addedToCart, setAddedToCart] = useState(false);
   const discountPercent = null;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product, 1, product.variants?.[0]);
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 1500);
+  };
 
   return (
     // ── Entire card is a link ──
@@ -97,17 +111,35 @@ export default function ProductCard({ product }: { product: Product }) {
             </span>
           </div>
 
-          {/* View Details button */}
-          <div
-            className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 border ${
-              product.inStock
-                ? 'bg-white text-primary border-primary hover:bg-primary hover:text-white hover:border-primary hover:shadow-[0_4px_16px_rgba(0,158,227,0.2)]'
-                : 'bg-slate-50 text-slate-300 border-slate-100'
-            }`}
-          >
-            <span>{product.inStock ? 'View Details' : 'Out of Stock'}</span>
+          {/* Buttons */}
+          <div className="space-y-2">
+            {/* View Details button */}
+            <div
+              className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 border ${
+                product.inStock
+                  ? 'bg-white text-primary border-primary hover:bg-primary hover:text-white hover:border-primary hover:shadow-[0_4px_16px_rgba(0,158,227,0.2)]'
+                  : 'bg-slate-50 text-slate-300 border-slate-100'
+              }`}
+            >
+              <span>{product.inStock ? 'View Details' : 'Out of Stock'}</span>
+              {product.inStock && (
+                <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
+              )}
+            </div>
+
+            {/* Add to Cart button */}
             {product.inStock && (
-              <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
+              <button
+                onClick={handleAddToCart}
+                className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 border ${
+                  addedToCart
+                    ? 'bg-green-50 text-green-700 border-green-300'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-primary hover:text-primary'
+                }`}
+              >
+                <ShoppingCart size={13} />
+                <span>{addedToCart ? 'Added!' : 'Add Cart'}</span>
+              </button>
             )}
           </div>
         </div>
