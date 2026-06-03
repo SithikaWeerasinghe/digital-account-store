@@ -22,6 +22,22 @@ export interface DatabaseOrderRow {
   mercadopago_payment_id?: string | null;
   mercadopago_merchant_order_id?: string | null;
   mercadopago_status?: string | null;
+  // Product options and guarantee metadata
+  order_metadata?: {
+    product_option?: {
+      id: string;
+      label: string;
+      price?: number;
+    };
+    guarantee?: {
+      id: string;
+      label: string;
+      months?: number;
+      total_price?: number;
+      monthly_price?: number;
+    };
+    [key: string]: unknown;
+  } | null;
 }
 
 // In-memory fallback used when Supabase is not configured
@@ -107,6 +123,7 @@ export function mapDatabaseOrder(row: DatabaseOrderRow): Order {
     mercadopago_payment_id: row.mercadopago_payment_id || null,
     mercadopago_merchant_order_id: row.mercadopago_merchant_order_id || null,
     mercadopago_status: row.mercadopago_status || null,
+    order_metadata: row.order_metadata || null,
   };
 }
 
@@ -133,6 +150,27 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const orderAmount = input.amount !== undefined ? Number(input.amount) : Number((product.price * Number(quantity)).toFixed(2));
   if (orderAmount <= 0) throw new Error('Amount must be greater than 0');
 
+  // Build order metadata from selected product option and guarantee
+  const orderMetadata: DatabaseOrderRow['order_metadata'] = {};
+
+  if (input.selectedOptionId || input.selectedOptionLabel) {
+    orderMetadata.product_option = {
+      id: input.selectedOptionId || '',
+      label: input.selectedOptionLabel || '',
+      price: input.selectedOptionPrice,
+    };
+  }
+
+  if (input.selectedGuaranteeId || input.selectedGuaranteeLabel) {
+    orderMetadata.guarantee = {
+      id: input.selectedGuaranteeId || '',
+      label: input.selectedGuaranteeLabel || '',
+      months: input.selectedGuaranteeMonths,
+      total_price: input.selectedGuaranteeTotalPrice,
+      monthly_price: input.selectedGuaranteeMonthlyPrice,
+    };
+  }
+
   const newRow: DatabaseOrderRow = {
     id: `ord-${Math.random().toString(36).substring(2, 11)}`,
     invoice_number: generateInvoiceNumber(),
@@ -144,6 +182,7 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     payment_status: 'pending',
     delivery_status: 'pending',
     created_at: new Date().toISOString(),
+    order_metadata: Object.keys(orderMetadata).length > 0 ? orderMetadata : null,
   };
 
   if (supabase) {
