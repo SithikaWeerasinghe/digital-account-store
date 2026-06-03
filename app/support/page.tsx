@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { faqs } from '@/data/faqs';
 import { createTicket } from '@/lib/api';
 import {
@@ -92,6 +92,29 @@ export default function SupportPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [screenshot, setScreenshot] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (submitted) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [submitted]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setApiError('Image is too large. Please select a file smaller than 2MB.');
+        return;
+      }
+      setApiError('');
+      const reader = new FileReader();
+      reader.onload = () => {
+        setScreenshot(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const validate = () => {
     const newErrors: Partial<FormData> = {};
@@ -114,6 +137,10 @@ export default function SupportPage() {
     setApiError('');
     setIsLoading(true);
 
+    const messagePayload = screenshot 
+      ? `${form.message}\n\n---SCREENSHOT---\n${screenshot}`
+      : form.message;
+
     try {
       await createTicket({
         name: form.name,
@@ -121,7 +148,7 @@ export default function SupportPage() {
         orderId: form.orderId || undefined,
         issueType: form.issueType,
         subject: form.subject,
-        message: form.message,
+        message: messagePayload,
       });
       setSubmitted(true);
     } catch (err: any) {
@@ -189,7 +216,11 @@ export default function SupportPage() {
                   Your ticket has been submitted successfully. Our support team will review it and respond as soon as possible.
                 </p>
                 <button
-                  onClick={() => { setSubmitted(false); setForm({ name: '', email: '', orderId: '', issueType: '', subject: '', message: '' }); }}
+                  onClick={() => { 
+                    setSubmitted(false); 
+                    setForm({ name: '', email: '', orderId: '', issueType: '', subject: '', message: '' }); 
+                    setScreenshot(null);
+                  }}
                   className="mp-button-primary relative z-10"
                 >
                   Submit Another Ticket
@@ -281,13 +312,39 @@ export default function SupportPage() {
                   {errors.message && <p className="text-xs font-bold tracking-wide text-destructive mt-2 flex items-center gap-1"><AlertCircle size={12} />{errors.message}</p>}
                 </div>
 
-                {/* Screenshot (placeholder) */}
+                {/* Screenshot Upload */}
                 <div>
                   <label className="block text-sm font-bold tracking-widest uppercase text-text-secondary mb-3">Screenshot <span className="text-text-secondary/50 font-medium">(optional)</span></label>
-                  <div className="w-full px-4 py-8 rounded-xl border-2 border-dashed border-border bg-slate-50 text-center text-sm sm:text-base font-medium text-text-secondary hover:border-primary/50 hover:text-primary transition-colors cursor-pointer group flex flex-col items-center gap-2">
-                    <UploadCloud size={24} className="text-text-secondary group-hover:text-primary transition-colors" />
-                    <span>Click to upload or drag and drop a screenshot (JPG, PNG)</span>
-                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="screenshot-file-input"
+                  />
+                  {screenshot ? (
+                    <div className="relative w-full rounded-xl border border-border p-4 bg-slate-50 flex items-center justify-between shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <img src={screenshot} alt="Screenshot Preview" className="w-14 h-14 object-cover rounded-lg border border-border" />
+                        <span className="text-sm font-semibold text-text-secondary truncate max-w-[200px]">Screenshot Attached</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setScreenshot(null); }}
+                        className="text-xs font-bold text-destructive hover:underline cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div 
+                      onClick={() => document.getElementById('screenshot-file-input')?.click()}
+                      className="w-full px-4 py-8 rounded-xl border-2 border-dashed border-border bg-slate-50 text-center text-sm sm:text-base font-medium text-text-secondary hover:border-primary/50 hover:text-primary transition-colors cursor-pointer group flex flex-col items-center gap-2"
+                    >
+                      <UploadCloud size={24} className="text-text-secondary group-hover:text-primary transition-colors" />
+                      <span>Click to upload a screenshot (JPG, PNG)</span>
+                    </div>
+                  )}
                 </div>
 
                 {apiError && (

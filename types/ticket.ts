@@ -7,6 +7,8 @@ export interface Ticket {
   priority: 'low' | 'medium' | 'high' | 'urgent';
   createdAt: string;
   updatedAt: string;
+  name?: string;
+  issueType?: string;
 }
 
 export interface TicketMessage {

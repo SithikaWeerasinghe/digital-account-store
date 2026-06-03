@@ -1,5 +1,6 @@
 import { Ticket, CreateTicketInput } from '@/types/ticket';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
+import crypto from 'crypto';
 
 export interface DatabaseTicketRow {
   id: string;
@@ -58,6 +59,8 @@ export function mapDatabaseTicket(row: DatabaseTicketRow): Ticket {
     priority,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    name: row.name,
+    issueType: row.issue_type,
   };
 }
 
@@ -71,8 +74,55 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
   if (!input.subject?.trim()) throw new Error('Subject is required');
   if (!input.message?.trim() || input.message.trim().length < 20) throw new Error('Message must be at least 20 characters');
 
+  const ticketId = crypto.randomUUID();
+
+  const client = supabaseAdmin || supabase;
+  if (client) {
+    let dbOrderId: string | null = null;
+    if (orderId?.trim()) {
+      // If it is a valid UUID, use it directly
+      if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId.trim())) {
+        dbOrderId = orderId.trim();
+      } else {
+        // Try searching orders by invoice_number (e.g. ORD-12345)
+        const { data: orderData } = await client
+          .from('orders')
+          .select('id')
+          .eq('invoice_number', orderId.trim())
+          .maybeSingle();
+        if (orderData) {
+          dbOrderId = orderData.id;
+        }
+      }
+    }
+
+    const dbRow = {
+      id: ticketId,
+      name: input.name.trim(),
+      email: input.email.trim(),
+      order_id: dbOrderId,
+      issue_type: issueType.trim(),
+      subject: input.subject.trim(),
+      message: input.message.trim(),
+      status: 'open',
+      admin_reply: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await client.from('tickets').insert([dbRow]).select();
+    if (error) {
+      console.error("Supabase ticket insert error:", error.message, error.details);
+      throw new Error(`Database Error: ${error.message}`);
+    }
+    if (data && data.length > 0) {
+      return mapDatabaseTicket(data[0] as DatabaseTicketRow);
+    }
+  }
+
+  // Fallback to in-memory store
   const newRow: DatabaseTicketRow = {
-    id: `TKT-${Math.floor(100 + Math.random() * 900)}`,
+    id: ticketId,
     name: input.name.trim(),
     email: input.email.trim(),
     order_id: orderId?.trim() || null,
@@ -84,19 +134,14 @@ export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
-
-  if (supabase) {
-    const { data, error } = await supabase.from('tickets').insert(newRow).select().single();
-    if (!error && data) return mapDatabaseTicket(data as DatabaseTicketRow);
-  }
-
   inMemoryTickets.push(newRow);
   return mapDatabaseTicket(newRow);
 }
 
 export async function getTickets(): Promise<Ticket[]> {
-  if (!supabase) return inMemoryTickets.map(mapDatabaseTicket);
-  const { data, error } = await supabase
+  const client = supabaseAdmin || supabase;
+  if (!client) return inMemoryTickets.map(mapDatabaseTicket);
+  const { data, error } = await client
     .from('tickets')
     .select('*')
     .order('created_at', { ascending: false });
@@ -105,11 +150,12 @@ export async function getTickets(): Promise<Ticket[]> {
 }
 
 export async function getTicketById(id: string): Promise<Ticket | null> {
-  if (!supabase) {
+  const client = supabaseAdmin || supabase;
+  if (!client) {
     const row = inMemoryTickets.find((t) => t.id === id);
     return row ? mapDatabaseTicket(row) : null;
   }
-  const { data, error } = await supabase.from('tickets').select('*').eq('id', id).single();
+  const { data, error } = await client.from('tickets').select('*').eq('id', id).maybeSingle();
   if (error || !data) return null;
   return mapDatabaseTicket(data as DatabaseTicketRow);
 }
@@ -118,19 +164,19 @@ export async function updateTicketStatus(
   id: string,
   status: 'open' | 'in_progress' | 'resolved' | 'closed'
 ): Promise<Ticket | null> {
-  if (!supabase) {
+  const client = supabaseAdmin || supabase;
+  if (!client) {
     const row = inMemoryTickets.find((t) => t.id === id);
     if (!row) return null;
     row.status = status;
     row.updated_at = new Date().toISOString();
     return mapDatabaseTicket(row);
   }
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('tickets')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', id)
-    .select()
-    .single();
-  if (error || !data) return null;
-  return mapDatabaseTicket(data as DatabaseTicketRow);
+    .select();
+  if (error || !data || data.length === 0) return null;
+  return mapDatabaseTicket(data[0] as DatabaseTicketRow);
 }

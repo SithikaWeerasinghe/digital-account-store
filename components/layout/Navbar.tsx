@@ -20,6 +20,11 @@ export default function Navbar() {
     setMounted(true);
   }, []);
 
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   // Scroll effect
   useEffect(() => {
     const handleScroll = () => {

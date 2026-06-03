@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { fetchAdminTickets } from '@/lib/api';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Package, ShoppingCart, Archive, Ticket, Star, LogOut, X, Globe, Tag, Megaphone } from 'lucide-react';
@@ -19,6 +20,47 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [openTicketsCount, setOpenTicketsCount] = useState<number>(0);
+
+  useEffect(() => {
+    let active = true;
+    const loadOpenTicketsCount = async () => {
+      try {
+        const tickets = await fetchAdminTickets();
+        if (!active) return;
+
+        // If currently viewing the tickets page, count is 0 and we update viewed timestamp
+        if (pathname === ROUTES.ADMIN.TICKETS) {
+          localStorage.setItem('admin_tickets_last_viewed', new Date().toISOString());
+          setOpenTicketsCount(0);
+          return;
+        }
+
+        const lastViewed = localStorage.getItem('admin_tickets_last_viewed');
+        if (lastViewed) {
+          const lastViewedDate = new Date(lastViewed);
+          const count = tickets.filter(
+            t => t.status === 'open' && new Date(t.createdAt) > lastViewedDate
+          ).length;
+          setOpenTicketsCount(count);
+        } else {
+          const count = tickets.filter(t => t.status === 'open').length;
+          setOpenTicketsCount(count);
+        }
+      } catch (err) {
+        console.error('Failed to load tickets count for sidebar:', err);
+      }
+    };
+    
+    loadOpenTicketsCount();
+    
+    // Poll every 30 seconds
+    const interval = setInterval(loadOpenTicketsCount, 30000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [pathname]);
 
   const navItems = [
     { href: ROUTES.ADMIN.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
@@ -81,7 +123,12 @@ export default function AdminSidebar({
                 "transition-transform group-hover:scale-110",
                 isActive ? "text-primary drop-shadow-[0_0_2px_rgba(0,158,227,0.3)]" : "text-slate-400 group-hover:text-slate-700"
               )} />
-              {item.label}
+              <span>{item.label}</span>
+              {item.label === 'Tickets' && openTicketsCount > 0 && (
+                <span className="ml-auto bg-rose-500 text-white text-[10px] font-black font-sans px-2 py-0.5 rounded-full flex items-center justify-center min-w-[20px] h-5 shadow-[0_0_10px_rgba(244,63,94,0.45)] animate-pulse">
+                  {openTicketsCount}
+                </span>
+              )}
             </Link>
           );
         })}
