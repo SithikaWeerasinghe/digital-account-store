@@ -1,6 +1,7 @@
 import { Order, OrderItem, CreateOrderInput } from '@/types/order';
 import { sampleProducts } from '@/data/sampleProducts';
 import { supabase } from '@/lib/supabase';
+import { getRedeemableCoupon, incrementCouponUsage } from '@/lib/services/discountService';
 
 export interface DatabaseOrderRow {
   id: string;
@@ -13,6 +14,11 @@ export interface DatabaseOrderRow {
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   delivery_status: 'pending' | 'delivered' | 'failed';
   created_at: string;
+  // Coupon / discount fields
+  discount_code?: string | null;
+  discount_amount?: number | null;
+  original_amount?: number | null;
+  final_amount?: number | null;
   // Stripe integration fields (DEPRECATED — kept but unused)
   stripe_session_id?: string | null;
   stripe_payment_intent_id?: string | null;
@@ -124,6 +130,10 @@ export function mapDatabaseOrder(row: DatabaseOrderRow): Order {
     mercadopago_merchant_order_id: row.mercadopago_merchant_order_id || null,
     mercadopago_status: row.mercadopago_status || null,
     order_metadata: row.order_metadata || null,
+    discount_code: row.discount_code ?? null,
+    discount_amount: row.discount_amount != null ? Number(row.discount_amount) : 0,
+    original_amount: row.original_amount != null ? Number(row.original_amount) : null,
+    final_amount: row.final_amount != null ? Number(row.final_amount) : null,
   };
 }
 
@@ -147,8 +157,34 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const product = sampleProducts.find((p) => p.id === productId);
   if (!product) throw new Error('Product not found');
 
-  const orderAmount = input.amount !== undefined ? Number(input.amount) : Number((product.price * Number(quantity)).toFixed(2));
-  if (orderAmount <= 0) throw new Error('Amount must be greater than 0');
+  // Pre-discount amount for this order line.
+  const originalAmount =
+    input.originalAmount !== undefined
+      ? Number(input.originalAmount)
+      : input.amount !== undefined
+        ? Number(input.amount)
+        : Number((product.price * Number(quantity)).toFixed(2));
+  if (originalAmount <= 0) throw new Error('Amount must be greater than 0');
+
+  // Coupon handling. The discount share is computed on the checkout client
+  // (proportionally across cart-item orders), but we re-validate the coupon
+  // server-side here so a tampered/expired/fake code never reduces the charge.
+  let discountCode: string | null = null;
+  let discountAmount = 0;
+  if (input.discountCode) {
+    const coupon = await getRedeemableCoupon(input.discountCode);
+    if (coupon) {
+      discountCode = coupon.code;
+      // Trust the per-order share from checkout but clamp it to this line's range.
+      const requested = Number(input.discountAmount ?? 0);
+      discountAmount = Math.min(Math.max(0, Number.isFinite(requested) ? requested : 0), originalAmount);
+      discountAmount = Number(discountAmount.toFixed(2));
+    }
+  }
+
+  const finalAmount = Number(Math.max(0, originalAmount - discountAmount).toFixed(2));
+  // `amount` reflects what is actually charged (the discounted total).
+  const orderAmount = finalAmount;
 
   // Build order metadata from selected product option and guarantee
   const orderMetadata: DatabaseOrderRow['order_metadata'] = {};
@@ -183,17 +219,29 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     delivery_status: 'pending',
     created_at: new Date().toISOString(),
     order_metadata: Object.keys(orderMetadata).length > 0 ? orderMetadata : null,
+    discount_code: discountCode,
+    discount_amount: discountAmount,
+    original_amount: originalAmount,
+    final_amount: finalAmount,
   };
+
+  // Increment coupon usage once per checkout (the checkout flags only the first
+  // order of a multi-item cart). Best-effort — never blocks order creation.
+  const shouldIncrementCoupon = !!discountCode && input.incrementCoupon === true;
 
   if (supabase) {
     const { data, error } = await supabase.from('orders').insert(newRow).select().single();
     if (error) {
       throw new Error(`Failed to save order to database: ${error.message}`);
     }
-    if (data) return mapDatabaseOrder(data as DatabaseOrderRow);
+    if (data) {
+      if (shouldIncrementCoupon) await incrementCouponUsage(discountCode!);
+      return mapDatabaseOrder(data as DatabaseOrderRow);
+    }
   }
 
   inMemoryOrders.push(newRow);
+  if (shouldIncrementCoupon) await incrementCouponUsage(discountCode!);
   return mapDatabaseOrder(newRow);
 }
 

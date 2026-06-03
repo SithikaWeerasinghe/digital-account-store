@@ -84,6 +84,19 @@ export function buildOrderConfirmationEmail(order: Order, options: OrderEmailOpt
     ? statusBadge('Payment Received', '#047857', '#d1fae5')
     : statusBadge('Pending Payment', '#b45309', '#fef3c7');
 
+  const hasDiscount = !!order.discount_code && (order.discount_amount ?? 0) > 0;
+  const discountRows = hasDiscount
+    ? `
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Subtotal</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${formatEUR(order.original_amount ?? order.totalAmount)}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#15803d;border-bottom:1px solid #e2e8f0;">Discount (${order.discount_code})</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:700;color:#15803d;border-bottom:1px solid #e2e8f0;text-align:right;">-${formatEUR(order.discount_amount ?? 0)}</td>
+      </tr>`
+    : '';
+
   const credentialsBlock = options.credentials
     ? `
       <div style="margin:24px 0;padding:20px;background-color:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;">
@@ -130,9 +143,10 @@ export function buildOrderConfirmationEmail(order: Order, options: OrderEmailOpt
         <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Delivery Status</td>
         <td style="padding:14px 16px;font-size:14px;font-weight:700;color:${deliveryStatus === 'delivered' ? '#047857' : '#b45309'};border-bottom:1px solid #e2e8f0;text-align:right;text-transform:uppercase;">${deliveryStatus}</td>
       </tr>
+      ${discountRows}
       <tr>
         <td style="padding:16px;font-size:14px;font-weight:800;color:#0f172a;background-color:#f8fafc;">Total</td>
-        <td style="padding:16px;font-size:20px;font-weight:900;color:${BRAND_COLOR};background-color:#f8fafc;text-align:right;">${formatEUR(order.totalAmount)}</td>
+        <td style="padding:16px;font-size:20px;font-weight:900;color:${BRAND_COLOR};background-color:#f8fafc;text-align:right;">${formatEUR(order.final_amount ?? order.totalAmount)}</td>
       </tr>
     </table>
 

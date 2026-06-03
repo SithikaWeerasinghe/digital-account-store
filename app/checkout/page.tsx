@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { CreditCard, Bitcoin, Banknote, ShieldCheck, AlertCircle } from 'lucide-react';
+import { CreditCard, Bitcoin, Banknote, ShieldCheck, AlertCircle, Tag, X, Loader2, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { createOrder, startMercadoPagoCheckout } from '@/lib/api';
+import { createOrder, startMercadoPagoCheckout, validateCoupon, ApplyDiscountResult } from '@/lib/api';
 import { useCart } from '@/lib/contexts/CartContext';
 import { useRouter } from 'next/navigation';
 
@@ -18,11 +18,70 @@ export default function CheckoutPage() {
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState('');
 
+  // Coupon / discount state
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<ApplyDiscountResult | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+
+  const discountAmount = appliedCoupon?.valid ? appliedCoupon.discount_amount ?? 0 : 0;
+  const finalTotal = Math.max(0, cartTotal - discountAmount);
+
   useEffect(() => {
     if (items.length === 0 && !isSuccess) {
       router.push('/cart');
     }
   }, [items, isSuccess, router]);
+
+  // If the cart changes while a coupon is applied, re-validate it against the
+  // new total. If it's no longer valid (e.g. below the minimum), remove it.
+  useEffect(() => {
+    if (!appliedCoupon?.valid || !appliedCoupon.code) return;
+    let cancelled = false;
+    (async () => {
+      const result = await validateCoupon(appliedCoupon.code as string, cartTotal);
+      if (cancelled) return;
+      if (result.valid) {
+        setAppliedCoupon(result);
+        setCouponError('');
+      } else {
+        setAppliedCoupon(null);
+        setCouponError(result.message || 'Coupon is no longer valid.');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartTotal]);
+
+  const handleApplyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) {
+      setCouponError('Please enter a coupon code.');
+      return;
+    }
+    setCouponLoading(true);
+    setCouponError('');
+    try {
+      const result = await validateCoupon(code, cartTotal);
+      if (result.valid) {
+        setAppliedCoupon(result);
+        setCouponError('');
+      } else {
+        setAppliedCoupon(null);
+        setCouponError(result.message || 'Invalid coupon code.');
+      }
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput('');
+    setCouponError('');
+  };
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,19 +110,42 @@ export default function CheckoutPage() {
 
     setIsLoading(true);
     try {
-      // 1. Create one pending order per cart item in Supabase.
-      const createdOrders: any[] = [];
-      for (const item of items) {
+      // Per-item pre-discount amounts.
+      const itemAmounts = items.map((item) => {
         const itemPrice = item.selectedGuarantee?.total_price
           ?? item.selectedOption?.price
           ?? item.selectedVariant?.price
           ?? item.product.price;
-        const amount = itemPrice * item.quantity;
+        return itemPrice * item.quantity;
+      });
+      const subtotal = itemAmounts.reduce((sum, a) => sum + a, 0);
+
+      // Distribute the coupon discount proportionally across the per-item orders
+      // so it is applied exactly once across the whole cart (never per item).
+      // The last order absorbs any rounding remainder so the shares sum exactly.
+      const totalDiscount = appliedCoupon?.valid ? appliedCoupon.discount_amount ?? 0 : 0;
+      const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
+      let remainingDiscount = round2(totalDiscount);
+      const discountShares = itemAmounts.map((amount, i) => {
+        if (totalDiscount <= 0 || subtotal <= 0) return 0;
+        if (i === itemAmounts.length - 1) return round2(remainingDiscount);
+        const share = round2((totalDiscount * amount) / subtotal);
+        remainingDiscount = round2(remainingDiscount - share);
+        return share;
+      });
+
+      // 1. Create one pending order per cart item in Supabase.
+      const createdOrders: any[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const originalAmount = round2(itemAmounts[i]);
+        const share = Math.min(discountShares[i], originalAmount);
+        const finalAmount = round2(originalAmount - share);
         const created = await createOrder({
           customerEmail: email,
           productId: item.product.id,
           quantity: item.quantity,
-          amount: amount,
+          amount: finalAmount,
           paymentMethod: paymentMethod,
           selectedOptionId: item.selectedOption?.id,
           selectedOptionLabel: item.selectedOption?.label,
@@ -72,7 +154,14 @@ export default function CheckoutPage() {
           selectedGuaranteeLabel: item.selectedGuarantee?.label,
           selectedGuaranteeMonths: item.selectedGuarantee?.months,
           selectedGuaranteeTotalPrice: item.selectedGuarantee?.total_price,
-          selectedGuaranteeMonthlyPrice: item.selectedGuarantee?.monthly_price
+          selectedGuaranteeMonthlyPrice: item.selectedGuarantee?.monthly_price,
+          // Coupon: server re-validates the code and clamps the share.
+          discountCode: appliedCoupon?.valid ? appliedCoupon.code : undefined,
+          discountAmount: share,
+          originalAmount: originalAmount,
+          finalAmount: finalAmount,
+          // Increment usage once per checkout — only on the first order.
+          incrementCoupon: i === 0 && !!appliedCoupon?.valid,
         });
         createdOrders.push(created);
       }
@@ -188,9 +277,21 @@ export default function CheckoutPage() {
                   </div>
                 );
               })}
+              {appliedCoupon?.valid && discountAmount > 0 && (
+                <>
+                  <div className="flex justify-between items-center pt-1 text-text-secondary">
+                    <span>Subtotal</span>
+                    <span>€{cartTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-emerald-600 font-semibold">
+                    <span>Discount ({appliedCoupon.code})</span>
+                    <span>-€{discountAmount.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
               <div className="pt-3 border-t-2 border-primary flex justify-between items-center">
                 <span className="text-lg font-black text-text-primary font-heading uppercase">Total</span>
-                <span className="text-3xl font-black text-primary">€{cartTotal.toFixed(2)}</span>
+                <span className="text-3xl font-black text-primary">€{finalTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -366,6 +467,66 @@ export default function CheckoutPage() {
                     );
                   })}
 
+                  {/* Coupon / Discount Code */}
+                  <div className="mb-6 pb-6 border-b border-border">
+                    <label className="block text-xs font-bold text-text-secondary mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                      <Tag size={14} /> Coupon Code
+                    </label>
+                    {appliedCoupon?.valid ? (
+                      <div className="flex items-center justify-between gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0" />
+                          <span className="font-mono font-bold text-emerald-700 text-sm truncate">
+                            {appliedCoupon.code}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          className="flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:text-emerald-900 flex-shrink-0"
+                        >
+                          <X size={14} /> Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponInput}
+                          onChange={(e) => {
+                            setCouponInput(e.target.value.toUpperCase());
+                            if (couponError) setCouponError('');
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleApplyCoupon();
+                            }
+                          }}
+                          placeholder="Enter discount code"
+                          className="flex-1 min-w-0 bg-white border border-border rounded-xl px-3 py-2.5 text-text-primary text-sm font-mono uppercase placeholder:text-text-secondary/40 placeholder:normal-case focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyCoupon}
+                          disabled={couponLoading}
+                          className="px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold uppercase tracking-wider hover:bg-primary-hover transition-all disabled:opacity-50 flex items-center gap-1.5"
+                        >
+                          {couponLoading ? <Loader2 size={15} className="animate-spin" /> : 'Apply'}
+                        </button>
+                      </div>
+                    )}
+                    {couponError && (
+                      <div className="flex items-center gap-1.5 mt-2 text-red-600">
+                        <AlertCircle size={13} className="flex-shrink-0" />
+                        <span className="text-xs font-medium">{couponError}</span>
+                      </div>
+                    )}
+                    {appliedCoupon?.valid && (
+                      <p className="text-xs text-emerald-600 font-medium mt-2">Coupon applied successfully.</p>
+                    )}
+                  </div>
+
                   <div className="space-y-3 mb-6 pb-6 border-b border-border text-sm sm:text-base">
                     <div className="flex justify-between text-text-secondary">
                       <span>Items</span>
@@ -375,12 +536,18 @@ export default function CheckoutPage() {
                       <span>Subtotal</span>
                       <span>€{cartTotal.toFixed(2)}</span>
                     </div>
+                    {appliedCoupon?.valid && discountAmount > 0 && (
+                      <div className="flex justify-between text-emerald-600 font-semibold">
+                        <span>Discount ({appliedCoupon.code})</span>
+                        <span>-€{discountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex justify-between items-center mb-6">
                     <span className="font-bold text-text-primary text-lg sm:text-xl">Total</span>
                     <span className="font-black text-primary text-2xl drop-shadow-[0_0_8px_rgba(0,158,227,0.15)]">
-                      €{cartTotal.toFixed(2)}
+                      €{finalTotal.toFixed(2)}
                     </span>
                   </div>
                 </>

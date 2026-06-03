@@ -104,6 +104,37 @@ export async function startMercadoPagoCheckout(payload: {
   }
 }
 
+// ── Coupons / Discounts ──
+
+export type ApplyDiscountResult = {
+  valid: boolean;
+  code?: string;
+  discount_amount?: number;
+  original_amount?: number;
+  final_amount?: number;
+  message?: string;
+};
+
+/**
+ * Validates a coupon code against the current cart total.
+ * Returns the calculation result; never throws on an invalid coupon
+ * (the `valid` flag carries the outcome).
+ */
+export async function validateCoupon(code: string, cartTotal: number): Promise<ApplyDiscountResult> {
+  try {
+    const response = await fetch('/api/discounts/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify({ code, cartTotal }),
+    });
+    const data = await response.json();
+    return (data?.data as ApplyDiscountResult) ?? { valid: false, message: 'Could not validate coupon.' };
+  } catch {
+    return { valid: false, message: 'Could not validate coupon. Please try again.' };
+  }
+}
+
 export async function createTicket(payload: CreateTicketInput): Promise<any> {
   return fetchApi('/api/tickets', {
     method: 'POST',
