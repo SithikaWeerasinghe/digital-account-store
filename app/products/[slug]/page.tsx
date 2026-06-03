@@ -80,6 +80,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [selectedGuarantee, setSelectedGuarantee] = useState<GuaranteeOption | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
 
+
   useEffect(() => {
     const loadData = async () => {
       try {

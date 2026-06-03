@@ -51,6 +51,23 @@ function ProductsContent() {
     loadProducts();
   }, []);
 
+  // Force scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Force scroll to top when products load
+  useEffect(() => {
+    if (!isLoading && products.length > 0) {
+      window.scrollTo(0, 0);
+    }
+  }, [isLoading, products]);
+
+  // Reset scroll to top when filters/search change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeCategory, search, sort]);
+
   const filtered = useMemo(() => {
     let result = [...products];
 
