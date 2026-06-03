@@ -25,16 +25,25 @@ const inMemoryReviews: DatabaseReviewRow[] = sampleReviews.map((r) => ({
 }));
 
 export function mapDatabaseReview(row: DatabaseReviewRow): Review {
-  const namePart = row.customer_email.split('@')[0] || 'Anonymous';
-  const userName = namePart
-    .split(/[._-]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  let email = row.customer_email || '';
+  let userName = 'Anonymous';
+
+  if (email.includes('|')) {
+    const parts = email.split('|');
+    email = parts[0];
+    userName = parts[1];
+  } else {
+    const namePart = email.split('@')[0] || 'Anonymous';
+    userName = namePart
+      .split(/[._-]/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
 
   return {
     id: row.id,
     productId: row.product_id,
-    userId: row.customer_email,
+    userId: email,
     userName,
     rating: row.rating,
     comment: row.comment,

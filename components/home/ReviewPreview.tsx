@@ -99,10 +99,8 @@ export default function ReviewPreview() {
     setIsSubmitting(true);
     setSubmitError('');
     try {
-      // Format email to preserve the name in the derived username logic
-      const namePart = formName.trim().toLowerCase().replace(/\s+/g, '.');
-      const emailDomain = formEmail.trim() ? (formEmail.includes('@') ? formEmail.trim().split('@')[1] : 'visitor.apexfled.com') : 'visitor.apexfled.com';
-      const formattedEmail = `${namePart}@${emailDomain}`;
+      const emailVal = formEmail.trim() || 'visitor@apexfled.com';
+      const formattedEmail = `${emailVal}|${formName.trim()}`;
 
       await createReview({
         rating: formRating,
