@@ -19,6 +19,11 @@ export interface Order {
   payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
   delivery_status?: 'pending' | 'delivered' | 'failed';
   created_at?: string;
+  // Coupon / discount fields (null/undefined when no coupon was used)
+  discount_code?: string | null;
+  discount_amount?: number;
+  original_amount?: number | null;
+  final_amount?: number | null;
   // Stripe integration fields (DEPRECATED — Stripe is no longer used)
   stripe_session_id?: string | null;
   stripe_payment_intent_id?: string | null;
@@ -73,4 +78,11 @@ export type CreateOrderInput = {
   selectedGuaranteeMonths?: number;
   selectedGuaranteeTotalPrice?: number;
   selectedGuaranteeMonthlyPrice?: number;
+  // Coupon / discount (computed per-order share, passed from checkout)
+  discountCode?: string | null;
+  discountAmount?: number;
+  originalAmount?: number;
+  finalAmount?: number;
+  /** When true, this order's creation increments the coupon's used_count (set on first order of a checkout only). */
+  incrementCoupon?: boolean;
 };

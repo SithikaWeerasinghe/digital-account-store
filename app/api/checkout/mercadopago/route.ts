@@ -64,9 +64,10 @@ export async function POST(request: NextRequest) {
 
     const items: PreferenceItemInput[] = orders.map((order) => {
       const quantity = order.quantity ?? order.items?.[0]?.quantity ?? 1;
-      const unitPrice =
-        order.items?.[0]?.price ??
-        Number(((order.amount ?? order.totalAmount ?? 0) / (quantity || 1)).toFixed(2));
+      // Charge the discounted amount: prefer final_amount, then amount/totalAmount.
+      const lineTotal =
+        order.final_amount ?? order.amount ?? order.totalAmount ?? 0;
+      const unitPrice = Number((lineTotal / (quantity || 1)).toFixed(2));
       const title =
         order.items?.[0]?.product?.name || order.product_id || 'Digital Product';
       return {
@@ -113,10 +114,20 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('[mercadopago] Checkout preference creation failed:', error?.message || error);
+    const message = error?.message || 'Failed to create Mercado Pago checkout';
+    const isCurrencyError = message.includes('MERCADOPAGO_CURRENCY') || message.includes('Invalid');
+
+    console.error('[mercadopago] Checkout preference creation failed:', message);
+
     return NextResponse.json(
-      { success: false, message: error?.message || 'Failed to create Mercado Pago checkout' },
-      { status: 500 }
+      {
+        success: false,
+        message: isCurrencyError
+          ? 'Invalid Mercado Pago currency configuration. Please check MERCADOPAGO_CURRENCY in environment variables.'
+          : message,
+        code: isCurrencyError ? 'invalid_currency' : 'checkout_failed',
+      },
+      { status: isCurrencyError ? 400 : 500 }
     );
   }
 }

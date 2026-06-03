@@ -181,10 +181,40 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
             <InfoRow icon={Calendar} label="Order Date" value={formatDate(order.createdAt)} />
           </div>
 
+          {/* Discount (only shown when a coupon was used) */}
+          {order.discount_code && (order.discount_amount ?? 0) > 0 && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <Tag size={14} className="text-emerald-600" />
+                <span className="text-[10px] font-black tracking-widest uppercase text-emerald-700">
+                  Coupon Applied
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Original Amount</span>
+                <span className="font-semibold text-slate-700 line-through">
+                  {formatCurrency(order.original_amount ?? order.totalAmount)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">
+                  Discount <span className="font-mono font-bold text-emerald-700">{order.discount_code}</span>
+                </span>
+                <span className="font-semibold text-emerald-700">
+                  -{formatCurrency(order.discount_amount ?? 0)}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Amount */}
           <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-xl px-4 py-3">
-            <span className="text-sm font-black tracking-widest uppercase text-slate-600">Total Amount</span>
-            <span className="text-2xl font-black text-primary">{formatCurrency(order.totalAmount)}</span>
+            <span className="text-sm font-black tracking-widest uppercase text-slate-600">
+              {order.discount_code && (order.discount_amount ?? 0) > 0 ? 'Final Amount' : 'Total Amount'}
+            </span>
+            <span className="text-2xl font-black text-primary">
+              {formatCurrency(order.final_amount ?? order.totalAmount)}
+            </span>
           </div>
 
           {/* Mercado Pago gateway details (only shown when present) */}

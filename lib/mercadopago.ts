@@ -10,7 +10,24 @@ import { createHmac, timingSafeEqual } from 'crypto';
 
 const ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET;
-const DEFAULT_CURRENCY = process.env.MERCADOPAGO_CURRENCY || 'ARS';
+const DEFAULT_CURRENCY = process.env.MERCADOPAGO_CURRENCY;
+
+// Valid Mercado Pago currency codes per country
+const VALID_CURRENCIES = ['ARS', 'MXN', 'BRL', 'COP', 'CLP', 'PEN', 'UYU'];
+
+function validateCurrency(currency?: string): string {
+  if (!currency) {
+    throw new Error(
+      'MERCADOPAGO_CURRENCY is required. Use your Mercado Pago account country currency such as ARS, MXN, BRL, COP, CLP, PEN, or UYU.'
+    );
+  }
+  if (!VALID_CURRENCIES.includes(currency.toUpperCase())) {
+    throw new Error(
+      `Invalid MERCADOPAGO_CURRENCY: "${currency}". Must be one of: ${VALID_CURRENCIES.join(', ')}`
+    );
+  }
+  return currency.toUpperCase();
+}
 
 const MP_API_BASE = 'https://api.mercadopago.com';
 
@@ -57,7 +74,7 @@ export async function createCheckoutPreference(
   }
 
   const siteUrl = params.siteUrl.replace(/\/$/, '');
-  const currency = params.currency || DEFAULT_CURRENCY;
+  const currency = validateCurrency(params.currency || DEFAULT_CURRENCY);
   const ref = encodeURIComponent(params.orderId);
 
   // Our own order_id is appended so the result pages know the order even before

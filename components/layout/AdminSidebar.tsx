@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingCart, Archive, Ticket, Star, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Archive, Ticket, Star, LogOut, X, Globe, Tag } from 'lucide-react';
 import { ROUTES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import ApexFledLogo from '@/components/ui/ApexFledLogo';
@@ -25,6 +25,7 @@ export default function AdminSidebar({
     { href: ROUTES.ADMIN.PRODUCTS, label: 'Products', icon: Package },
     { href: ROUTES.ADMIN.ORDERS, label: 'Orders', icon: ShoppingCart },
     { href: ROUTES.ADMIN.INVENTORY, label: 'Inventory', icon: Archive },
+    { href: ROUTES.ADMIN.DISCOUNTS, label: 'Coupons', icon: Tag },
     { href: ROUTES.ADMIN.TICKETS, label: 'Tickets', icon: Ticket },
     { href: ROUTES.ADMIN.REVIEWS, label: 'Reviews', icon: Star },
   ];
@@ -85,8 +86,16 @@ export default function AdminSidebar({
         })}
       </nav>
 
-      <div className="p-4 border-t border-slate-200/80 relative">
+      <div className="p-4 border-t border-slate-200/80 relative space-y-3">
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent"></div>
+        <Link
+          href="/"
+          onClick={() => setIsOpen(false)}
+          className="flex items-center justify-center gap-2.5 px-4 py-3 w-full rounded-xl text-xs font-black font-heading tracking-widest uppercase text-slate-600 hover:text-slate-900 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-all duration-200"
+        >
+          <Globe size={15} />
+          View Store
+        </Link>
         <button
           onClick={async () => {
             setIsLoggingOut(true);
