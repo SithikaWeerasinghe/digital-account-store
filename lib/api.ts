@@ -206,3 +206,51 @@ export async function fetchAdminReviews(): Promise<Review[]> {
   return fetchApi<Review[]>('/api/reviews');
 }
 
+/**
+ * Fetch admin API with Supabase auth token in Authorization header.
+ * Call this from client-side admin pages when making requests to admin API routes.
+ */
+export async function fetchAdminApi<T>(
+  url: string,
+  options?: RequestInit
+): Promise<T> {
+  try {
+    // Import Supabase client dynamically to avoid SSR issues
+    const { supabase } = await import('@/lib/supabase');
+
+    if (!supabase) {
+      throw new Error('Supabase client not configured');
+    }
+
+    // Get the current session's access token
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session?.access_token) {
+      throw new Error('No authentication session. Please log in again.');
+    }
+
+    // Make the request with the Bearer token
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options?.headers,
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || `API Error: ${response.status}`);
+    }
+
+    return data.data;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('An unexpected error occurred.');
+  }
+}
+

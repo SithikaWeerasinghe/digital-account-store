@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { CreditCard, Bitcoin, Banknote, ShieldCheck } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { CreditCard, Bitcoin, Banknote, ShieldCheck, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { createOrder, startMercadoPagoCheckout } from '@/lib/api';
 import { useCart } from '@/lib/contexts/CartContext';
@@ -10,11 +10,13 @@ import { useRouter } from 'next/navigation';
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, cartTotal, clearCart } = useCart();
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto' | 'manual'>('card');
   const [isSuccess, setIsSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   useEffect(() => {
     if (items.length === 0 && !isSuccess) {
@@ -25,9 +27,20 @@ export default function CheckoutPage() {
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setEmailError('');
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Please enter a valid email address.');
+    // Validate email
+    if (!email) {
+      setEmailError('Please enter your email address.');
+      emailInputRef.current?.focus();
+      emailInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('Please enter a valid email address.');
+      emailInputRef.current?.focus();
+      emailInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -41,13 +54,25 @@ export default function CheckoutPage() {
       // 1. Create one pending order per cart item in Supabase.
       const createdOrders: any[] = [];
       for (const item of items) {
-        const amount = (item.selectedVariant?.price ?? item.product.price) * item.quantity;
+        const itemPrice = item.selectedGuarantee?.total_price
+          ?? item.selectedOption?.price
+          ?? item.selectedVariant?.price
+          ?? item.product.price;
+        const amount = itemPrice * item.quantity;
         const created = await createOrder({
           customerEmail: email,
           productId: item.product.id,
           quantity: item.quantity,
           amount: amount,
-          paymentMethod: paymentMethod
+          paymentMethod: paymentMethod,
+          selectedOptionId: item.selectedOption?.id,
+          selectedOptionLabel: item.selectedOption?.label,
+          selectedOptionPrice: item.selectedOption?.price,
+          selectedGuaranteeId: item.selectedGuarantee?.id,
+          selectedGuaranteeLabel: item.selectedGuarantee?.label,
+          selectedGuaranteeMonths: item.selectedGuarantee?.months,
+          selectedGuaranteeTotalPrice: item.selectedGuarantee?.total_price,
+          selectedGuaranteeMonthlyPrice: item.selectedGuarantee?.monthly_price
         });
         createdOrders.push(created);
       }
@@ -139,12 +164,21 @@ export default function CheckoutPage() {
             <h2 className="text-xl font-black font-heading uppercase tracking-widest text-text-primary mb-4">Order Summary</h2>
             <div className="space-y-3">
               {items.map((item) => {
-                const itemPrice = item.selectedVariant?.price ?? item.product.price;
+                const itemPrice = item.selectedGuarantee?.total_price
+                  ?? item.selectedOption?.price
+                  ?? item.selectedVariant?.price
+                  ?? item.product.price;
                 return (
                   <div key={item.id} className="flex justify-between items-center pb-3 border-b border-border last:border-0">
                     <div>
                       <p className="font-semibold text-text-primary">{item.product.name}</p>
-                      {item.selectedVariant && (
+                      {item.selectedOption && (
+                        <p className="text-xs text-text-secondary">Option: {item.selectedOption.label}</p>
+                      )}
+                      {item.selectedGuarantee && (
+                        <p className="text-xs text-text-secondary">Guarantee: {item.selectedGuarantee.label}</p>
+                      )}
+                      {item.selectedVariant && !item.selectedOption && (
                         <p className="text-xs text-text-secondary">{item.selectedVariant.label}</p>
                       )}
                     </div>
@@ -175,14 +209,30 @@ export default function CheckoutPage() {
                 {/* Email */}
                 <div>
                   <label htmlFor="email" className="block text-sm sm:text-base font-bold text-text-secondary mb-2 uppercase tracking-wider">Email Address</label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email for delivery"
-                    className="w-full bg-white border border-border rounded-xl px-4 py-3.5 text-text-primary text-base placeholder:text-text-secondary/40 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm"
-                  />
+                  <div className="relative">
+                    <input
+                      ref={emailInputRef}
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (emailError) setEmailError('');
+                      }}
+                      placeholder="Enter your email for delivery"
+                      className={`w-full bg-white border rounded-xl px-4 py-3.5 text-text-primary text-base placeholder:text-text-secondary/40 focus:outline-none transition-all shadow-sm ${
+                        emailError
+                          ? 'border-red-500 focus:border-red-600 focus:ring-1 focus:ring-red-500/50'
+                          : 'border-border focus:border-primary focus:ring-1 focus:ring-primary'
+                      }`}
+                    />
+                    {emailError && (
+                      <div className="flex items-center gap-1.5 mt-2 text-red-600">
+                        <AlertCircle size={14} className="flex-shrink-0" />
+                        <span className="text-sm font-medium">{emailError}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Payment Method */}
@@ -273,7 +323,10 @@ export default function CheckoutPage() {
               {items.length > 0 && (
                 <>
                   {items.map((item) => {
-                    const itemPrice = item.selectedVariant?.price ?? item.product.price;
+                    const itemPrice = item.selectedGuarantee?.total_price
+                      ?? item.selectedOption?.price
+                      ?? item.selectedVariant?.price
+                      ?? item.product.price;
                     return (
                       <div key={item.id} className="flex gap-4 mb-6">
                         <div className="w-16 h-16 bg-slate-50 border border-border rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -296,7 +349,13 @@ export default function CheckoutPage() {
                           <h4 className="font-bold text-text-primary leading-tight mb-1 line-clamp-2">
                             {item.product.name}
                           </h4>
-                          {item.selectedVariant && (
+                          {item.selectedOption && (
+                            <p className="text-xs text-text-secondary mb-1">Opt: {item.selectedOption.label}</p>
+                          )}
+                          {item.selectedGuarantee && (
+                            <p className="text-xs text-text-secondary mb-1">Guar: {item.selectedGuarantee.label}</p>
+                          )}
+                          {item.selectedVariant && !item.selectedOption && (
                             <p className="text-xs text-text-secondary mb-1">{item.selectedVariant.label}</p>
                           )}
                           <p className="text-text-secondary text-sm sm:text-base font-semibold">

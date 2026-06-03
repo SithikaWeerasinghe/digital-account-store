@@ -6,7 +6,7 @@ import { OrderStatusUpdate, resendOrderEmail } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import {
   X, Mail, Package, CreditCard, Hash, Calendar, Loader2,
-  CheckCircle, Truck, Send,
+  CheckCircle, Truck, Send, Tag, Shield, DollarSign,
 } from 'lucide-react';
 
 interface OrderDetailProps {
@@ -61,6 +61,57 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
       setTimeout(() => setEmailSent(false), 3000);
     } catch (err: any) {
       setError(err.message || 'Failed to send email');
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const handleDeliverOrder = async () => {
+    try {
+      setBusyAction('deliver');
+      setError('');
+
+      // Import Supabase to get auth token
+      const supabaseModule = await import('@/lib/supabase');
+      const supabase = supabaseModule.supabase;
+
+      if (!supabase) {
+        setError('Supabase is not configured');
+        setBusyAction(null);
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setError('Session expired. Please log in again.');
+        setBusyAction(null);
+        return;
+      }
+
+      const headers = {
+        'Authorization': `Bearer ${session.access_token}`,
+      };
+
+      const res = await fetch(`/api/admin/orders/${order.id}/deliver`, {
+        method: 'POST',
+        headers,
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Refresh order status
+        const newRes = await fetch(`/api/admin/orders/${order.id}`, {
+          headers,
+        });
+        const newData = await newRes.json();
+        if (newData.success) {
+          setOrder(newData.data);
+        }
+        setError('');
+      } else {
+        setError(data.message || 'Failed to deliver order');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to deliver order');
     } finally {
       setBusyAction(null);
     }
@@ -164,6 +215,42 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
             </div>
           )}
 
+          {/* Product Option & Guarantee (order_metadata) */}
+          {(order.order_metadata?.product_option || order.order_metadata?.guarantee) && (
+            <div className="bg-slate-50 rounded-xl px-4">
+              <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 pt-3 -mb-1">
+                Selection Details
+              </p>
+              {order.order_metadata.product_option && (
+                <InfoRow
+                  icon={Tag}
+                  label="Product Option"
+                  value={`${order.order_metadata.product_option.label}${
+                    order.order_metadata.product_option.price != null
+                      ? ` · ${formatCurrency(order.order_metadata.product_option.price)}`
+                      : ''
+                  }`}
+                />
+              )}
+              {order.order_metadata.guarantee && (
+                <>
+                  <InfoRow
+                    icon={Shield}
+                    label="Guarantee"
+                    value={order.order_metadata.guarantee.label}
+                  />
+                  {order.order_metadata.guarantee.total_price && (
+                    <InfoRow
+                      icon={DollarSign}
+                      label="Guarantee Total"
+                      value={formatCurrency(order.order_metadata.guarantee.total_price)}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
           {/* Actions */}
           <div className="space-y-3">
             <p className="text-[10px] font-black tracking-widest uppercase text-slate-400">Admin Actions</p>
@@ -177,6 +264,18 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
               >
                 {busyAction === 'paid' ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
                 Mark as Paid
+              </button>
+            )}
+
+            {/* Deliver Order (send digital access) */}
+            {deliveryStatus !== 'delivered' && (
+              <button
+                onClick={() => handleDeliverOrder()}
+                disabled={!!busyAction}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-600 text-white font-black font-heading tracking-widest uppercase text-sm hover:bg-blue-700 transition-all disabled:opacity-50"
+              >
+                {busyAction === 'deliver' ? <Loader2 size={16} className="animate-spin" /> : <Package size={16} />}
+                Send Delivery / Access Details
               </button>
             )}
 

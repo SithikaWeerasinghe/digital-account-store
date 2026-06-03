@@ -187,7 +187,10 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
 
   if (supabase) {
     const { data, error } = await supabase.from('orders').insert(newRow).select().single();
-    if (!error && data) return mapDatabaseOrder(data as DatabaseOrderRow);
+    if (error) {
+      throw new Error(`Failed to save order to database: ${error.message}`);
+    }
+    if (data) return mapDatabaseOrder(data as DatabaseOrderRow);
   }
 
   inMemoryOrders.push(newRow);

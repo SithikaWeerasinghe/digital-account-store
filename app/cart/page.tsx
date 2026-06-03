@@ -43,7 +43,10 @@ export default function CartPage() {
             <div className="lg:col-span-2">
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
                 {items.map((item) => {
-                  const itemPrice = item.selectedVariant?.price ?? item.product.price;
+                  const itemPrice = item.selectedGuarantee?.total_price
+                    ?? item.selectedOption?.price
+                    ?? item.selectedVariant?.price
+                    ?? item.product.price;
                   const itemTotal = itemPrice * item.quantity;
 
                   return (
@@ -76,8 +79,21 @@ export default function CartPage() {
                             {item.product.name}
                           </Link>
 
-                          {item.selectedVariant && (
-                            <p className="text-sm text-slate-600 mt-1">
+                          {item.selectedOption && (
+                            <p className="text-xs text-slate-600 mt-1">
+                              Product Option: <span className="font-semibold">{item.selectedOption.label}</span>
+                            </p>
+                          )}
+
+                          {item.selectedGuarantee && (
+                            <p className="text-xs text-slate-600 mt-1">
+                              Guarantee: <span className="font-semibold">{item.selectedGuarantee.label}</span>
+                              {item.selectedGuarantee.monthly_price && ` · €${item.selectedGuarantee.monthly_price.toFixed(2)}/mo`}
+                            </p>
+                          )}
+
+                          {item.selectedVariant && !item.selectedOption && (
+                            <p className="text-xs text-slate-600 mt-1">
                               Guarantee: <span className="font-semibold">{item.selectedVariant.label}</span>
                             </p>
                           )}

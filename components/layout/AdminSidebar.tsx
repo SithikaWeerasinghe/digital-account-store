@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingCart, Ticket, Star, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Archive, Ticket, Star, LogOut, X } from 'lucide-react';
 import { ROUTES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import ApexFledLogo from '@/components/ui/ApexFledLogo';
@@ -24,6 +24,7 @@ export default function AdminSidebar({
     { href: ROUTES.ADMIN.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
     { href: ROUTES.ADMIN.PRODUCTS, label: 'Products', icon: Package },
     { href: ROUTES.ADMIN.ORDERS, label: 'Orders', icon: ShoppingCart },
+    { href: ROUTES.ADMIN.INVENTORY, label: 'Inventory', icon: Archive },
     { href: ROUTES.ADMIN.TICKETS, label: 'Tickets', icon: Ticket },
     { href: ROUTES.ADMIN.REVIEWS, label: 'Reviews', icon: Star },
   ];

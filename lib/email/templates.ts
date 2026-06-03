@@ -207,3 +207,68 @@ export function buildAdminNotificationEmail(order: Order, adminEmail: string) {
     html: wrap(`New Order ${invoice}`, inner),
   };
 }
+
+/**
+ * Digital delivery email: sends account/license/access details to customer.
+ * Shows the delivery content in a prominent green box.
+ */
+export function buildDeliveryEmail(
+  order: Order,
+  deliveryContent: string,
+  productName?: string
+) {
+  const invoice = order.invoice_number || order.id;
+  const email = order.customer_email || order.userId;
+  const productDisplay = productName || order.items?.[0]?.product?.name || 'Digital Product';
+
+  const inner = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;">✓ Your Digital Access</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.6;">
+      Your order has been confirmed and your digital access details are below. Keep this information private and secure.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;background-color:#f8fafc;border-bottom:1px solid #e2e8f0;">Invoice</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:700;color:#0f172a;background-color:#f8fafc;border-bottom:1px solid #e2e8f0;text-align:right;font-family:'Courier New',monospace;">${invoice}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Product</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${productDisplay}</td>
+      </tr>
+    </table>
+
+    <div style="margin:24px 0;padding:16px;background-color:#f0fdf4;border:2px solid #16a34a;border-radius:12px;">
+      <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#15803d;text-transform:uppercase;letter-spacing:0.5px;">
+        Your Access Details
+      </p>
+      <pre style="margin:0;padding:12px;background-color:#ffffff;border:1px solid #dcfce7;border-radius:8px;font-size:13px;font-family:'Courier New',monospace;color:#0f172a;line-height:1.5;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word;">${escapeHtml(deliveryContent)}</pre>
+    </div>
+
+    <div style="margin:24px 0;padding:16px;background-color:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;">
+      <p style="margin:0;font-size:13px;color:#92400e;line-height:1.6;">
+        <strong>Security Notice:</strong> Keep this information private. Do not share these credentials with anyone. If you believe your access has been compromised, contact support immediately.
+      </p>
+    </div>
+
+    <div style="text-align:center;margin:28px 0 8px;">
+      <a href="${SITE_URL}" style="display:inline-block;padding:12px 32px;background-color:${BRAND_COLOR};color:#ffffff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-decoration:none;border-radius:10px;">Return to Store</a>
+    </div>`;
+
+  return {
+    to: email,
+    subject: `Your Digital Access — ${productDisplay} (${invoice})`,
+    html: wrap(`Digital Access ${invoice}`, inner),
+  };
+}
+
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  };
+  return text.replace(/[&<>"']/g, (m) => map[m]);
+}
