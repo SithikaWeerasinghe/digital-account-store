@@ -114,8 +114,8 @@ export default function Footer() {
                 { label: 'Home', href: ROUTES.HOME },
                 { label: 'Products', href: ROUTES.PRODUCTS },
                 { label: 'Support', href: ROUTES.SUPPORT },
-                { label: 'Terms of Service', href: '/terms-of-service' },
-                { label: 'Privacy Policy', href: '/privacy-policy' },
+                { label: 'Terms of Service', href: '/terms' },
+                { label: 'Privacy Policy', href: '/privacy' },
               ].map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="hover:text-primary hover:translate-x-1 inline-flex items-center gap-1.5 transition-all duration-200">
