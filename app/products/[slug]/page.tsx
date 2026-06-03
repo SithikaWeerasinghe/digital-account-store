@@ -333,8 +333,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     {/* Variant picker */}
                     {product.variants?.length ? (
                       <div>
-                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Subscription Plan</label>
-                        <div className="space-y-2">
+                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Guarantee Option</label>
+                        <div className="flex flex-wrap gap-2">
                           {product.variants.map((v) => (
                             <button
                               key={v.id}
@@ -416,7 +416,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-[20px]"></div>
                       {selectedVariant && (
                         <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
-                          <span>Plan</span>
+                          <span>Guarantee</span>
                           <span>{selectedVariant.label}</span>
                         </div>
                       )}

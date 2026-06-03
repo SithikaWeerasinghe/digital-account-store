@@ -5,6 +5,8 @@ import {
   mapPaymentStatus,
   verifyWebhookSignature,
 } from '@/lib/mercadopago';
+import { sendOrderConfirmation, sendAdminNotification } from '@/lib/services/emailService';
+import { Order } from '@/types/order';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -110,10 +112,24 @@ export async function POST(request: NextRequest) {
       orderIds.map((id) => orderService.updateOrderPaymentFields(id, patch))
     );
 
-    const updated = results.filter((r) => r.status === 'fulfilled' && r.value).length;
+    const updatedOrders = results
+      .filter((r): r is PromiseFulfilledResult<Order | null> => r.status === 'fulfilled')
+      .map((r) => r.value)
+      .filter((o): o is Order => !!o);
+    const updated = updatedOrders.length;
 
-    // NOTE: When mappedStatus === 'paid', this is where Resend confirmation +
-    // admin notification emails will be dispatched later (kept disabled for now).
+    // On approved payment, dispatch the customer payment confirmation + admin
+    // paid-order notification. Best-effort only: emailService no-ops when
+    // RESEND_API_KEY is missing, and a failure here must never break the webhook
+    // (Promise.allSettled + emailService internal try/catch guarantee this).
+    if (mappedStatus === 'paid' && updatedOrders.length > 0) {
+      await Promise.allSettled(
+        updatedOrders.flatMap((order) => [
+          sendOrderConfirmation(order),
+          sendAdminNotification(order),
+        ])
+      );
+    }
 
     return NextResponse.json({
       success: true,
