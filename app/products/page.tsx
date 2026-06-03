@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { fetchProducts } from '@/lib/api';
 import { Product } from '@/types/product';
 import ProductCard from '@/components/products/ProductCard';
+import PromoBannerList from '@/components/promos/PromoBannerList';
 import { Search, SlidersHorizontal, Zap, Shield, Package, HeadphonesIcon } from 'lucide-react';
 
 const CATEGORIES = ['All Products', 'Gaming', 'Streaming', 'AI Tools', 'Software', 'Productivity'];
@@ -113,6 +114,9 @@ function ProductsContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+        {/* Active products + global promo banners (renders nothing if none) */}
+        <PromoBannerList placement="products" className="mb-8" />
+
         {/* Search + Sort */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-grow">

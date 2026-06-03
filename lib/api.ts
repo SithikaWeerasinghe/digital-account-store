@@ -3,6 +3,7 @@ import { Review, CreateReviewInput } from '@/types/review';
 import { Order, CreateOrderInput } from '@/types/order';
 import { Ticket, CreateTicketInput } from '@/types/ticket';
 import { AdminLoginInput } from '@/types/admin';
+import { PromoBanner, PromoPlacement } from '@/types/promo';
 
 export type ApiResponse<T> = {
   success: boolean;
@@ -132,6 +133,24 @@ export async function validateCoupon(code: string, cartTotal: number): Promise<A
     return (data?.data as ApplyDiscountResult) ?? { valid: false, message: 'Could not validate coupon.' };
   } catch {
     return { valid: false, message: 'Could not validate coupon. Please try again.' };
+  }
+}
+
+// ── Promo Banners (public) ──
+
+/**
+ * Fetches active promo banners for a placement (always includes global banners).
+ * Never throws — returns an empty array on any failure so pages never break.
+ */
+export async function fetchActivePromos(placement: PromoPlacement): Promise<PromoBanner[]> {
+  try {
+    const response = await fetch(`/api/promos?placement=${encodeURIComponent(placement)}`, {
+      cache: 'no-store',
+    });
+    const data = await response.json();
+    return (data?.data as PromoBanner[]) ?? [];
+  } catch {
+    return [];
   }
 }
 
