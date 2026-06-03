@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { CreditCard, Bitcoin, Banknote, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
-import { createOrder } from '@/lib/api';
+import { createOrder, startMercadoPagoCheckout } from '@/lib/api';
 import { useCart } from '@/lib/contexts/CartContext';
 import { useRouter } from 'next/navigation';
 
@@ -38,16 +38,47 @@ export default function CheckoutPage() {
 
     setIsLoading(true);
     try {
+      // 1. Create one pending order per cart item in Supabase.
+      const createdOrders: any[] = [];
       for (const item of items) {
         const amount = (item.selectedVariant?.price ?? item.product.price) * item.quantity;
-        await createOrder({
+        const created = await createOrder({
           customerEmail: email,
           productId: item.product.id,
           quantity: item.quantity,
           amount: amount,
           paymentMethod: paymentMethod
         });
+        createdOrders.push(created);
       }
+
+      // 2. Online card payment → Mercado Pago Checkout Pro (redirect).
+      //    Payment is confirmed ONLY by the webhook, never on this redirect.
+      if (paymentMethod === 'card') {
+        const ids = createdOrders.map((o) => o?.id).filter(Boolean) as string[];
+        if (ids.length > 0) {
+          const result = await startMercadoPagoCheckout({ order_id: ids[0], order_ids: ids });
+          const redirectUrl = result?.data?.init_point || result?.data?.sandbox_init_point;
+
+          if (result.success && redirectUrl) {
+            clearCart();
+            window.location.href = redirectUrl; // leave the app for Mercado Pago
+            return;
+          }
+
+          // Gateway not configured yet → fall back to a pending confirmation
+          // instead of failing the order the customer just placed.
+          if (result.code === 'not_configured') {
+            clearCart();
+            setIsSuccess(true);
+            return;
+          }
+
+          throw new Error(result.message || 'Could not start the Mercado Pago checkout. Please try again.');
+        }
+      }
+
+      // 3. Manual / crypto → keep the existing pending/manual flow.
       clearCart();
       setIsSuccess(true);
     } catch (err: any) {
@@ -67,15 +98,16 @@ export default function CheckoutPage() {
             <ShieldCheck size={32} className="text-primary" />
           </div>
           
-          <h2 className="text-2xl font-bold font-heading text-text-primary mb-2 tracking-wide">Order preview created</h2>
+          <h2 className="text-2xl font-bold font-heading text-text-primary mb-2 tracking-wide">Order Received</h2>
           <p className="text-text-secondary text-sm sm:text-base mb-6">
-            Your checkout details are ready. Real payment processing will be connected in the backend phase.
+            Your order has been created and is <span className="font-bold">pending confirmation</span>. Once payment is
+            confirmed, your digital products will be sent to your email.
           </p>
-          
+
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-8">
-            <p className="text-sm sm:text-base text-primary font-medium">Checkout request created successfully. Payment integration will be connected later.</p>
+            <p className="text-sm sm:text-base text-primary font-medium">Keep your order details safe. You can reference them when contacting support.</p>
           </div>
-          
+
           <Link href="/" className="mp-button-primary w-full inline-block text-center py-3">
             Return to Home
           </Link>
@@ -169,8 +201,8 @@ export default function CheckoutPage() {
                       }`}
                     >
                       <CreditCard size={24} className={`mb-2 ${paymentMethod === 'card' ? 'text-primary' : 'text-text-secondary'}`} />
-                      <span className="font-bold text-text-primary text-base mb-1">Card Payment</span>
-                      <span className="text-xs sm:text-sm text-text-secondary leading-tight">Pay securely using a debit or credit card.</span>
+                      <span className="font-bold text-text-primary text-base mb-1">Online Payment</span>
+                      <span className="text-xs sm:text-sm text-text-secondary leading-tight">Pay securely via Mercado Pago — cards, wallet &amp; local methods.</span>
                     </button>
 
                     {/* Crypto */}

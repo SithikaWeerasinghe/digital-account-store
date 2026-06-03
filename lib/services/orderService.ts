@@ -13,10 +13,15 @@ export interface DatabaseOrderRow {
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   delivery_status: 'pending' | 'delivered' | 'failed';
   created_at: string;
-  // Stripe integration fields
+  // Stripe integration fields (DEPRECATED — kept but unused)
   stripe_session_id?: string | null;
   stripe_payment_intent_id?: string | null;
   paid_at?: string | null;
+  // Mercado Pago integration fields (ACTIVE gateway)
+  mercadopago_preference_id?: string | null;
+  mercadopago_payment_id?: string | null;
+  mercadopago_merchant_order_id?: string | null;
+  mercadopago_status?: string | null;
 }
 
 // In-memory fallback used when Supabase is not configured
@@ -98,6 +103,10 @@ export function mapDatabaseOrder(row: DatabaseOrderRow): Order {
     stripe_session_id: row.stripe_session_id || null,
     stripe_payment_intent_id: row.stripe_payment_intent_id || null,
     paid_at: row.paid_at || null,
+    mercadopago_preference_id: row.mercadopago_preference_id || null,
+    mercadopago_payment_id: row.mercadopago_payment_id || null,
+    mercadopago_merchant_order_id: row.mercadopago_merchant_order_id || null,
+    mercadopago_status: row.mercadopago_status || null,
   };
 }
 
@@ -219,6 +228,54 @@ export async function updateOrderStatus(
     .single();
   if (error || !data) {
     throw new Error(error?.message || 'Failed to update order');
+  }
+  return mapDatabaseOrder(data as DatabaseOrderRow);
+}
+
+// ============================================================
+// PAYMENT GATEWAY: UPDATE PAYMENT / PROVIDER FIELDS
+// Used by the Mercado Pago checkout route (save preference id) and the
+// Mercado Pago webhook (save payment id, status, paid_at, mark paid/failed).
+// Separate from the admin updateOrderStatus so gateway writes never depend on
+// the admin-facing validation rules.
+// ============================================================
+
+export interface OrderPaymentFieldsUpdate {
+  payment_status?: 'pending' | 'paid' | 'failed' | 'refunded';
+  delivery_status?: 'pending' | 'delivered' | 'failed';
+  paid_at?: string | null;
+  mercadopago_preference_id?: string | null;
+  mercadopago_payment_id?: string | null;
+  mercadopago_merchant_order_id?: string | null;
+  mercadopago_status?: string | null;
+}
+
+export async function updateOrderPaymentFields(
+  id: string,
+  update: OrderPaymentFieldsUpdate
+): Promise<Order | null> {
+  // Only write keys that were explicitly provided (allows null to clear a field).
+  const patch: Record<string, any> = {};
+  for (const [key, value] of Object.entries(update)) {
+    if (value !== undefined) patch[key] = value;
+  }
+  if (Object.keys(patch).length === 0) return getOrderById(id);
+
+  if (!supabase) {
+    const row = inMemoryOrders.find((o) => o.id === id);
+    if (!row) return null;
+    Object.assign(row, patch);
+    return mapDatabaseOrder(row);
+  }
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update(patch)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error || !data) {
+    throw new Error(error?.message || 'Failed to update order payment fields');
   }
   return mapDatabaseOrder(data as DatabaseOrderRow);
 }
