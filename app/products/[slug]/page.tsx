@@ -172,97 +172,116 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           
           {/* LEFT COLUMN: Product Info */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Product Header Card */}
-            <div className="bg-card border border-border shadow-2xl rounded-3xl overflow-hidden">
-              <div className="aspect-[21/9] relative overflow-hidden group border-b border-slate-100 flex items-center justify-center bg-white p-4">
+            
+            {/* 1. Image Showcase Card */}
+            <div className="bg-card border border-border shadow-2xl rounded-3xl overflow-hidden p-6 flex items-center justify-center bg-white relative group">
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent pointer-events-none"></div>
+              
+              <div className="aspect-[16/10] w-full relative overflow-hidden rounded-2xl flex items-center justify-center bg-slate-50/50 border border-slate-100/70">
                 {product.imageUrl ? (
                   <>
                     <img 
                       src={product.imageUrl} 
                       alt="" 
-                      className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-35 scale-110 pointer-events-none" 
+                      className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-20 scale-110 pointer-events-none" 
                     />
                     <img 
                       src={product.imageUrl} 
                       alt={product.name} 
-                      className="relative w-full h-full object-contain z-10 transition-transform duration-500 ease-out group-hover:scale-103" 
+                      className="relative max-h-[85%] max-w-[85%] object-contain z-10 transition-transform duration-500 ease-out group-hover:scale-105" 
                     />
                   </>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-850 to-slate-800 relative z-10">
-                    <div className="absolute inset-0 bg-[linear-gradient(rgba(0,158,227,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,158,227,0.03)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-855 to-slate-800">
                     <Package size={64} className="text-primary/45 animate-pulse" />
-                  </div>
-                )}
-                
-                {/* Subtle dark gradient overlay at the bottom for element blend */}
-                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-
-                {product.isInstantDelivery && (
-                  <div className="absolute top-4 right-4 z-20">
-                    <span className="flex items-center gap-1.5 bg-white/95 backdrop-blur-sm border border-primary/20 text-primary text-xs font-black font-heading tracking-widest uppercase px-3.5 py-1.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
-                      <Zap size={11} className="text-primary fill-primary animate-pulse" /> INSTANT EMAIL DELIVERY
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="p-8 sm:p-10 relative z-10 -mt-10 bg-card rounded-t-3xl border-t border-border">
-                <div className="flex items-start justify-end gap-4 mb-6">
-                  <span className={`text-sm font-black font-heading tracking-widest uppercase px-3 py-1.5 rounded-sm border ${product.inStock ? 'text-success border-success/20 bg-success/5' : 'text-hazard border-hazard/20 bg-hazard/5'}`}>
-                    {product.inStock ? 'In Stock' : 'Out of Stock'}
-                  </span>
-                </div>
-
-                <h1 className="text-3xl sm:text-4xl font-black font-heading uppercase tracking-wider text-text-primary mb-6">{product.name}</h1>
-
-                <div className="flex items-center gap-4 mb-8 bg-secondary-background border border-border rounded-xl p-4 inline-flex">
-                  <StarRating rating={product.rating} />
-                  <span className="font-bold text-text-primary font-heading">{product.rating}</span>
-                  <span className="text-text-secondary text-sm sm:text-base font-medium">({product.reviewsCount} reviews)</span>
-                </div>
-
-                <div className="flex items-end gap-4 mb-10 pb-10 border-b border-border">
-                  <div>
-                    {product.variants?.length ? (
-                      <p className="text-xs font-black font-heading tracking-widest uppercase text-text-secondary mb-1">From</p>
-                    ) : null}
-                    <span className="text-5xl font-black font-heading text-text-primary tracking-wider">{formatCurrency(product.price)}</span>
-                  </div>
-                </div>
-
-                {/* Product Description */}
-                <div className="mb-10">
-                  <h2 className="text-lg font-black font-heading uppercase tracking-widest text-text-primary mb-4 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_8px_rgba(0,158,227,0.4)]"></span>
-                    Product Description
-                  </h2>
-                  <p className="text-text-secondary leading-relaxed font-medium">
-                    {product.description || 'Access to premium digital license keys and accounts. Delivered instantly to your email upon payment.'}
-                  </p>
-                </div>
-
-                {/* Key Features */}
-                {product.features?.length > 0 && (
-                  <div className="mb-6">
-                    <h2 className="text-lg font-black font-heading uppercase tracking-widest text-text-primary mb-5 flex items-center gap-2">
-                      <Zap size={18} className="text-warning fill-warning" />
-                      Key Features
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {product.features.map((f) => (
-                        <div key={f} className="flex items-center gap-3 text-sm sm:text-base font-medium text-text-secondary bg-secondary-background border border-border p-3 rounded-xl">
-                          <div className="w-6 h-6 rounded-sm bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                            <Check size={12} className="text-primary" />
-                          </div>
-                          {f}
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 )}
               </div>
             </div>
+
+            {/* 2. Product Info Card */}
+            <div className="bg-card border border-border shadow-2xl rounded-3xl p-8 sm:p-10 space-y-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-6">
+                <div>
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-black font-heading tracking-widest uppercase px-3.5 py-1.5 rounded-full border mb-4 ${product.inStock ? 'text-success border-success/20 bg-success/5' : 'text-hazard border-hazard/20 bg-hazard/5'}`}>
+                    {product.inStock ? '● In Stock' : '○ Out of Stock'}
+                  </span>
+                  <h1 className="text-3xl sm:text-4xl font-black font-heading uppercase tracking-wider text-text-primary leading-tight">{product.name}</h1>
+                </div>
+                
+                <div className="flex flex-col sm:items-end gap-1 flex-shrink-0">
+                  {product.variants?.length ? (
+                    <span className="text-xs font-black font-heading tracking-widest uppercase text-text-secondary">Starting From</span>
+                  ) : null}
+                  <span className="text-4xl sm:text-5xl font-black font-heading text-primary tracking-wider">{formatCurrency(product.price)}</span>
+                </div>
+              </div>
+
+              {/* Rating Summary */}
+              <div className="flex items-center gap-4 bg-secondary-background border border-border rounded-2xl p-4 w-fit">
+                <StarRating rating={product.rating} />
+                <span className="font-black text-text-primary font-heading text-lg leading-none">{product.rating.toFixed(1)}</span>
+                <span className="text-text-secondary text-sm font-semibold">({product.reviewsCount} verified reviews)</span>
+              </div>
+
+              {/* Product Description */}
+              <div className="space-y-3">
+                <h2 className="text-lg font-black font-heading uppercase tracking-widest text-text-primary flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full shadow-[0_0_8px_rgba(0,158,227,0.4)]"></span>
+                  Product Description
+                </h2>
+                <p className="text-text-secondary leading-relaxed font-medium text-base sm:text-lg">
+                  {product.description || 'Access to premium digital license keys and accounts. Delivered instantly to your email upon payment.'}
+                </p>
+              </div>
+
+              {/* Key Features */}
+              {product.features?.length > 0 && (
+                <div className="space-y-4 pt-6 border-t border-border/50">
+                  <h2 className="text-lg font-black font-heading uppercase tracking-widest text-text-primary flex items-center gap-2">
+                    <Zap size={18} className="text-warning fill-warning" />
+                    Key Features
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {product.features.map((f) => (
+                      <div key={f} className="flex items-center gap-3 text-sm sm:text-base font-medium text-text-secondary bg-secondary-background border border-border p-4 rounded-xl hover:border-primary/30 transition-colors">
+                        <div className="w-6 h-6 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
+                          <Check size={12} className="text-primary" />
+                        </div>
+                        {f}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 3. Customer Reviews Section */}
+            {reviews.length > 0 && (
+              <div className="bg-card border border-border shadow-2xl rounded-3xl p-8 sm:p-10 relative overflow-hidden">
+                <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-[80px]"></div>
+                
+                <h2 className="text-2xl font-black font-heading uppercase tracking-widest text-text-primary mb-6 relative z-10">
+                  Customer <span className="text-primary">Reviews</span>
+                </h2>
+                
+                <div className="max-h-[380px] overflow-y-auto border border-border bg-secondary-background rounded-2xl p-6 relative z-10 custom-scrollbar divide-y divide-border/60">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="py-4 first:pt-0 last:pb-0 flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <StarRating rating={review.rating} />
+                        <span className="text-xs text-text-secondary font-semibold font-mono">
+                          {formatDate(review.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-[14px] sm:text-base text-text-secondary leading-relaxed font-medium">
+                        &ldquo;{review.comment}&rdquo;
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </div>
 
@@ -292,8 +311,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   {/* Header */}
                   <div className="bg-secondary-background border-b border-border px-8 py-6 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-                    <h2 className="text-lg font-black font-heading uppercase tracking-widest text-text-primary mb-1">Complete Order</h2>
-                    <p className="text-primary text-xs sm:text-sm font-black font-heading tracking-widest uppercase">Instant Email Delivery</p>
+                    <h2 className="text-lg font-black font-heading uppercase tracking-widest text-text-primary">Complete Order</h2>
                   </div>
 
                   <div className="p-8 space-y-8">
@@ -316,22 +334,31 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     {product.variants?.length ? (
                       <div>
                         <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Subscription Plan</label>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="space-y-2">
                           {product.variants.map((v) => (
                             <button
                               key={v.id}
                               type="button"
                               onClick={() => setSelectedVariant(v)}
-                              className={`flex-1 min-w-[90px] flex flex-col items-center px-3 py-3 rounded-xl border text-center transition-all ${
+                              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
                                 selectedVariant?.id === v.id
-                                  ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(0,158,227,0.1)]'
+                                  ? 'border-primary bg-primary/10 shadow-[0_0_12px_rgba(0,158,227,0.12)]'
                                   : 'border-border bg-white hover:border-primary/50'
                               }`}
                             >
-                              <span className={`text-xs font-black font-heading tracking-widest uppercase mb-1 ${selectedVariant?.id === v.id ? 'text-primary' : 'text-text-secondary'}`}>
-                                {v.label}
-                              </span>
-                              <span className={`text-base font-black font-heading ${selectedVariant?.id === v.id ? 'text-text-primary' : 'text-text-secondary'}`}>
+                              <div className="flex items-center gap-3">
+                                <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                                  selectedVariant?.id === v.id ? 'border-primary bg-primary/10' : 'border-slate-300'
+                                }`}>
+                                  {selectedVariant?.id === v.id && (
+                                    <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                                  )}
+                                </div>
+                                <span className={`text-xs sm:text-[13px] font-black font-heading tracking-wider uppercase ${selectedVariant?.id === v.id ? 'text-text-primary' : 'text-text-secondary'}`}>
+                                  {v.label}
+                                </span>
+                              </div>
+                              <span className={`text-sm sm:text-base font-black font-heading ${selectedVariant?.id === v.id ? 'text-primary' : 'text-text-secondary'}`}>
                                 {formatCurrency(v.price)}
                               </span>
                             </button>
@@ -440,34 +467,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
             </div>
           </div>
         </div>
-
-        {/* Customer Reviews Section (Full Width, below the columns) */}
-        {reviews.length > 0 && (
-          <div className="bg-card border border-border shadow-2xl rounded-3xl p-8 sm:p-10 relative overflow-hidden mt-8">
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-[80px]"></div>
-            
-            <h2 className="text-2xl font-black font-heading uppercase tracking-widest text-text-primary mb-6 relative z-10">
-              Customer <span className="text-primary">Reviews</span>
-            </h2>
-            
-            {/* Unified Scrollable Reviews Box */}
-            <div className="max-h-[380px] overflow-y-auto border border-border bg-secondary-background rounded-2xl p-6 relative z-10 custom-scrollbar divide-y divide-border/60">
-              {reviews.map((review) => (
-                <div key={review.id} className="py-4 first:pt-0 last:pb-0 flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <StarRating rating={review.rating} />
-                    <span className="text-xs text-text-secondary font-semibold font-mono">
-                      {formatDate(review.createdAt)}
-                    </span>
-                  </div>
-                  <p className="text-[14px] sm:text-base text-text-secondary leading-relaxed font-medium">
-                    &ldquo;{review.comment}&rdquo;
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
