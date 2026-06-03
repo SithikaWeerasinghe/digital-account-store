@@ -87,6 +87,7 @@ export async function createCheckoutPreference(
       invoice_number: params.invoiceNumber ?? null,
     },
     statement_descriptor: 'APEXFLED',
+    locale: 'en-US',
   };
 
   const response = await fetch(`${MP_API_BASE}/checkout/preferences`, {
