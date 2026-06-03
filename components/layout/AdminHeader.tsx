@@ -21,6 +21,7 @@ export default function AdminHeader({
   const [ordersCount, setOrdersCount] = useState<number>(0);
   const [reviewsCount, setReviewsCount] = useState<number>(0);
   const [ticketsCount, setTicketsCount] = useState<number>(0);
+  const [badgeCount, setBadgeCount] = useState<number>(0);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState('');
 
@@ -109,18 +110,50 @@ export default function AdminHeader({
         ]);
         if (!active) return;
 
-        // Pending orders: delivery_status is 'pending' or status is 'pending'
+        // 1. Total counts for the popover list
         const pendingOrders = orders.filter(o => o.delivery_status === 'pending' || o.status === 'pending').length;
-
-        // Pending reviews: not approved yet
         const pendingReviews = reviews.filter(r => !r.isApproved).length;
-
-        // Active tickets: open or in_progress
         const activeTickets = tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length;
 
         setOrdersCount(pendingOrders);
         setReviewsCount(pendingReviews);
         setTicketsCount(activeTickets);
+
+        // 2. New counts since last viewed for the bell icon badge
+        let lastViewedDate: Date | null = null;
+        if (typeof window !== 'undefined') {
+          const lastViewedStr = localStorage.getItem('admin_notifications_last_viewed');
+          if (lastViewedStr) {
+            lastViewedDate = new Date(lastViewedStr);
+          }
+        }
+
+        if (lastViewedDate) {
+          const newOrders = orders.filter(o => {
+            const isPending = o.delivery_status === 'pending' || o.status === 'pending';
+            if (!isPending) return false;
+            const createdAt = o.createdAt || o.created_at;
+            return createdAt ? new Date(createdAt) > lastViewedDate : true;
+          }).length;
+
+          const newReviews = reviews.filter(r => {
+            const isPending = !r.isApproved;
+            if (!isPending) return false;
+            const createdAt = r.createdAt;
+            return createdAt ? new Date(createdAt) > lastViewedDate : true;
+          }).length;
+
+          const newTickets = tickets.filter(t => {
+            const isActive = t.status === 'open' || t.status === 'in_progress';
+            if (!isActive) return false;
+            const createdAt = t.createdAt;
+            return createdAt ? new Date(createdAt) > lastViewedDate : true;
+          }).length;
+
+          setBadgeCount(newOrders + newReviews + newTickets);
+        } else {
+          setBadgeCount(pendingOrders + pendingReviews + activeTickets);
+        }
       } catch (error) {
         console.error('Failed to load notifications in header:', error);
       }
@@ -134,7 +167,16 @@ export default function AdminHeader({
     };
   }, []);
 
-  const totalNotifications = ordersCount + reviewsCount + ticketsCount;
+  const handleToggleNotifications = () => {
+    const nextOpen = !notificationsOpen;
+    setNotificationsOpen(nextOpen);
+    if (nextOpen) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('admin_notifications_last_viewed', new Date().toISOString());
+      }
+      setBadgeCount(0);
+    }
+  };
 
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
@@ -153,13 +195,13 @@ export default function AdminHeader({
       <div className="flex items-center gap-4">
         <div className="relative" ref={notificationRef}>
           <button 
-            onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="p-2 relative text-slate-500 hover:text-primary transition-colors bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:border-slate-300"
+            onClick={handleToggleNotifications}
+            className="p-2 relative text-slate-500 hover:text-primary transition-colors bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:border-slate-350"
           >
             <Bell size={18} />
-            {totalNotifications > 0 && (
+            {badgeCount > 0 && (
               <span className="absolute top-1 right-1 bg-rose-500 text-white text-[9px] rounded-full h-3.5 w-3.5 flex items-center justify-center font-black shadow-[0_0_8px_rgba(244,63,94,0.4)]">
-                {totalNotifications}
+                {badgeCount}
               </span>
             )}
           </button>
