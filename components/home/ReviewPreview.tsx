@@ -235,10 +235,10 @@ export default function ReviewPreview() {
                   <div className="w-16 h-16 bg-success/15 border border-success/30 rounded-2xl flex items-center justify-center mb-6 text-success animate-bounce shadow-md">
                     <CheckCircle2 size={32} />
                   </div>
-                  <h3 className="text-lg font-black font-heading uppercase tracking-widest text-text-primary mb-2">
+                  <h3 className="text-xl font-black font-heading uppercase tracking-widest text-text-primary mb-2">
                     Review Submitted!
                   </h3>
-                  <p className="text-[13px] text-text-secondary font-medium mb-6 leading-relaxed">
+                  <p className="text-sm text-text-secondary font-medium mb-6 leading-relaxed">
                     Thank you for your feedback! Your review has been submitted successfully and will appear on the store once approved.
                   </p>
                   <button
@@ -250,16 +250,16 @@ export default function ReviewPreview() {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 mb-6">
-                    <h3 className="text-lg font-black font-heading uppercase tracking-wider text-text-primary">
+                  <div className="flex items-center gap-2.5 mb-6">
+                    <h3 className="text-xl sm:text-2xl font-black font-heading uppercase tracking-wider text-text-primary whitespace-nowrap">
                       Leave a Review
                     </h3>
-                    <Sparkles size={16} className="text-primary" />
+                    <Sparkles size={22} className="text-primary shrink-0" />
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-[11px] font-black tracking-wider uppercase text-text-secondary mb-2">
+                      <label className="block text-xs font-black tracking-wider uppercase text-text-secondary mb-2">
                         Your Rating
                       </label>
                       <div className="flex gap-1.5 items-center">
@@ -286,13 +286,13 @@ export default function ReviewPreview() {
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-black tracking-wider uppercase text-text-secondary mb-2">
+                      <label className="block text-xs font-black tracking-wider uppercase text-text-secondary mb-2">
                         Product / Category
                       </label>
                       <select
                         value={formProduct}
                         onChange={(e) => setFormProduct(e.target.value)}
-                        className="w-full bg-secondary-background border border-border rounded-xl px-4 py-3 text-text-primary text-[13px] focus:outline-none focus:border-primary/50 transition-all font-medium cursor-pointer"
+                        className="w-full bg-secondary-background border border-border rounded-xl px-4 py-3 text-text-primary text-sm focus:outline-none focus:border-primary/50 transition-all font-medium cursor-pointer"
                       >
                         <option value="">General Store / Website</option>
                         {productsList.map((p) => (
@@ -304,7 +304,7 @@ export default function ReviewPreview() {
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-black tracking-wider uppercase text-text-secondary mb-2">
+                      <label className="block text-xs font-black tracking-wider uppercase text-text-secondary mb-2">
                         Your Name
                       </label>
                       <input
@@ -312,13 +312,13 @@ export default function ReviewPreview() {
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         placeholder="e.g. Jane Doe"
-                        className="w-full bg-secondary-background border border-border rounded-xl px-4 py-3 text-text-primary text-[13px] placeholder-text-secondary/35 focus:outline-none focus:border-primary/50 transition-all font-medium"
+                        className="w-full bg-secondary-background border border-border rounded-xl px-4 py-3 text-text-primary text-sm placeholder-text-secondary/35 focus:outline-none focus:border-primary/50 transition-all font-medium"
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-black tracking-wider uppercase text-text-secondary mb-2">
+                      <label className="block text-xs font-black tracking-wider uppercase text-text-secondary mb-2">
                         Email (Optional)
                       </label>
                       <input
@@ -326,12 +326,12 @@ export default function ReviewPreview() {
                         value={formEmail}
                         onChange={(e) => setFormEmail(e.target.value)}
                         placeholder="e.g. jane@example.com"
-                        className="w-full bg-secondary-background border border-border rounded-xl px-4 py-3 text-text-primary text-[13px] placeholder-text-secondary/35 focus:outline-none focus:border-primary/50 transition-all font-medium"
+                        className="w-full bg-secondary-background border border-border rounded-xl px-4 py-3 text-text-primary text-sm placeholder-text-secondary/35 focus:outline-none focus:border-primary/50 transition-all font-medium"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-black tracking-wider uppercase text-text-secondary mb-2">
+                      <label className="block text-xs font-black tracking-wider uppercase text-text-secondary mb-2">
                         Your Feedback
                       </label>
                       <textarea
@@ -339,7 +339,7 @@ export default function ReviewPreview() {
                         onChange={(e) => setFormComment(e.target.value)}
                         placeholder="Tell us what you think..."
                         rows={3}
-                        className="w-full bg-secondary-background border border-border rounded-xl px-4 py-3 text-text-primary text-[13px] placeholder-text-secondary/35 focus:outline-none focus:border-primary/50 transition-all font-medium resize-none"
+                        className="w-full bg-secondary-background border border-border rounded-xl px-4 py-3 text-text-primary text-sm placeholder-text-secondary/35 focus:outline-none focus:border-primary/50 transition-all font-medium resize-none"
                         required
                       />
                     </div>
@@ -351,7 +351,7 @@ export default function ReviewPreview() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-primary hover:bg-primary-hover text-white font-black font-heading text-xs tracking-widest uppercase py-3.5 rounded-xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-2"
+                      className="w-full bg-primary hover:bg-primary-hover text-white font-black font-heading text-sm tracking-widest uppercase py-3.5 rounded-xl shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-2"
                     >
                       {isSubmitting ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

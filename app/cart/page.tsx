@@ -94,7 +94,7 @@ export default function CartPage() {
 
                           {item.selectedVariant && !item.selectedOption && (
                             <p className="text-xs text-slate-600 mt-1">
-                              Guarantee: <span className="font-semibold">{item.selectedVariant.label}</span>
+                              Product Option: <span className="font-semibold">{item.selectedVariant.label}</span>
                             </p>
                           )}
 

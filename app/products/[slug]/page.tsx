@@ -96,11 +96,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         }
 
         // Initialize selected guarantee (use provided or generate defaults)
-        const gOptions = productData?.guarantee_options?.length
-          ? productData.guarantee_options
-          : productData ? getDefaultGuaranteeOptions(productData.price) : [];
-        if (gOptions.length > 0) {
-          setSelectedGuarantee(gOptions.find(g => g.is_default) || gOptions[0]);
+        const hasGuaranteesOrOptions = productData?.options?.length || productData?.guarantee_options?.length;
+        if (hasGuaranteesOrOptions) {
+          const gOptions = productData?.guarantee_options?.length
+            ? productData.guarantee_options
+            : productData ? getDefaultGuaranteeOptions(productData.price) : [];
+          if (gOptions.length > 0) {
+            setSelectedGuarantee(gOptions.find(g => g.is_default) || gOptions[0]);
+          }
+        } else {
+          setSelectedGuarantee(null);
         }
 
         if (productData) {
@@ -124,7 +129,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
 
   const guaranteeOptions: GuaranteeOption[] = product?.guarantee_options?.length
     ? product.guarantee_options
-    : product ? getDefaultGuaranteeOptions(selectedOption?.price ?? product.price) : [];
+    : product ? getDefaultGuaranteeOptions(selectedOption?.price ?? selectedVariant?.price ?? product.price) : [];
 
   const activePrice = selectedGuarantee?.total_price
     ?? selectedOption?.price
@@ -533,34 +538,34 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     <div className="bg-slate-50 border border-border rounded-xl p-5 space-y-3 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-[20px]"></div>
                       {selectedOption && (
-                        <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
+                        <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
                           <span>Product Option</span>
-                          <span>{selectedOption.label}</span>
+                          <span className="text-right">{selectedOption.label}</span>
                         </div>
                       )}
                       {selectedGuarantee && (
-                        <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
+                        <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
                           <span>Guarantee</span>
-                          <span>{selectedGuarantee.label}</span>
+                          <span className="text-right">{selectedGuarantee.label}</span>
                         </div>
                       )}
                       {selectedVariant && !selectedOption && (
-                        <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
-                          <span>Guarantee</span>
-                          <span>{selectedVariant.label}</span>
+                        <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
+                          <span>Product Option</span>
+                          <span className="text-right">{selectedVariant.label}</span>
                         </div>
                       )}
-                      <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
+                      <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
                         <span>Unit Price</span>
-                        <span>{formatCurrency(activePrice)}</span>
+                        <span className="text-right">{formatCurrency(activePrice)}</span>
                       </div>
-                      <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
+                      <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
                         <span>Quantity</span>
-                        <span>× {quantity}</span>
+                        <span className="text-right">× {quantity}</span>
                       </div>
-                      <div className="border-t border-border pt-3 mt-1 flex justify-between items-center relative z-10">
+                      <div className="border-t border-border pt-3 mt-1 flex justify-between gap-4 items-center relative z-10">
                         <span className="text-base font-black font-heading tracking-widest uppercase text-text-primary">Total</span>
-                        <span className="text-2xl font-black font-heading text-primary drop-shadow-[0_0_8px_rgba(0,158,227,0.2)]">{formatCurrency(total)}</span>
+                        <span className="text-2xl font-black font-heading text-primary drop-shadow-[0_0_8px_rgba(0,158,227,0.2)] text-right">{formatCurrency(total)}</span>
                       </div>
                     </div>
 
