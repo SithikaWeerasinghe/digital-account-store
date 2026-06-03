@@ -238,36 +238,13 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     Product Description
                   </h2>
                   <p className="text-text-secondary leading-relaxed font-medium">
-                    This digital product gives customers access to selected productivity, entertainment, gaming, or software features designed for online tasks. After successful checkout, delivery details will be sent to your email.
+                    {product.description || 'Access to premium digital license keys and accounts. Delivered instantly to your email upon payment.'}
                   </p>
-                </div>
-
-                {/* What You Receive */}
-                <div className="mb-10 bg-primary/5 border border-primary/20 rounded-2xl p-6 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-[40px]"></div>
-                  <h2 className="text-lg font-black font-heading uppercase tracking-widest text-text-primary mb-5 relative z-10 flex items-center gap-2">
-                    <Package size={18} className="text-primary" />
-                    What You Receive
-                  </h2>
-                  <ul className="space-y-3 relative z-10">
-                    {[
-                      'Digital product details',
-                      'Delivery instructions',
-                      'Order confirmation',
-                      'Basic usage guidance',
-                      'Support access if needed'
-                    ].map((item) => (
-                      <li key={item} className="flex items-start gap-3 text-sm sm:text-base font-medium text-text-secondary">
-                        <Check size={16} className="text-primary mt-0.5 flex-shrink-0" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
                 </div>
 
                 {/* Key Features */}
                 {product.features?.length > 0 && (
-                  <div className="mb-10">
+                  <div className="mb-6">
                     <h2 className="text-lg font-black font-heading uppercase tracking-widest text-text-primary mb-5 flex items-center gap-2">
                       <Zap size={18} className="text-warning fill-warning" />
                       Key Features
@@ -284,53 +261,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     </div>
                   </div>
                 )}
-
-                {/* Important Notes */}
-                <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6">
-                  <h2 className="text-lg font-black font-heading uppercase tracking-widest text-amber-600 mb-5 flex items-center gap-2">
-                    <AlertCircle size={18} />
-                    Important Before Purchase
-                  </h2>
-                  <ul className="space-y-2.5">
-                    {[
-                      'Please enter a valid email address at checkout.',
-                      'Digital products are delivered after payment confirmation.',
-                      'Do not share your order details publicly.',
-                      'Refunds are handled according to our refund policy.',
-                      'Contact support if you face any issue with your order.',
-                    ].map((note) => (
-                      <li key={note} className="flex items-start gap-3 text-sm sm:text-base font-bold text-amber-900">
-                        <span className="text-amber-500/80 mt-1 flex-shrink-0 text-[10px]">■</span>
-                        {note}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </div>
             </div>
 
-            {/* Customer Reviews */}
-            <div className="bg-card border border-border shadow-2xl rounded-3xl p-8 sm:p-10 relative overflow-hidden">
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-[80px]"></div>
-              
-              <h2 className="text-2xl font-black font-heading uppercase tracking-widest text-text-primary mb-8 relative z-10">
-                Customer <span className="text-primary">Reviews</span>
-              </h2>
-              
-              <div className="space-y-6 relative z-10">
-                {reviews.map((review) => (
-                  <div key={review.id} className="p-6 bg-secondary-background border border-border rounded-xl">
-                    <div className="flex items-center justify-between mb-4">
-                      <StarRating rating={review.rating} />
-                      <span className="text-xs text-text-secondary font-semibold">
-                        {formatDate(review.createdAt)}
-                      </span>
-                    </div>
-                    <p className="text-[15px] sm:text-base text-text-secondary leading-relaxed font-medium">&ldquo;{review.comment}&rdquo;</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* RIGHT COLUMN: Checkout Box */}
@@ -430,28 +363,22 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     {/* Payment Method */}
                     <div>
                       <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Payment Method</label>
-                      <div className="space-y-3">
-                        {PAYMENT_METHODS.map(({ id, label, desc, icon: Icon }) => (
+                      <div className="grid grid-cols-3 gap-3">
+                        {PAYMENT_METHODS.map(({ id, label, icon: Icon }) => (
                           <button
                             key={id}
                             type="button"
                             onClick={() => setPaymentMethod(id)}
-                            className={`w-full flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                            className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all cursor-pointer ${
                               paymentMethod === id
                                 ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(0,158,227,0.1)]'
                                 : 'border-border bg-white hover:border-primary/50'
                             }`}
                           >
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${paymentMethod === id ? 'border-primary' : 'border-border'}`}>
-                              {paymentMethod === id && <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_5px_rgba(0,158,227,0.5)]" />}
-                            </div>
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${paymentMethod === id ? 'bg-primary/15 text-primary' : 'bg-slate-50 border border-border text-text-secondary/55'}`}>
-                              <Icon size={18} />
-                            </div>
-                            <div className="text-left font-mono">
-                              <p className={`text-sm font-black tracking-widest uppercase mb-0.5 ${paymentMethod === id ? 'text-text-primary font-extrabold' : 'text-text-secondary'}`}>{label}</p>
-                              <p className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-text-secondary/50">{desc}</p>
-                            </div>
+                            <Icon size={20} className={`${paymentMethod === id ? 'text-primary' : 'text-text-secondary'} mb-2`} />
+                            <span className={`text-[11px] font-black font-heading tracking-wider uppercase ${paymentMethod === id ? 'text-text-primary' : 'text-text-secondary'}`}>
+                              {id === 'card' ? 'Card' : id === 'crypto' ? 'Crypto' : 'Manual'}
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -513,6 +440,34 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
             </div>
           </div>
         </div>
+
+        {/* Customer Reviews Section (Full Width, below the columns) */}
+        {reviews.length > 0 && (
+          <div className="bg-card border border-border shadow-2xl rounded-3xl p-8 sm:p-10 relative overflow-hidden mt-8">
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-[80px]"></div>
+            
+            <h2 className="text-2xl font-black font-heading uppercase tracking-widest text-text-primary mb-6 relative z-10">
+              Customer <span className="text-primary">Reviews</span>
+            </h2>
+            
+            {/* Unified Scrollable Reviews Box */}
+            <div className="max-h-[380px] overflow-y-auto border border-border bg-secondary-background rounded-2xl p-6 relative z-10 custom-scrollbar divide-y divide-border/60">
+              {reviews.map((review) => (
+                <div key={review.id} className="py-4 first:pt-0 last:pb-0 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <StarRating rating={review.rating} />
+                    <span className="text-xs text-text-secondary font-semibold font-mono">
+                      {formatDate(review.createdAt)}
+                    </span>
+                  </div>
+                  <p className="text-[14px] sm:text-base text-text-secondary leading-relaxed font-medium">
+                    &ldquo;{review.comment}&rdquo;
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
