@@ -1,18 +1,20 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, ProductVariant } from '@/types/product';
+import { Product, ProductVariant, ProductOption, GuaranteeOption } from '@/types/product';
 
 export interface CartItem {
   id: string;
   product: Product;
   quantity: number;
   selectedVariant?: ProductVariant;
+  selectedOption?: ProductOption;
+  selectedGuarantee?: GuaranteeOption;
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product, quantity: number, variant?: ProductVariant) => void;
+  addToCart: (product: Product, quantity: number, variant?: ProductVariant, option?: ProductOption, guarantee?: GuaranteeOption) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -44,12 +46,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, mounted]);
 
-  const addToCart = (product: Product, quantity: number, variant?: ProductVariant) => {
+  const addToCart = (product: Product, quantity: number, variant?: ProductVariant, option?: ProductOption, guarantee?: GuaranteeOption) => {
     setItems((prev) => {
       const existingIndex = prev.findIndex(
         (item) =>
           item.product.id === product.id &&
-          (!variant ? !item.selectedVariant : item.selectedVariant?.id === variant.id)
+          (!variant ? !item.selectedVariant : item.selectedVariant?.id === variant.id) &&
+          (!option ? !item.selectedOption : item.selectedOption?.id === option.id) &&
+          (!guarantee ? !item.selectedGuarantee : item.selectedGuarantee?.id === guarantee.id)
       );
 
       if (existingIndex > -1) {
@@ -61,10 +65,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [
         ...prev,
         {
-          id: `${product.id}-${variant?.id || 'base'}`,
+          id: `${product.id}-${variant?.id || 'base'}-${option?.id || 'noopt'}-${guarantee?.id || 'noguar'}`,
           product,
           quantity,
           selectedVariant: variant,
+          selectedOption: option,
+          selectedGuarantee: guarantee,
         },
       ];
     });
@@ -90,8 +96,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const cartTotal = items.reduce((sum, item) => {
-    const price = item.selectedVariant?.price ?? item.product.price;
-    return sum + price * item.quantity;
+    // Use guarantee total price if available, otherwise use variant price, otherwise use product price
+    let itemPrice: number;
+    if (item.selectedGuarantee?.total_price) {
+      itemPrice = item.selectedGuarantee.total_price;
+    } else if (item.selectedOption?.price) {
+      itemPrice = item.selectedOption.price;
+    } else if (item.selectedVariant?.price) {
+      itemPrice = item.selectedVariant.price;
+    } else {
+      itemPrice = item.product.price;
+    }
+    return sum + itemPrice * item.quantity;
   }, 0);
 
   return (

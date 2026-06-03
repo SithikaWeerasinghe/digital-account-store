@@ -6,6 +6,7 @@ import {
   verifyWebhookSignature,
 } from '@/lib/mercadopago';
 import { sendOrderConfirmation, sendAdminNotification } from '@/lib/services/emailService';
+import { deliverOrder } from '@/lib/services/deliveryService';
 import { Order } from '@/types/order';
 
 export const dynamic = 'force-dynamic';
@@ -128,6 +129,12 @@ export async function POST(request: NextRequest) {
           sendOrderConfirmation(order),
           sendAdminNotification(order),
         ])
+      );
+
+      // Trigger automatic delivery for paid orders
+      // This sends digital access details to the customer if inventory is available
+      await Promise.allSettled(
+        updatedOrders.map((order) => deliverOrder(order.id, false))
       );
     }
 

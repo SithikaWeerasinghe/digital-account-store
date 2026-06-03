@@ -13,6 +13,7 @@ export const ROUTES = {
     DASHBOARD: '/admin/dashboard',
     PRODUCTS: '/admin/products',
     ORDERS: '/admin/orders',
+    INVENTORY: '/admin/inventory',
     TICKETS: '/admin/tickets',
     REVIEWS: '/admin/reviews',
   }

@@ -75,6 +75,53 @@ export const sampleProducts: Product[] = [
         "price": 7.7
       }
     ],
+    "options": [
+      {
+        "id": "netflix-opt-1",
+        "label": "Standard",
+        "description": "Full HD quality",
+        "price": 1,
+        "is_default": true
+      },
+      {
+        "id": "netflix-opt-2",
+        "label": "Premium",
+        "description": "4K Ultra HD quality",
+        "price": 7.7
+      }
+    ],
+    "guarantee_options": [
+      {
+        "id": "guar-1m",
+        "label": "1 Month",
+        "months": 1,
+        "total_price": 1,
+        "monthly_price": 1,
+        "is_default": true
+      },
+      {
+        "id": "guar-3m",
+        "label": "3 Months",
+        "months": 3,
+        "total_price": 2.85,
+        "monthly_price": 0.95
+      },
+      {
+        "id": "guar-1y",
+        "label": "1 Year",
+        "months": 12,
+        "total_price": 10.2,
+        "monthly_price": 0.85,
+        "badge": "Popular"
+      },
+      {
+        "id": "guar-2y",
+        "label": "2 Years",
+        "months": 24,
+        "total_price": 19.2,
+        "monthly_price": 0.8
+      }
+    ],
     "createdAt": "2026-06-01T07:11:27.051Z"
   },
   {
@@ -235,6 +282,54 @@ export const sampleProducts: Product[] = [
         "id": "claude-v2",
         "label": "12 Months Access",
         "price": 48.99
+      }
+    ],
+    "options": [
+      {
+        "id": "claude-opt-1",
+        "label": "Monthly Plan",
+        "description": "Pay per month",
+        "price": 10.99,
+        "is_default": true
+      },
+      {
+        "id": "claude-opt-2",
+        "label": "Yearly Plan",
+        "description": "12 months access",
+        "price": 48.99,
+        "badge": "Save 30%"
+      }
+    ],
+    "guarantee_options": [
+      {
+        "id": "guar-1m",
+        "label": "1 Month",
+        "months": 1,
+        "total_price": 10.99,
+        "monthly_price": 10.99,
+        "is_default": true
+      },
+      {
+        "id": "guar-3m",
+        "label": "3 Months",
+        "months": 3,
+        "total_price": 30.97,
+        "monthly_price": 10.32
+      },
+      {
+        "id": "guar-1y",
+        "label": "1 Year",
+        "months": 12,
+        "total_price": 109.9,
+        "monthly_price": 9.16,
+        "badge": "Best Value"
+      },
+      {
+        "id": "guar-2y",
+        "label": "2 Years",
+        "months": 24,
+        "total_price": 219.8,
+        "monthly_price": 9.16
       }
     ],
     "createdAt": "2026-06-01T07:11:27.051Z"
@@ -721,6 +816,54 @@ export const sampleProducts: Product[] = [
         "id": "gpt-v2",
         "label": "Lifetime Access",
         "price": 15.99
+      }
+    ],
+    "options": [
+      {
+        "id": "gpt-opt-1",
+        "label": "Monthly",
+        "description": "1 month access",
+        "price": 3.5,
+        "is_default": true
+      },
+      {
+        "id": "gpt-opt-2",
+        "label": "Lifetime",
+        "description": "Forever access",
+        "price": 15.99,
+        "badge": "One-time"
+      }
+    ],
+    "guarantee_options": [
+      {
+        "id": "guar-1m",
+        "label": "1 Month",
+        "months": 1,
+        "total_price": 3.5,
+        "monthly_price": 3.5,
+        "is_default": true
+      },
+      {
+        "id": "guar-3m",
+        "label": "3 Months",
+        "months": 3,
+        "total_price": 10.5,
+        "monthly_price": 3.5
+      },
+      {
+        "id": "guar-6m",
+        "label": "6 Months",
+        "months": 6,
+        "total_price": 19.95,
+        "monthly_price": 3.33,
+        "badge": "Popular"
+      },
+      {
+        "id": "guar-1y",
+        "label": "1 Year",
+        "months": 12,
+        "total_price": 38.5,
+        "monthly_price": 3.21
       }
     ],
     "createdAt": "2026-06-01T07:11:27.051Z"

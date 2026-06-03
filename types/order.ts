@@ -28,6 +28,22 @@ export interface Order {
   mercadopago_payment_id?: string | null;
   mercadopago_merchant_order_id?: string | null;
   mercadopago_status?: string | null;
+  // Product options and guarantee metadata
+  order_metadata?: {
+    product_option?: {
+      id: string;
+      label: string;
+      price?: number;
+    };
+    guarantee?: {
+      id: string;
+      label: string;
+      months?: number;
+      total_price?: number;
+      monthly_price?: number;
+    };
+    [key: string]: unknown;
+  } | null;
 }
 
 export interface OrderItem {
@@ -48,4 +64,13 @@ export type CreateOrderInput = {
   amount?: number;
   paymentMethod?: 'card' | 'crypto' | 'manual';
   payment_method?: 'card' | 'crypto' | 'manual';
+  // Product option and guarantee selection
+  selectedOptionId?: string;
+  selectedOptionLabel?: string;
+  selectedOptionPrice?: number;
+  selectedGuaranteeId?: string;
+  selectedGuaranteeLabel?: string;
+  selectedGuaranteeMonths?: number;
+  selectedGuaranteeTotalPrice?: number;
+  selectedGuaranteeMonthlyPrice?: number;
 };

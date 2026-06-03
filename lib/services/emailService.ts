@@ -1,7 +1,9 @@
 import { Order } from '@/types/order';
+import { InventoryItem } from '@/types/inventory';
 import {
   buildOrderConfirmationEmail,
   buildAdminNotificationEmail,
+  buildDeliveryEmail,
 } from '@/lib/email/templates';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -88,5 +90,18 @@ export async function sendAdminNotification(order: Order): Promise<SendEmailResu
     return { success: false, skipped: true };
   }
   const email = buildAdminNotificationEmail(order, ADMIN_EMAIL);
+  return sendEmail(email);
+}
+
+/**
+ * Sends delivery email with digital access details to the customer.
+ * Called after an inventory item has been assigned to an order.
+ */
+export async function sendDeliveryEmail(params: {
+  order: Order;
+  inventoryItem: InventoryItem;
+  productName?: string;
+}): Promise<SendEmailResult> {
+  const email = buildDeliveryEmail(params.order, params.inventoryItem.delivery_content, params.productName);
   return sendEmail(email);
 }

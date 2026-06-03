@@ -2,12 +2,13 @@
 
 import { useState, useEffect, use } from 'react';
 import { fetchProductBySlug, fetchReviews } from '@/lib/api';
-import { Product, ProductVariant } from '@/types/product';
+import { Product, ProductVariant, ProductOption, GuaranteeOption } from '@/types/product';
 import { Review } from '@/types/review';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/lib/constants';
 import { useCart } from '@/lib/contexts/CartContext';
+import { getDefaultGuaranteeOptions } from '@/lib/productUtils';
 import {
   Star, ShieldCheck, Zap, Shield, Package,
   ChevronRight, Mail, CreditCard, Bitcoin, Banknote, Check, AlertCircle, ShoppingCart
@@ -75,6 +76,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedOption, setSelectedOption] = useState<ProductOption | null>(null);
+  const [selectedGuarantee, setSelectedGuarantee] = useState<GuaranteeOption | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
@@ -86,7 +89,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         if (productData?.variants?.length) {
           setSelectedVariant(productData.variants[0]);
         }
-        
+
+        // Initialize selected option (if available)
+        if (productData?.options?.length) {
+          setSelectedOption(productData.options.find(o => o.is_default) || productData.options[0]);
+        }
+
+        // Initialize selected guarantee (use provided or generate defaults)
+        const gOptions = productData?.guarantee_options?.length
+          ? productData.guarantee_options
+          : productData ? getDefaultGuaranteeOptions(productData.price) : [];
+        if (gOptions.length > 0) {
+          setSelectedGuarantee(gOptions.find(g => g.is_default) || gOptions[0]);
+        }
+
         if (productData) {
           const reviewsData = await fetchReviews({ productId: productData.id });
           setReviews(reviewsData);
@@ -106,7 +122,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [emailError, setEmailError] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const activePrice = product ? (selectedVariant?.price ?? product.price) : 0;
+  const guaranteeOptions: GuaranteeOption[] = product?.guarantee_options?.length
+    ? product.guarantee_options
+    : product ? getDefaultGuaranteeOptions(selectedOption?.price ?? product.price) : [];
+
+  const activePrice = selectedGuarantee?.total_price
+    ?? selectedOption?.price
+    ?? selectedVariant?.price
+    ?? product?.price ?? 0;
   const total = activePrice * quantity;
 
   const handleCheckout = () => {
@@ -120,7 +143,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
 
   const handleAddToCart = () => {
     if (!product) return;
-    addToCart(product, quantity, selectedVariant || undefined);
+    addToCart(product, quantity, selectedVariant || undefined, selectedOption || undefined, selectedGuarantee || undefined);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
@@ -330,8 +353,103 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       {emailError && <p className="text-xs font-black tracking-wide text-hazard mt-2">{emailError}</p>}
                     </div>
 
-                    {/* Variant picker */}
-                    {product.variants?.length ? (
+                    {/* Product Option Dropdown */}
+                    {product.options?.length ? (
+                      <div>
+                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Product Option</label>
+                        <div className="space-y-2">
+                          {product.options.map((option) => (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedOption(option);
+                                // Reset guarantee to default when option changes
+                                const newGOptions = product.guarantee_options?.length
+                                  ? product.guarantee_options
+                                  : getDefaultGuaranteeOptions(option.price);
+                                setSelectedGuarantee(newGOptions.find(g => g.is_default) || newGOptions[0]);
+                              }}
+                              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                selectedOption?.id === option.id
+                                  ? 'border-primary bg-primary/10 shadow-[0_0_12px_rgba(0,158,227,0.12)]'
+                                  : 'border-border bg-white hover:border-primary/50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                                  selectedOption?.id === option.id ? 'border-primary bg-primary/10' : 'border-slate-300'
+                                }`}>
+                                  {selectedOption?.id === option.id && (
+                                    <Check size={12} className="text-primary" />
+                                  )}
+                                </div>
+                                <div className="flex flex-col gap-0.5">
+                                  <span className={`text-xs sm:text-[13px] font-black font-heading tracking-wider uppercase ${selectedOption?.id === option.id ? 'text-text-primary' : 'text-text-secondary'}`}>
+                                    {option.label}
+                                    {option.badge && <span className="text-primary text-[10px] ml-2">{option.badge}</span>}
+                                  </span>
+                                  {option.description && (
+                                    <span className="text-[11px] text-text-secondary/60 font-normal">{option.description}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <span className={`text-sm sm:text-base font-black font-heading flex-shrink-0 ${selectedOption?.id === option.id ? 'text-primary' : 'text-text-secondary'}`}>
+                                {formatCurrency(option.price)}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {/* Guarantee Cards Section */}
+                    {product.options?.length || product.guarantee_options?.length ? (
+                      <div>
+                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Guarantee</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {guaranteeOptions.map((guarantee) => (
+                            <button
+                              key={guarantee.id}
+                              type="button"
+                              onClick={() => setSelectedGuarantee(guarantee)}
+                              className={`p-4 rounded-xl border-2 text-left transition-all cursor-pointer relative ${
+                                selectedGuarantee?.id === guarantee.id
+                                  ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(0,158,227,0.1)]'
+                                  : 'border-border bg-white hover:border-primary/30'
+                              }`}
+                            >
+                              {selectedGuarantee?.id === guarantee.id && (
+                                <Check size={18} className="absolute top-2 right-2 text-primary" />
+                              )}
+                              <div className="flex flex-col gap-2">
+                                <span className={`text-xs font-black font-heading tracking-wider uppercase leading-tight ${selectedGuarantee?.id === guarantee.id ? 'text-text-primary' : 'text-text-secondary'}`}>
+                                  {guarantee.label}
+                                  {guarantee.badge && (
+                                    <span className={`text-[9px] ml-1 px-2 py-0.5 rounded-full inline-block ${
+                                      selectedGuarantee?.id === guarantee.id
+                                        ? 'bg-primary text-white'
+                                        : 'bg-primary/20 text-primary'
+                                    }`}>
+                                      {guarantee.badge}
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="text-2xl font-black font-heading text-primary">
+                                  {formatCurrency(guarantee.total_price)}
+                                </span>
+                                <span className={`text-xs font-semibold ${selectedGuarantee?.id === guarantee.id ? 'text-text-secondary' : 'text-text-secondary/70'}`}>
+                                  {formatCurrency(guarantee.monthly_price)}/mo
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {/* Variant picker (only for products without options) */}
+                    {!product.options?.length && product.variants?.length ? (
                       <div>
                         <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Guarantee Option</label>
                         <div className="flex flex-wrap gap-2">
@@ -414,7 +532,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     {/* Order Summary */}
                     <div className="bg-slate-50 border border-border rounded-xl p-5 space-y-3 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-[20px]"></div>
-                      {selectedVariant && (
+                      {selectedOption && (
+                        <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
+                          <span>Product Option</span>
+                          <span>{selectedOption.label}</span>
+                        </div>
+                      )}
+                      {selectedGuarantee && (
+                        <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
+                          <span>Guarantee</span>
+                          <span>{selectedGuarantee.label}</span>
+                        </div>
+                      )}
+                      {selectedVariant && !selectedOption && (
                         <div className="flex justify-between text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
                           <span>Guarantee</span>
                           <span>{selectedVariant.label}</span>
