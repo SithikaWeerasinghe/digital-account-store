@@ -115,7 +115,14 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     const message = error?.message || 'Failed to create Mercado Pago checkout';
-    const isCurrencyError = message.includes('MERCADOPAGO_CURRENCY') || message.includes('Invalid');
+    const isCurrencyError =
+      message.includes('MERCADOPAGO_CURRENCY') || message.includes('Invalid MERCADOPAGO');
+    // Currency-conversion / amount configuration problems (EUR → COP).
+    const isConversionError =
+      message.includes('EUR_TO_COP_RATE') ||
+      message.includes('less than 1 COP') ||
+      message.includes('Invalid order amount');
+    const isConfigError = isCurrencyError || isConversionError;
 
     console.error('[mercadopago] Checkout preference creation failed:', message);
 
@@ -125,9 +132,9 @@ export async function POST(request: NextRequest) {
         message: isCurrencyError
           ? 'Invalid Mercado Pago currency configuration. Please check MERCADOPAGO_CURRENCY in environment variables.'
           : message,
-        code: isCurrencyError ? 'invalid_currency' : 'checkout_failed',
+        code: isConfigError ? 'invalid_currency' : 'checkout_failed',
       },
-      { status: isCurrencyError ? 400 : 500 }
+      { status: isConfigError ? 400 : 500 }
     );
   }
 }

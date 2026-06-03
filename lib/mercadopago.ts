@@ -11,9 +11,16 @@ import { createHmac, timingSafeEqual } from 'crypto';
 const ACCESS_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN;
 const WEBHOOK_SECRET = process.env.MERCADOPAGO_WEBHOOK_SECRET;
 const DEFAULT_CURRENCY = process.env.MERCADOPAGO_CURRENCY;
+// The website displays prices in this currency (EUR by default). It is NOT what
+// Mercado Pago is charged in — see MERCADOPAGO_CURRENCY for the gateway currency.
+const DISPLAY_CURRENCY = (process.env.DISPLAY_CURRENCY || 'EUR').toUpperCase();
+const EUR_TO_COP_RATE = process.env.EUR_TO_COP_RATE;
 
 // Valid Mercado Pago currency codes per country
 const VALID_CURRENCIES = ['ARS', 'MXN', 'BRL', 'COP', 'CLP', 'PEN', 'UYU'];
+
+// Currencies Mercado Pago requires as whole-integer amounts (no decimals).
+const INTEGER_ONLY_CURRENCIES = ['COP', 'CLP'];
 
 function validateCurrency(currency?: string): string {
   if (!currency) {
@@ -27,6 +34,51 @@ function validateCurrency(currency?: string): string {
     );
   }
   return currency.toUpperCase();
+}
+
+/**
+ * Converts a display-currency amount (EUR shown on the website) into the amount
+ * Mercado Pago should be charged in the gateway currency.
+ *
+ * When the gateway currency matches the display currency, the amount is sent
+ * unchanged. When charging COP while displaying EUR, the EUR amount is converted
+ * with EUR_TO_COP_RATE and rounded to a whole integer (COP is integer-only).
+ */
+function toGatewayUnitPrice(displayAmount: number, gatewayCurrency: string): number {
+  const amount = Number(displayAmount);
+  if (!Number.isFinite(amount) || amount < 0) {
+    throw new Error('Invalid order amount for Mercado Pago.');
+  }
+
+  // No conversion needed when the gateway currency equals the display currency.
+  if (gatewayCurrency === DISPLAY_CURRENCY) {
+    return amount;
+  }
+
+  if (gatewayCurrency === 'COP') {
+    if (!EUR_TO_COP_RATE) {
+      throw new Error('EUR_TO_COP_RATE is required when charging COP while displaying EUR.');
+    }
+    const rate = Number(EUR_TO_COP_RATE);
+    if (!Number.isFinite(rate) || rate <= 0) {
+      throw new Error('EUR_TO_COP_RATE must be a positive number.');
+    }
+    const cop = Math.round(amount * rate);
+    if (cop < 1) {
+      throw new Error(
+        'Converted Mercado Pago amount is less than 1 COP. Increase the price or the EUR_TO_COP_RATE.'
+      );
+    }
+    return cop;
+  }
+
+  // Other integer-only currencies without a configured rate: round defensively
+  // so Mercado Pago never receives a decimal value it will reject.
+  if (INTEGER_ONLY_CURRENCIES.includes(gatewayCurrency)) {
+    return Math.round(amount);
+  }
+
+  return amount;
 }
 
 const MP_API_BASE = 'https://api.mercadopago.com';
@@ -86,13 +138,28 @@ export async function createCheckoutPreference(
   };
 
   const preferenceBody = {
-    items: params.items.map((item) => ({
-      id: item.id,
-      title: item.title,
-      quantity: item.quantity,
-      unit_price: Number(item.unit_price),
-      currency_id: currency,
-    })),
+    items: params.items.map((item) => {
+      const displayUnitPrice = Number(item.unit_price);
+      const gatewayUnitPrice = toGatewayUnitPrice(displayUnitPrice, currency);
+
+      // Development-only debug (no secrets logged).
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[mercadopago] unit_price conversion', {
+          display_amount: displayUnitPrice,
+          display_currency: DISPLAY_CURRENCY,
+          converted_amount: gatewayUnitPrice,
+          currency_id: currency,
+        });
+      }
+
+      return {
+        id: item.id,
+        title: item.title,
+        quantity: item.quantity,
+        unit_price: gatewayUnitPrice,
+        currency_id: currency,
+      };
+    }),
     payer: params.customerEmail ? { email: params.customerEmail } : undefined,
     back_urls: backUrls,
     auto_return: 'approved',
