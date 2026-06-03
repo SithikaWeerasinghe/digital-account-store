@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createOrder, startMercadoPagoCheckout, validateCoupon, ApplyDiscountResult } from '@/lib/api';
 import { useCart } from '@/lib/contexts/CartContext';
 import { useRouter } from 'next/navigation';
+import PromoBannerList from '@/components/promos/PromoBannerList';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -246,6 +247,9 @@ export default function CheckoutPage() {
             Review your digital product, enter your delivery email, and complete your order through a simple checkout process.
           </p>
         </div>
+
+        {/* Active checkout + global promo banners (coupon reminders, delivery notices) */}
+        <PromoBannerList placement="checkout" className="mb-8" />
 
         {/* Order Items Summary */}
         {items.length > 0 && (
