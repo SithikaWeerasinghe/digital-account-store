@@ -1,6 +1,6 @@
 import { Product, ProductVariant } from '@/types/product';
 import { sampleProducts } from '@/data/sampleProducts';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { slugify } from '@/lib/utils';
 
 export function mapDatabaseProduct(dbRow: any): Product {
@@ -37,12 +37,13 @@ export function mapDatabaseProduct(dbRow: any): Product {
 }
 
 export async function getProducts(): Promise<Product[]> {
-  console.log('DEBUG: getProducts called. Supabase client initialized:', !!supabase);
-  if (!supabase) {
-    console.log('DEBUG: Supabase is null, using local sampleProducts');
+  const client = supabaseAdmin || supabase;
+  console.log('DEBUG: getProducts called. Supabase client initialized:', !!client);
+  if (!client) {
+    console.log('DEBUG: Supabase client is null, using local sampleProducts');
     return sampleProducts;
   }
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('products')
     .select('*')
     .order('created_at', { ascending: false });
@@ -60,8 +61,9 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getActiveProducts(): Promise<Product[]> {
-  if (!supabase) return sampleProducts;
-  const { data, error } = await supabase
+  const client = supabaseAdmin || supabase;
+  if (!client) return sampleProducts;
+  const { data, error } = await client
     .from('products')
     .select('*')
     .gt('stock_count', 0)
@@ -71,8 +73,9 @@ export async function getActiveProducts(): Promise<Product[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  if (!supabase) return sampleProducts.find((p) => p.slug === slug) ?? null;
-  const { data, error } = await supabase
+  const client = supabaseAdmin || supabase;
+  if (!client) return sampleProducts.find((p) => p.slug === slug) ?? null;
+  const { data, error } = await client
     .from('products')
     .select('*')
     .eq('slug', slug)
@@ -82,8 +85,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  if (!supabase) return sampleProducts.find((p) => p.id === id) ?? null;
-  const { data, error } = await supabase
+  const client = supabaseAdmin || supabase;
+  if (!client) return sampleProducts.find((p) => p.id === id) ?? null;
+  const { data, error } = await client
     .from('products')
     .select('*')
     .eq('id', id)
@@ -166,13 +170,14 @@ export async function createProduct(input: ProductInput): Promise<Product> {
     ...mapInputToRow(input),
   };
 
-  if (!supabase) {
+  const client = supabaseAdmin || supabase;
+  if (!client) {
     const product = mapDatabaseProduct(row);
     sampleProducts.unshift(product);
     return product;
   }
 
-  const { data, error } = await supabase.from('products').insert(row).select().single();
+  const { data, error } = await client.from('products').insert(row).select().single();
   if (error || !data) {
     throw new Error(error?.message || 'Failed to create product');
   }
@@ -186,14 +191,15 @@ export async function updateProduct(id: string, input: ProductInput): Promise<Pr
   // Regenerate slug from the (possibly updated) name
   row.slug = slugify(input.name) || `product-${Date.now()}`;
 
-  if (!supabase) {
+  const client = supabaseAdmin || supabase;
+  if (!client) {
     const index = sampleProducts.findIndex((p) => p.id === id);
     if (index === -1) throw new Error('Product not found');
     sampleProducts[index] = { ...sampleProducts[index], ...mapDatabaseProduct({ ...row, id }) };
     return sampleProducts[index];
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('products')
     .update(row)
     .eq('id', id)
@@ -206,14 +212,15 @@ export async function updateProduct(id: string, input: ProductInput): Promise<Pr
 }
 
 export async function deleteProduct(id: string): Promise<{ id: string }> {
-  if (!supabase) {
+  const client = supabaseAdmin || supabase;
+  if (!client) {
     const index = sampleProducts.findIndex((p) => p.id === id);
     if (index === -1) throw new Error('Product not found');
     sampleProducts.splice(index, 1);
     return { id };
   }
 
-  const { error } = await supabase.from('products').delete().eq('id', id);
+  const { error } = await client.from('products').delete().eq('id', id);
   if (error) {
     throw new Error(error.message || 'Failed to delete product');
   }

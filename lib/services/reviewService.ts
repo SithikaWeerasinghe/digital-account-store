@@ -1,11 +1,11 @@
 import { Review, CreateReviewInput } from '@/types/review';
 import { sampleReviews } from '@/data/sampleReviews';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseAdmin } from '@/lib/supabase';
 
 export interface DatabaseReviewRow {
   id: string;
   order_id: string | null;
-  product_id: string;
+  product_id: string | null;
   customer_email: string;
   rating: number;
   comment: string;
@@ -25,16 +25,25 @@ const inMemoryReviews: DatabaseReviewRow[] = sampleReviews.map((r) => ({
 }));
 
 export function mapDatabaseReview(row: DatabaseReviewRow): Review {
-  const namePart = row.customer_email.split('@')[0] || 'Anonymous';
-  const userName = namePart
-    .split(/[._-]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  let email = row.customer_email || '';
+  let userName = 'Anonymous';
+
+  if (email.includes('|')) {
+    const parts = email.split('|');
+    email = parts[0];
+    userName = parts[1];
+  } else {
+    const namePart = email.split('@')[0] || 'Anonymous';
+    userName = namePart
+      .split(/[._-]/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
 
   return {
     id: row.id,
     productId: row.product_id,
-    userId: row.customer_email,
+    userId: email,
     userName,
     rating: row.rating,
     comment: row.comment,
@@ -44,27 +53,48 @@ export function mapDatabaseReview(row: DatabaseReviewRow): Review {
 }
 
 export async function getApprovedReviews(): Promise<Review[]> {
-  if (!supabase) return inMemoryReviews.filter((r) => r.is_approved).map(mapDatabaseReview);
-  const { data, error } = await supabase
+  const client = supabaseAdmin || supabase;
+  if (!client) return inMemoryReviews.filter((r) => r.is_approved).map(mapDatabaseReview);
+  const { data, error } = await client
     .from('reviews')
     .select('*')
     .eq('is_approved', true)
     .order('created_at', { ascending: false });
-  if (error || !data) return inMemoryReviews.filter((r) => r.is_approved).map(mapDatabaseReview);
+  if (error || !data || data.length === 0) return inMemoryReviews.filter((r) => r.is_approved).map(mapDatabaseReview);
   return data.map((row) => mapDatabaseReview(row as DatabaseReviewRow));
 }
 
 export async function getReviewsByProductId(productId: string): Promise<Review[]> {
-  if (!supabase) {
+  const client = supabaseAdmin || supabase;
+  if (!client) {
     return inMemoryReviews.filter((r) => r.product_id === productId && r.is_approved).map(mapDatabaseReview);
   }
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('reviews')
     .select('*')
     .eq('product_id', productId)
     .eq('is_approved', true)
     .order('created_at', { ascending: false });
-  if (error || !data) return [];
+  if (error || !data || data.length === 0) {
+    return inMemoryReviews.filter((r) => r.product_id === productId && r.is_approved).map(mapDatabaseReview);
+  }
+  return data.map((row) => mapDatabaseReview(row as DatabaseReviewRow));
+}
+
+export async function getWebsiteReviews(): Promise<Review[]> {
+  const client = supabaseAdmin || supabase;
+  if (!client) {
+    return inMemoryReviews.filter((r) => !r.product_id && r.is_approved).map(mapDatabaseReview);
+  }
+  const { data, error } = await client
+    .from('reviews')
+    .select('*')
+    .is('product_id', null)
+    .eq('is_approved', true)
+    .order('created_at', { ascending: false });
+  if (error || !data || data.length === 0) {
+    return inMemoryReviews.filter((r) => !r.product_id && r.is_approved).map(mapDatabaseReview);
+  }
   return data.map((row) => mapDatabaseReview(row as DatabaseReviewRow));
 }
 
@@ -74,7 +104,6 @@ export async function createReview(input: CreateReviewInput): Promise<Review> {
   const customerEmail = input.customerEmail || input.customer_email;
 
   const ratingVal = Number(input.rating);
-  if (!productId) throw new Error('Product ID is required');
   if (!customerEmail || !customerEmail.includes('@')) throw new Error('A valid email is required');
   if (isNaN(ratingVal) || ratingVal < 1 || ratingVal > 5) throw new Error('Rating must be between 1 and 5');
   if (!input.comment?.trim()) throw new Error('Comment is required');
@@ -82,17 +111,31 @@ export async function createReview(input: CreateReviewInput): Promise<Review> {
   const newRow: DatabaseReviewRow = {
     id: `rev-${Math.random().toString(36).substring(2, 9)}`,
     order_id: orderId || null,
-    product_id: productId,
+    product_id: productId || null,
     customer_email: customerEmail.trim(),
     rating: Math.floor(ratingVal),
     comment: input.comment.trim(),
-    is_approved: false,
+    is_approved: true,
     created_at: new Date().toISOString(),
   };
 
-  if (supabase) {
-    const { data, error } = await supabase.from('reviews').insert(newRow).select().single();
-    if (!error && data) return mapDatabaseReview(data as DatabaseReviewRow);
+  const client = supabaseAdmin || supabase;
+  if (client) {
+    const dbRow = {
+      order_id: newRow.order_id,
+      product_id: newRow.product_id,
+      customer_email: newRow.customer_email,
+      rating: newRow.rating,
+      comment: newRow.comment,
+      is_approved: newRow.is_approved,
+      created_at: newRow.created_at,
+    };
+    const { data, error } = await client.from('reviews').insert([dbRow]).select();
+    if (error) {
+      console.error("Supabase insert error:", error.message, error.details);
+      throw new Error(`Database Error: ${error.message}`);
+    }
+    if (data && data.length > 0) return mapDatabaseReview(data[0] as DatabaseReviewRow);
   }
 
   inMemoryReviews.push(newRow);
@@ -100,18 +143,18 @@ export async function createReview(input: CreateReviewInput): Promise<Review> {
 }
 
 export async function approveReview(id: string): Promise<Review | null> {
-  if (!supabase) {
+  const client = supabaseAdmin || supabase;
+  if (!client) {
     const row = inMemoryReviews.find((r) => r.id === id);
     if (!row) return null;
     row.is_approved = true;
     return mapDatabaseReview(row);
   }
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('reviews')
     .update({ is_approved: true })
     .eq('id', id)
-    .select()
-    .single();
-  if (error || !data) return null;
-  return mapDatabaseReview(data as DatabaseReviewRow);
+    .select();
+  if (error || !data || data.length === 0) return null;
+  return mapDatabaseReview(data[0] as DatabaseReviewRow);
 }

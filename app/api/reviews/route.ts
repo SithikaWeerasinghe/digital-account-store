@@ -1,9 +1,21 @@
 import { NextResponse } from 'next/server';
 import * as reviewService from '@/lib/services/reviewService';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const reviews = await reviewService.getApprovedReviews();
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+    const productId = searchParams.get('productId');
+
+    let reviews;
+    if (type === 'website') {
+      reviews = await reviewService.getWebsiteReviews();
+    } else if (productId) {
+      reviews = await reviewService.getReviewsByProductId(productId);
+    } else {
+      reviews = await reviewService.getApprovedReviews();
+    }
+
     return NextResponse.json({ success: true, data: reviews });
   } catch (error: any) {
     return NextResponse.json(

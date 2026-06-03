@@ -129,9 +129,10 @@ export default function ProductCard({ product }: { product: Product }) {
 
             {/* Add to Cart button */}
             {product.inStock && (
-              <button
+              <div
+                role="button"
                 onClick={handleAddToCart}
-                className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 border ${
+                className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-300 border cursor-pointer ${
                   addedToCart
                     ? 'bg-green-50 text-green-700 border-green-300'
                     : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-primary hover:text-primary'
@@ -139,7 +140,7 @@ export default function ProductCard({ product }: { product: Product }) {
               >
                 <ShoppingCart size={13} />
                 <span>{addedToCart ? 'Added!' : 'Add Cart'}</span>
-              </button>
+              </div>
             )}
           </div>
         </div>
