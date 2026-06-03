@@ -11,20 +11,29 @@ function AdminReviewsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchAdminReviews();
+      setReviews(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch reviews');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchAdminReviews();
-        setReviews(data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch reviews');
-      } finally {
-        setIsLoading(false);
-      }
-    };
     loadData();
   }, []);
+
+  const handleReviewApproved = (id: string) => {
+    setReviews(prev => prev.map(r => r.id === id ? { ...r, isApproved: true } : r));
+  };
+
+  const handleReviewDeleted = (id: string) => {
+    setReviews(prev => prev.filter(r => r.id !== id));
+  };
   return (
     <div className="space-y-6">
       <div>
@@ -42,7 +51,11 @@ function AdminReviewsContent() {
           <p>{error}</p>
         </div>
       ) : reviews.length > 0 ? (
-        <ReviewTable reviews={reviews} />
+        <ReviewTable 
+          reviews={reviews} 
+          onReviewApproved={handleReviewApproved}
+          onReviewDeleted={handleReviewDeleted}
+        />
       ) : (
         <div className="text-center py-12 bg-white border border-border rounded-xl">
           <p className="text-text-secondary">No reviews found.</p>

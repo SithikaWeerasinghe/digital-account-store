@@ -253,7 +253,21 @@ export async function fetchAdminTickets(): Promise<Ticket[]> {
 }
 
 export async function fetchAdminReviews(): Promise<Review[]> {
-  return fetchApi<Review[]>('/api/reviews');
+  return fetchApi<Review[]>('/api/reviews?all=true');
+}
+
+export async function approveAdminReview(id: string): Promise<any> {
+  return fetchApi('/api/reviews', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+}
+
+export async function deleteAdminReview(id: string): Promise<any> {
+  return fetchApi(`/api/reviews?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
 }
 
 /**

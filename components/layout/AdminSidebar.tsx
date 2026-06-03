@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { fetchAdminTickets } from '@/lib/api';
+import { fetchAdminTickets, fetchAdminReviews } from '@/lib/api';
+import { Review } from '@/types/review';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Package, ShoppingCart, Archive, Ticket, Star, LogOut, X, Globe, Tag, Megaphone } from 'lucide-react';
@@ -21,10 +22,11 @@ export default function AdminSidebar({
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [openTicketsCount, setOpenTicketsCount] = useState<number>(0);
+  const [pendingReviewsCount, setPendingReviewsCount] = useState<number>(0);
 
   useEffect(() => {
     let active = true;
-    const loadOpenTicketsCount = async () => {
+    const loadCounts = async () => {
       try {
         const tickets = await fetchAdminTickets();
         if (!active) return;
@@ -33,29 +35,53 @@ export default function AdminSidebar({
         if (pathname === ROUTES.ADMIN.TICKETS) {
           localStorage.setItem('admin_tickets_last_viewed', new Date().toISOString());
           setOpenTicketsCount(0);
-          return;
-        }
-
-        const lastViewed = localStorage.getItem('admin_tickets_last_viewed');
-        if (lastViewed) {
-          const lastViewedDate = new Date(lastViewed);
-          const count = tickets.filter(
-            t => t.status === 'open' && new Date(t.createdAt) > lastViewedDate
-          ).length;
-          setOpenTicketsCount(count);
         } else {
-          const count = tickets.filter(t => t.status === 'open').length;
-          setOpenTicketsCount(count);
+          const lastViewed = localStorage.getItem('admin_tickets_last_viewed');
+          if (lastViewed) {
+            const lastViewedDate = new Date(lastViewed);
+            const count = tickets.filter(
+              t => t.status === 'open' && new Date(t.createdAt) > lastViewedDate
+            ).length;
+            setOpenTicketsCount(count);
+          } else {
+            const count = tickets.filter(t => t.status === 'open').length;
+            setOpenTicketsCount(count);
+          }
         }
       } catch (err) {
         console.error('Failed to load tickets count for sidebar:', err);
       }
+
+      try {
+        const reviews = await fetchAdminReviews();
+        if (!active) return;
+
+        // If currently viewing the reviews page, count is 0 and we update viewed timestamp
+        if (pathname === ROUTES.ADMIN.REVIEWS) {
+          localStorage.setItem('admin_reviews_last_viewed', new Date().toISOString());
+          setPendingReviewsCount(0);
+        } else {
+          const lastViewed = localStorage.getItem('admin_reviews_last_viewed');
+          if (lastViewed) {
+            const lastViewedDate = new Date(lastViewed);
+            const count = reviews.filter(
+              (r: Review) => !r.isApproved && new Date(r.createdAt) > lastViewedDate
+            ).length;
+            setPendingReviewsCount(count);
+          } else {
+            const count = reviews.filter((r: Review) => !r.isApproved).length;
+            setPendingReviewsCount(count);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load reviews count for sidebar:', err);
+      }
     };
     
-    loadOpenTicketsCount();
+    loadCounts();
     
     // Poll every 30 seconds
-    const interval = setInterval(loadOpenTicketsCount, 30000);
+    const interval = setInterval(loadCounts, 30000);
     return () => {
       active = false;
       clearInterval(interval);
@@ -127,6 +153,11 @@ export default function AdminSidebar({
               {item.label === 'Tickets' && openTicketsCount > 0 && (
                 <span className="ml-auto bg-rose-500 text-white text-[10px] font-black font-sans px-2 py-0.5 rounded-full flex items-center justify-center min-w-[20px] h-5 shadow-[0_0_10px_rgba(244,63,94,0.45)] animate-pulse">
                   {openTicketsCount}
+                </span>
+              )}
+              {item.label === 'Reviews' && pendingReviewsCount > 0 && (
+                <span className="ml-auto bg-rose-500 text-white text-[10px] font-black font-sans px-2 py-0.5 rounded-full flex items-center justify-center min-w-[20px] h-5 shadow-[0_0_10px_rgba(244,63,94,0.45)] animate-pulse">
+                  {pendingReviewsCount}
                 </span>
               )}
             </Link>

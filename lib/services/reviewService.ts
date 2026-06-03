@@ -49,6 +49,7 @@ export function mapDatabaseReview(row: DatabaseReviewRow): Review {
     comment: row.comment,
     createdAt: row.created_at,
     verifiedPurchase: true,
+    isApproved: row.is_approved,
   };
 }
 
@@ -115,7 +116,7 @@ export async function createReview(input: CreateReviewInput): Promise<Review> {
     customer_email: customerEmail.trim(),
     rating: Math.floor(ratingVal),
     comment: input.comment.trim(),
-    is_approved: true,
+    is_approved: false,
     created_at: new Date().toISOString(),
   };
 
@@ -157,4 +158,27 @@ export async function approveReview(id: string): Promise<Review | null> {
     .select();
   if (error || !data || data.length === 0) return null;
   return mapDatabaseReview(data[0] as DatabaseReviewRow);
+}
+
+export async function getAllReviews(): Promise<Review[]> {
+  const client = supabaseAdmin || supabase;
+  if (!client) return inMemoryReviews.map(mapDatabaseReview);
+  const { data, error } = await client
+    .from('reviews')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error || !data || data.length === 0) return inMemoryReviews.map(mapDatabaseReview);
+  return data.map((row) => mapDatabaseReview(row as DatabaseReviewRow));
+}
+
+export async function deleteReview(id: string): Promise<boolean> {
+  const client = supabaseAdmin || supabase;
+  if (!client) {
+    const index = inMemoryReviews.findIndex((r) => r.id === id);
+    if (index === -1) return false;
+    inMemoryReviews.splice(index, 1);
+    return true;
+  }
+  const { error } = await client.from('reviews').delete().eq('id', id);
+  return !error;
 }

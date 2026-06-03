@@ -7,6 +7,7 @@ export interface Review {
   comment: string;
   createdAt: string;
   verifiedPurchase: boolean;
+  isApproved?: boolean;
 }
 
 export type CreateReviewInput = {
