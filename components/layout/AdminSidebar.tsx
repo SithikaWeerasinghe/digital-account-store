@@ -151,12 +151,12 @@ export default function AdminSidebar({
               )} />
               <span>{item.label}</span>
               {item.label === 'Tickets' && openTicketsCount > 0 && (
-                <span className="ml-auto bg-rose-500 text-white text-[10px] font-black font-sans px-2 py-0.5 rounded-full flex items-center justify-center min-w-[20px] h-5 shadow-[0_0_10px_rgba(244,63,94,0.45)] animate-pulse">
+                <span className="ml-auto bg-rose-500 text-white text-[10px] font-black font-sans px-2 py-0.5 rounded-full flex items-center justify-center min-w-[20px] h-5 shadow-[0_0_10px_rgba(244,63,94,0.45)]">
                   {openTicketsCount}
                 </span>
               )}
               {item.label === 'Reviews' && pendingReviewsCount > 0 && (
-                <span className="ml-auto bg-rose-500 text-white text-[10px] font-black font-sans px-2 py-0.5 rounded-full flex items-center justify-center min-w-[20px] h-5 shadow-[0_0_10px_rgba(244,63,94,0.45)] animate-pulse">
+                <span className="ml-auto bg-rose-500 text-white text-[10px] font-black font-sans px-2 py-0.5 rounded-full flex items-center justify-center min-w-[20px] h-5 shadow-[0_0_10px_rgba(244,63,94,0.45)]">
                   {pendingReviewsCount}
                 </span>
               )}

@@ -52,6 +52,46 @@ export const sampleReviews: Review[] = [
     "verifiedPurchase": true
   },
   {
+    "id": "rev-104_1",
+    "productId": null,
+    "userId": "gamer.sam@example.com",
+    "userName": "Sam Gamer",
+    "rating": 5,
+    "comment": "Excellent customer support and instant delivery. Buying all my keys here from now on.",
+    "createdAt": "2026-06-03T10:00:00Z",
+    "verifiedPurchase": true
+  },
+  {
+    "id": "rev-104_2",
+    "productId": null,
+    "userId": "tech.lisa@example.com",
+    "userName": "Lisa Tech",
+    "rating": 5,
+    "comment": "Super clean UI and very smooth checkout. Love the instant delivery!",
+    "createdAt": "2026-06-02T18:30:00Z",
+    "verifiedPurchase": true
+  },
+  {
+    "id": "rev-104_3",
+    "productId": null,
+    "userId": "pro.david@example.com",
+    "userName": "David Pro",
+    "rating": 5,
+    "comment": "Unbelievably fast and secure. Got my code in under 5 seconds in my email.",
+    "createdAt": "2026-06-01T15:20:00Z",
+    "verifiedPurchase": true
+  },
+  {
+    "id": "rev-104_4",
+    "productId": null,
+    "userId": "ultra.kevin@example.com",
+    "userName": "Kevin Ultra",
+    "rating": 5,
+    "comment": "Prices are unbeatable and the customer service is top notch. Fully recommend this store.",
+    "createdAt": "2026-05-31T09:40:00Z",
+    "verifiedPurchase": true
+  },
+  {
     "id": "rev-105",
     "productId": "v2v9f0q4-5mp3-4b8r-de4w-8qpom30v9452",
     "userId": "hbo.buyer1@example.com",

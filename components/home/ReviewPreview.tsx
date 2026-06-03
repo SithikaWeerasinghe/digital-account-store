@@ -51,9 +51,12 @@ const getAvatarGradient = (name: string) => {
 };
 
 export default function ReviewPreview() {
+  const [allReviews, setAllReviews] = useState<Review[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [productsList, setProductsList] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [setIndex, setSetIndex] = useState(0);
+  const [isFading, setIsFading] = useState(false);
 
   // Form states
   const [formName, setFormName] = useState('');
@@ -74,7 +77,22 @@ export default function ReviewPreview() {
           fetchReviews({ type: 'website' }),
           fetchProducts()
         ]);
-        setReviews(reviewsData.slice(0, 4));
+        
+        let displayedReviews = [...reviewsData];
+        if (displayedReviews.length < 30) {
+          const allReviews = await fetchReviews();
+          const existingIds = new Set(displayedReviews.map(r => r.id));
+          for (const r of allReviews) {
+            if (displayedReviews.length >= 30) break;
+            if (!existingIds.has(r.id)) {
+              displayedReviews.push(r);
+              existingIds.add(r.id);
+            }
+          }
+        }
+
+        setAllReviews(displayedReviews);
+        setReviews(displayedReviews.slice(0, 10));
         setProductsList(productsData);
       } catch (error) {
         console.error('Failed to load review data:', error);
@@ -84,6 +102,38 @@ export default function ReviewPreview() {
     };
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (allReviews.length === 0) return;
+    
+    const setSize = 10;
+    if (allReviews.length <= setSize) {
+      setReviews(allReviews);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setIsFading(true);
+      
+      setTimeout(() => {
+        setSetIndex((prevIndex) => {
+          const nextIndex = prevIndex + 1;
+          const start = (nextIndex * setSize) % allReviews.length;
+          
+          const newSet: Review[] = [];
+          for (let i = 0; i < setSize; i++) {
+            newSet.push(allReviews[(start + i) % allReviews.length]);
+          }
+          
+          setReviews(newSet);
+          return nextIndex;
+        });
+        setIsFading(false);
+      }, 400);
+    }, 35000);
+
+    return () => clearInterval(interval);
+  }, [allReviews]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,19 +188,19 @@ export default function ReviewPreview() {
           <div className="w-16 h-[2px] bg-primary mx-auto mt-6 shadow-[0_0_10px_rgba(0,158,227,0.6)]"></div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
           {/* LEFT: Reviews Grid (Takes 2 columns) */}
           <div className="lg:col-span-2">
             {isLoading ? (
-              <div className="flex justify-center items-center py-24">
+              <div className="flex justify-center items-center py-24 h-full">
                 <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
               </div>
             ) : reviews.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-350 ${isFading ? 'opacity-0' : 'opacity-100'}`}>
                 {reviews.map((review) => (
                   <div
                     key={review.id}
-                    className="mp-card p-6 flex flex-col group relative overflow-hidden border border-border bg-card/45"
+                    className="mp-card p-6 flex flex-col group relative overflow-hidden border border-border bg-card/45 h-[155px]"
                   >
                     {/* Quote Mark Decoration */}
                     <div className="absolute top-4 right-4 text-5xl text-slate-200/5 font-serif leading-none group-hover:text-primary/5 transition-colors pointer-events-none">&rdquo;</div>
@@ -162,22 +212,22 @@ export default function ReviewPreview() {
                       </span>
                     </div>
 
-                    <p className="text-text-primary text-[14px] sm:text-base leading-relaxed relative z-10 font-medium">
+                    <p className="text-text-primary text-[14px] sm:text-base leading-relaxed relative z-10 font-medium line-clamp-3 overflow-hidden text-ellipsis">
                       {review.comment}
                     </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-24 border border-dashed border-border rounded-3xl bg-card/20 text-text-secondary">
+              <div className="text-center py-24 border border-dashed border-border rounded-3xl bg-card/20 text-text-secondary h-full flex items-center justify-center">
                 <p>No reviews available yet. Be the first to leave one!</p>
               </div>
             )}
           </div>
 
           {/* RIGHT: Write a Review Form (Takes 1 column) */}
-          <div className="lg:col-span-1">
-            <div className="mp-card p-8 bg-card/50 backdrop-blur-md border border-border rounded-3xl relative overflow-hidden shadow-2xl">
+          <div className="lg:col-span-1 h-full">
+            <div className="mp-card p-8 bg-card/50 backdrop-blur-md border border-border rounded-3xl relative overflow-hidden shadow-2xl h-full flex flex-col justify-center">
               <div className="absolute -top-16 -right-16 w-36 h-36 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
 
               {submitSuccess ? (
