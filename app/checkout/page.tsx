@@ -111,14 +111,17 @@ export default function CheckoutPage() {
 
     setIsLoading(true);
     try {
-      // Inventory safety check: confirm each selected option still has stock
-      // before creating orders or charging. Prevents paying for a sold-out option.
+      // Inventory safety check: confirm each selected plan (option or variant)
+      // still has stock before creating orders or charging. Prevents paying for
+      // a sold-out plan. Applies to every payment method, including crypto.
       for (const item of items) {
-        if (item.selectedOption?.id) {
-          const stock = await fetchInventoryCount(item.product.id, item.selectedOption.id);
+        const selId = item.selectedOption?.id ?? item.selectedVariant?.id;
+        const selLabel = item.selectedOption?.label ?? item.selectedVariant?.label;
+        if (selId) {
+          const stock = await fetchInventoryCount(item.product.id, selId);
           if (stock.available_count <= 0) {
             setError(
-              `${item.product.name} — "${item.selectedOption.label}" is out of stock. Please choose another option.`
+              `${item.product.name} — "${selLabel}" is out of stock. Please choose another plan.`
             );
             setIsLoading(false);
             return;
@@ -208,7 +211,43 @@ export default function CheckoutPage() {
         }
       }
 
-      // 3. Manual / crypto → keep the existing pending/manual flow.
+      // 3. Crypto → manual payment. Never touches Mercado Pago. The order stays
+      //    pending until an admin confirms payment and triggers delivery. We hand
+      //    the customer a lightweight summary (no sensitive data) for the
+      //    instructions page via sessionStorage + a reference in the URL.
+      if (paymentMethod === 'crypto') {
+        const primaryRef =
+          createdOrders[0]?.invoice_number || createdOrders[0]?.id || '';
+        const summary = {
+          email,
+          amountEUR: round2(finalTotal),
+          primaryRef,
+          refs: createdOrders
+            .map((o) => o?.invoice_number || o?.id)
+            .filter(Boolean),
+          items: items.map((it) => ({
+            name: it.product.name,
+            plan: it.selectedOption?.label ?? it.selectedVariant?.label ?? null,
+            warranty: it.selectedGuarantee?.label ?? null,
+            quantity: it.quantity,
+            price:
+              it.selectedGuarantee?.total_price ??
+              it.selectedOption?.price ??
+              it.selectedVariant?.price ??
+              it.product.price,
+          })),
+        };
+        try {
+          sessionStorage.setItem('cryptoOrder', JSON.stringify(summary));
+        } catch {
+          // sessionStorage unavailable — the page falls back to the URL ref.
+        }
+        clearCart();
+        router.push(`/checkout/crypto?ref=${encodeURIComponent(primaryRef)}`);
+        return;
+      }
+
+      // 4. Manual (bank transfer) → keep the existing pending/manual flow.
       clearCart();
       setIsSuccess(true);
     } catch (err: any) {

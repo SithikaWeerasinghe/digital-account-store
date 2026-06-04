@@ -67,6 +67,27 @@ export async function createOrder(payload: CreateOrderInput): Promise<any> {
   });
 }
 
+// ── Manual crypto payment ──
+
+export type CryptoWalletInfo = { id: string; coin: string; network: string; address: string };
+export type CryptoConfigResult = { wallets: CryptoWalletInfo[]; supportNote: string; enabled: boolean };
+
+/**
+ * Fetches the store's configured crypto receiving wallets + support note.
+ * Never throws — returns an empty/disabled config on failure so the crypto
+ * instructions page always renders.
+ */
+export async function fetchCryptoConfig(): Promise<CryptoConfigResult> {
+  try {
+    const response = await fetch('/api/crypto/config', { cache: 'no-store' });
+    const data = await response.json();
+    if (data?.success && data.data) return data.data as CryptoConfigResult;
+  } catch {
+    // ignore — fall through to empty config
+  }
+  return { wallets: [], supportNote: '', enabled: false };
+}
+
 // ── Mercado Pago Checkout Pro ──
 
 export type MercadoPagoCheckoutResult = {

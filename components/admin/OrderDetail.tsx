@@ -243,6 +243,24 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
             </span>
           </div>
 
+          {/* Crypto manual-payment notice (pending crypto orders only) */}
+          {(order.payment_method || order.paymentMethod) === 'crypto' && paymentStatus !== 'paid' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1">
+              <div className="flex items-center gap-2">
+                <CreditCard size={14} className="text-amber-600" />
+                <span className="text-[10px] font-black tracking-widest uppercase text-amber-700">
+                  Crypto — Manual Verification
+                </span>
+              </div>
+              <p className="text-xs text-amber-800 leading-relaxed">
+                The customer should send the transaction hash to support with reference{' '}
+                <span className="font-mono font-bold">{order.invoice_number || order.id}</span>.
+                After confirming the crypto payment, click <span className="font-bold">Mark as Paid</span>, then{' '}
+                <span className="font-bold">Send Delivery / Access Details</span>.
+              </p>
+            </div>
+          )}
+
           {/* Mercado Pago gateway details (only shown when present) */}
           {(order.mercadopago_payment_id ||
             order.mercadopago_preference_id ||
