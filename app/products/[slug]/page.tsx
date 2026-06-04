@@ -423,10 +423,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       {emailError && <p className="text-xs font-black tracking-wide text-hazard mt-2">{emailError}</p>}
                     </div>
 
-                    {/* Product Option Dropdown */}
+                    {/* Product / Plan — option picker */}
                     {product.options?.length ? (
                       <div>
-                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Product Option</label>
+                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Product / Plan</label>
                         <div className="space-y-2">
                           {product.options.map((option) => (
                             <button
@@ -473,10 +473,55 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       </div>
                     ) : null}
 
-                    {/* Guarantee Cards Section */}
+                    {/* Product / Plan — variant picker (products without options).
+                        Shown directly under the options block; only one renders. */}
+                    {!product.options?.length && product.variants?.length ? (
+                      <div>
+                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Product / Plan</label>
+                        <div className="flex flex-col gap-2">
+                          {product.variants.map((v) => (
+                            <button
+                              key={v.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedVariant(v);
+                                // Keep warranty selection/pricing in sync with the chosen plan.
+                                if (product.guarantee_options?.length) {
+                                  const g = product.guarantee_options;
+                                  setSelectedGuarantee(g.find((x) => x.is_default) || g[0]);
+                                }
+                              }}
+                              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                selectedVariant?.id === v.id
+                                  ? 'border-primary bg-primary/10 shadow-[0_0_12px_rgba(0,158,227,0.12)]'
+                                  : 'border-border bg-white hover:border-primary/50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                                  selectedVariant?.id === v.id ? 'border-primary bg-primary/10' : 'border-slate-300'
+                                }`}>
+                                  {selectedVariant?.id === v.id && (
+                                    <div className="w-2.5 h-2.5 rounded-full bg-primary" />
+                                  )}
+                                </div>
+                                <span className={`text-xs sm:text-[13px] font-black font-heading tracking-wider uppercase ${selectedVariant?.id === v.id ? 'text-text-primary' : 'text-text-secondary'}`}>
+                                  {v.label}
+                                </span>
+                              </div>
+                              <span className={`text-sm sm:text-base font-black font-heading ${selectedVariant?.id === v.id ? 'text-primary' : 'text-text-secondary'}`}>
+                                {formatCurrency(v.price)}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {/* Warranty Cards Section (rendered below Product / Plan) */}
                     {product.options?.length || product.guarantee_options?.length ? (
                       <div>
-                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Guarantee</label>
+                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Warranty</label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {guaranteeOptions.map((guarantee) => (
                             <button
@@ -518,43 +563,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       </div>
                     ) : null}
 
-                    {/* Variant picker (only for products without options) */}
-                    {!product.options?.length && product.variants?.length ? (
-                      <div>
-                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Guarantee Option</label>
-                        <div className="flex flex-wrap gap-2">
-                          {product.variants.map((v) => (
-                            <button
-                              key={v.id}
-                              type="button"
-                              onClick={() => setSelectedVariant(v)}
-                              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
-                                selectedVariant?.id === v.id
-                                  ? 'border-primary bg-primary/10 shadow-[0_0_12px_rgba(0,158,227,0.12)]'
-                                  : 'border-border bg-white hover:border-primary/50'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                                  selectedVariant?.id === v.id ? 'border-primary bg-primary/10' : 'border-slate-300'
-                                }`}>
-                                  {selectedVariant?.id === v.id && (
-                                    <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-                                  )}
-                                </div>
-                                <span className={`text-xs sm:text-[13px] font-black font-heading tracking-wider uppercase ${selectedVariant?.id === v.id ? 'text-text-primary' : 'text-text-secondary'}`}>
-                                  {v.label}
-                                </span>
-                              </div>
-                              <span className={`text-sm sm:text-base font-black font-heading ${selectedVariant?.id === v.id ? 'text-primary' : 'text-text-secondary'}`}>
-                                {formatCurrency(v.price)}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
                     {/* Selected option/variant stock count — visible above Quantity,
                         updates immediately when the selection changes */}
                     {usesVariantInventory && variantStockLabel && (
@@ -573,7 +581,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                           <span className={`w-2 h-2 rounded-full flex-shrink-0 ${variantOutOfStock ? 'bg-hazard' : 'bg-success animate-pulse'}`} />
                         )}
                         <span>
-                          Selected option stock:{' '}
+                          Selected plan stock:{' '}
                           {variantStockLabel === 'Checking stock...' ? 'Checking stock...' : variantStockLabel}
                         </span>
                       </div>
@@ -628,20 +636,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-[20px]"></div>
                       {selectedOption && (
                         <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
-                          <span>Product Option</span>
+                          <span>Product / Plan</span>
                           <span className="text-right">{selectedOption.label}</span>
-                        </div>
-                      )}
-                      {selectedGuarantee && (
-                        <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
-                          <span>Guarantee</span>
-                          <span className="text-right">{selectedGuarantee.label}</span>
                         </div>
                       )}
                       {selectedVariant && !selectedOption && (
                         <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
-                          <span>Product Option</span>
+                          <span>Product / Plan</span>
                           <span className="text-right">{selectedVariant.label}</span>
+                        </div>
+                      )}
+                      {selectedGuarantee && (
+                        <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
+                          <span>Warranty</span>
+                          <span className="text-right">{selectedGuarantee.label}</span>
                         </div>
                       )}
                       <div className="flex justify-between gap-4 text-sm font-black tracking-widest uppercase text-text-secondary/70 relative z-10 font-mono">
@@ -663,7 +671,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       <div className="flex items-center gap-2 bg-hazard/5 border border-hazard/20 text-hazard rounded-xl px-4 py-3 text-sm font-bold">
                         <AlertCircle size={16} className="flex-shrink-0" />
                         {usesVariantInventory && activeSelectionLabel
-                          ? `${activeSelectionLabel} is out of stock. Please choose another option.`
+                          ? `${activeSelectionLabel} is out of stock. Please choose another plan.`
                           : 'This product is currently out of stock.'}
                       </div>
                     )}

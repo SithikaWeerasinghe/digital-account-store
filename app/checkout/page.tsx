@@ -281,13 +281,13 @@ export default function CheckoutPage() {
                     <div>
                       <p className="font-semibold text-text-primary">{item.product.name}</p>
                       {item.selectedOption && (
-                        <p className="text-xs text-text-secondary">Option: {item.selectedOption.label}</p>
-                      )}
-                      {item.selectedGuarantee && (
-                        <p className="text-xs text-text-secondary">Guarantee: {item.selectedGuarantee.label}</p>
+                        <p className="text-xs text-text-secondary">Product / Plan: {item.selectedOption.label}</p>
                       )}
                       {item.selectedVariant && !item.selectedOption && (
-                        <p className="text-xs text-text-secondary">{item.selectedVariant.label}</p>
+                        <p className="text-xs text-text-secondary">Product / Plan: {item.selectedVariant.label}</p>
+                      )}
+                      {item.selectedGuarantee && (
+                        <p className="text-xs text-text-secondary">Warranty: {item.selectedGuarantee.label}</p>
                       )}
                     </div>
                     <p className="font-black text-text-primary">
@@ -470,13 +470,13 @@ export default function CheckoutPage() {
                             {item.product.name}
                           </h4>
                           {item.selectedOption && (
-                            <p className="text-xs text-text-secondary mb-1">Opt: {item.selectedOption.label}</p>
-                          )}
-                          {item.selectedGuarantee && (
-                            <p className="text-xs text-text-secondary mb-1">Guar: {item.selectedGuarantee.label}</p>
+                            <p className="text-xs text-text-secondary mb-1">Plan: {item.selectedOption.label}</p>
                           )}
                           {item.selectedVariant && !item.selectedOption && (
-                            <p className="text-xs text-text-secondary mb-1">{item.selectedVariant.label}</p>
+                            <p className="text-xs text-text-secondary mb-1">Plan: {item.selectedVariant.label}</p>
+                          )}
+                          {item.selectedGuarantee && (
+                            <p className="text-xs text-text-secondary mb-1">Warranty: {item.selectedGuarantee.label}</p>
                           )}
                           <p className="text-text-secondary text-sm sm:text-base font-semibold">
                             €{(itemPrice * item.quantity).toFixed(2)}

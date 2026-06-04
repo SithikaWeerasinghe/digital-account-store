@@ -242,14 +242,14 @@ export function buildDeliveryEmail(
   const optionRow = optionLabel
     ? `
       <tr>
-        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Selected Option</td>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Product / Plan</td>
         <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${escapeHtml(optionLabel)}</td>
       </tr>`
     : '';
   const guaranteeRow = guaranteeLabel
     ? `
       <tr>
-        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Guarantee</td>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Warranty</td>
         <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${escapeHtml(guaranteeLabel)}</td>
       </tr>`
     : '';

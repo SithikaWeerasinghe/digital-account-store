@@ -81,20 +81,20 @@ export default function CartPage() {
 
                           {item.selectedOption && (
                             <p className="text-xs text-slate-600 mt-1">
-                              Product Option: <span className="font-semibold">{item.selectedOption.label}</span>
-                            </p>
-                          )}
-
-                          {item.selectedGuarantee && (
-                            <p className="text-xs text-slate-600 mt-1">
-                              Guarantee: <span className="font-semibold">{item.selectedGuarantee.label}</span>
-                              {item.selectedGuarantee.monthly_price && ` · €${item.selectedGuarantee.monthly_price.toFixed(2)}/mo`}
+                              Product / Plan: <span className="font-semibold">{item.selectedOption.label}</span>
                             </p>
                           )}
 
                           {item.selectedVariant && !item.selectedOption && (
                             <p className="text-xs text-slate-600 mt-1">
-                              Product Option: <span className="font-semibold">{item.selectedVariant.label}</span>
+                              Product / Plan: <span className="font-semibold">{item.selectedVariant.label}</span>
+                            </p>
+                          )}
+
+                          {item.selectedGuarantee && (
+                            <p className="text-xs text-slate-600 mt-1">
+                              Warranty: <span className="font-semibold">{item.selectedGuarantee.label}</span>
+                              {item.selectedGuarantee.monthly_price && ` · €${item.selectedGuarantee.monthly_price.toFixed(2)}/mo`}
                             </p>
                           )}
 
