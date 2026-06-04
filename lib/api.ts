@@ -154,6 +154,42 @@ export async function fetchActivePromos(placement: PromoPlacement): Promise<Prom
   }
 }
 
+// ── Variant Inventory Stock Count (public) ──
+
+export type InventoryCountResult = {
+  product_id: string | null;
+  product_option_id: string | null;
+  available_count: number;
+};
+
+/**
+ * Fetches the available stock count for a product (optionally scoped to a
+ * selected option). Never throws — returns 0 on any failure so the product
+ * page stays usable and falls back to the product's own inStock flag.
+ */
+export async function fetchInventoryCount(
+  productId: string,
+  productOptionId?: string
+): Promise<InventoryCountResult> {
+  try {
+    const params = new URLSearchParams({ product_id: productId });
+    if (productOptionId) params.append('product_option_id', productOptionId);
+    const response = await fetch(`/api/inventory/count?${params.toString()}`, {
+      cache: 'no-store',
+    });
+    const data = await response.json();
+    return (
+      (data?.data as InventoryCountResult) ?? {
+        product_id: productId,
+        product_option_id: productOptionId ?? null,
+        available_count: 0,
+      }
+    );
+  } catch {
+    return { product_id: productId, product_option_id: productOptionId ?? null, available_count: 0 };
+  }
+}
+
 export async function createTicket(payload: CreateTicketInput): Promise<any> {
   return fetchApi('/api/tickets', {
     method: 'POST',

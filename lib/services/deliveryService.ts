@@ -49,20 +49,37 @@ export async function deliverOrder(orderId: string, skipPaymentCheck = false): P
       return { success: false, message: 'Order has no customer email' };
     }
 
+    // Read the exact selected option/guarantee from the order metadata so we
+    // deliver inventory matching the variant the customer actually purchased.
+    const selectedOption = order.order_metadata?.product_option;
+    const selectedGuarantee = order.order_metadata?.guarantee;
+    const optionId = selectedOption?.id || null;
+    const optionLabel = selectedOption?.label || null;
+    const guaranteeId = selectedGuarantee?.id || null;
+    const guaranteeLabel = selectedGuarantee?.label || null;
+
     const inventoryItem = await inventoryService.assignInventoryItemToOrder(
       productId,
       orderId,
-      customerEmail
+      customerEmail,
+      optionId,
+      optionLabel,
+      guaranteeId,
+      guaranteeLabel
     );
 
     if (!inventoryItem) {
-      // No inventory available — update order delivery_status to failed
+      // No matching inventory — update order delivery_status to failed.
+      // For variant orders, never substitute a different option's credentials.
       await orderService.updateOrderPaymentFields(orderId, {
         delivery_status: 'failed',
       });
+      const message = optionLabel
+        ? `No available inventory for selected option: ${optionLabel}`
+        : 'No available inventory item for this product';
       return {
         success: false,
-        message: 'No available inventory item for this product',
+        message,
         inventoryItem: null,
       };
     }

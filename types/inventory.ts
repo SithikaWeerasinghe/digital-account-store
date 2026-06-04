@@ -9,16 +9,29 @@ export interface InventoryItem {
   sold_at?: string | null;
   created_at?: string;
   updated_at?: string;
+  // Variant-based inventory: links stock to the exact selected option/guarantee.
+  product_option_id?: string | null;
+  product_option_label?: string | null;
+  guarantee_id?: string | null;
+  guarantee_label?: string | null;
 }
 
 export type CreateInventoryItemInput = {
   product_id: string;
   delivery_content: string;
   title?: string;
+  product_option_id?: string;
+  product_option_label?: string;
+  guarantee_id?: string;
+  guarantee_label?: string;
 };
 
 export type UpdateInventoryItemInput = {
   title?: string;
   delivery_content?: string;
   status?: 'available' | 'reserved' | 'sold' | 'disabled';
+  product_option_id?: string;
+  product_option_label?: string;
+  guarantee_id?: string;
+  guarantee_label?: string;
 };

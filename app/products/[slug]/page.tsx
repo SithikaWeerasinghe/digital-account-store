@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { fetchProductBySlug, fetchReviews } from '@/lib/api';
+import { fetchProductBySlug, fetchReviews, fetchInventoryCount } from '@/lib/api';
 import { Product, ProductVariant, ProductOption, GuaranteeOption } from '@/types/product';
 import { Review } from '@/types/review';
 import Link from 'next/link';
@@ -79,6 +79,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [selectedOption, setSelectedOption] = useState<ProductOption | null>(null);
   const [selectedGuarantee, setSelectedGuarantee] = useState<GuaranteeOption | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+  // Variant-aware stock: available inventory count for the selected option.
+  // null = not loaded yet / not applicable.
+  const [variantStock, setVariantStock] = useState<number | null>(null);
+  const [stockLoading, setStockLoading] = useState(false);
 
 
   useEffect(() => {
@@ -121,6 +125,49 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     };
     loadData();
   }, [slug]);
+
+  // Whether this product's stock is managed by variant inventory (has options).
+  const usesVariantInventory = !!product?.options?.length;
+
+  // Fetch available inventory count for the current product + selected option.
+  // For variant products this scopes to the selected option; for simple products
+  // it reads product-level stock (used only for display, never to block).
+  useEffect(() => {
+    if (!product) return;
+    let cancelled = false;
+    const optionId = usesVariantInventory ? selectedOption?.id : undefined;
+    // For a variant product, wait until an option is actually selected.
+    if (usesVariantInventory && !optionId) return;
+
+    (async () => {
+      setStockLoading(true);
+      // Clear the previous option's count so we never flash a stale number.
+      setVariantStock(null);
+      const result = await fetchInventoryCount(product.id, optionId);
+      if (!cancelled) {
+        setVariantStock(result.available_count);
+        setStockLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [product, usesVariantInventory, selectedOption?.id]);
+
+  // Out of stock when a variant product's selected option has 0 inventory.
+  // Simple products keep the existing product.inStock behavior (fallback).
+  const variantOutOfStock = usesVariantInventory && variantStock === 0;
+  const isOutOfStock = !(product?.inStock ?? false) || variantOutOfStock;
+
+  // Human-readable stock label for variant products (used by badge + selector).
+  // Returns null for simple products so they keep the plain In/Out badge.
+  const variantStockLabel: string | null = !usesVariantInventory
+    ? null
+    : stockLoading || variantStock === null
+      ? 'Checking stock...'
+      : variantStock > 0
+        ? `In Stock: ${variantStock}`
+        : 'Out of Stock';
 
   const [email, setEmail] = useState('');
   const [quantity, setQuantity] = useState(1);
@@ -232,8 +279,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
             <div className="bg-card border border-border shadow-2xl rounded-3xl p-8 sm:p-10 space-y-8">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-6">
                 <div>
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-black font-heading tracking-widest uppercase px-3.5 py-1.5 rounded-full border mb-4 ${product.inStock ? 'text-success border-success/20 bg-success/5' : 'text-hazard border-hazard/20 bg-hazard/5'}`}>
-                    {product.inStock ? '● In Stock' : '○ Out of Stock'}
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-black font-heading tracking-widest uppercase px-3.5 py-1.5 rounded-full border mb-4 ${!isOutOfStock ? 'text-success border-success/20 bg-success/5' : 'text-hazard border-hazard/20 bg-hazard/5'}`}>
+                    {isOutOfStock
+                      ? '○ Out of Stock'
+                      : usesVariantInventory && variantStock !== null
+                        ? `● In Stock: ${variantStock}`
+                        : '● In Stock'}
                   </span>
                   <h1 className="text-3xl sm:text-4xl font-black font-heading uppercase tracking-wider text-text-primary leading-tight">{product.name}</h1>
                 </div>
@@ -570,19 +621,29 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       </div>
                     </div>
 
+                    {/* Out-of-stock notice for the selected option */}
+                    {isOutOfStock && (
+                      <div className="flex items-center gap-2 bg-hazard/5 border border-hazard/20 text-hazard rounded-xl px-4 py-3 text-sm font-bold">
+                        <AlertCircle size={16} className="flex-shrink-0" />
+                        {usesVariantInventory && selectedOption
+                          ? `${selectedOption.label} is out of stock. Please choose another option.`
+                          : 'This product is currently out of stock.'}
+                      </div>
+                    )}
+
                     {/* CTAs */}
                     <div className="space-y-3">
                       <button
                         onClick={handleCheckout}
-                        disabled={!product.inStock}
+                        disabled={isOutOfStock || stockLoading}
                         className="w-full py-4 rounded-xl bg-primary text-white font-black font-heading tracking-widest uppercase hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_0_15px_rgba(0,158,227,0.15)] hover:shadow-[0_0_25px_rgba(0,158,227,0.3)] hover:-translate-y-0.5 active:translate-y-0"
                       >
-                        Continue to Checkout
+                        {isOutOfStock ? 'Out of Stock' : 'Continue to Checkout'}
                       </button>
                       <button
                         onClick={handleAddToCart}
-                        disabled={!product.inStock}
-                        className={`w-full py-3 rounded-xl border-2 font-black font-heading tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 ${
+                        disabled={isOutOfStock || stockLoading}
+                        className={`w-full py-3 rounded-xl border-2 font-black font-heading tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                           addedToCart
                             ? 'border-green-500 bg-green-50 text-green-700'
                             : 'border-slate-300 bg-white text-slate-700 hover:border-primary hover:text-primary'

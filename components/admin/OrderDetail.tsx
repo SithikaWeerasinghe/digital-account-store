@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Order } from '@/types/order';
+import { InventoryItem } from '@/types/inventory';
 import { OrderStatusUpdate, resendOrderEmail } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import {
   X, Mail, Package, CreditCard, Hash, Calendar, Loader2,
-  CheckCircle, Truck, Send, Tag, Shield, DollarSign,
+  CheckCircle, Truck, Send, Tag, Shield, DollarSign, Archive,
 } from 'lucide-react';
 
 interface OrderDetailProps {
@@ -33,6 +34,31 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [assignedInventory, setAssignedInventory] = useState<InventoryItem[]>([]);
+
+  // Load the inventory item(s) assigned to this order so the admin can confirm
+  // the correct account variant was delivered. Best-effort — silent on failure.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { supabase } = await import('@/lib/supabase');
+        if (!supabase) return;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+        const res = await fetch(`/api/admin/orders/${order.id}/inventory`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const data = await res.json();
+        if (!cancelled && data.success) setAssignedInventory(data.data || []);
+      } catch {
+        // ignore — assigned inventory display is optional
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [order.id, order.delivery_status]);
 
   const paymentStatus = order.payment_status || 'pending';
   const deliveryStatus = order.delivery_status || 'pending';
@@ -278,6 +304,33 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
                   )}
                 </>
               )}
+            </div>
+          )}
+
+          {/* Assigned Inventory (which exact stock item was delivered) */}
+          {assignedInventory.length > 0 && (
+            <div className="bg-slate-50 rounded-xl px-4">
+              <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 pt-3 -mb-1">
+                Assigned Inventory
+              </p>
+              {assignedInventory.map((inv) => (
+                <div key={inv.id}>
+                  <InfoRow
+                    icon={Archive}
+                    label="Inventory Item"
+                    value={inv.title || inv.id}
+                  />
+                  <InfoRow
+                    icon={Tag}
+                    label="Inventory Option"
+                    value={inv.product_option_label || 'Product-level inventory'}
+                  />
+                  {inv.guarantee_label && (
+                    <InfoRow icon={Shield} label="Inventory Guarantee" value={inv.guarantee_label} />
+                  )}
+                  <InfoRow icon={CheckCircle} label="Inventory Status" value={inv.status} />
+                </div>
+              ))}
             </div>
           )}
 

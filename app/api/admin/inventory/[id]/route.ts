@@ -24,6 +24,10 @@ export async function PATCH(
       title: body.title,
       delivery_content: body.delivery_content,
       status: body.status,
+      product_option_id: body.product_option_id,
+      product_option_label: body.product_option_label,
+      guarantee_id: body.guarantee_id,
+      guarantee_label: body.guarantee_label,
     };
 
     const item = await inventoryService.updateInventoryItem(id, input);
