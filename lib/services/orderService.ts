@@ -303,6 +303,12 @@ export async function updateOrderStatus(
   if (update.delivery_status) patch.delivery_status = update.delivery_status;
   if (Object.keys(patch).length === 0) throw new Error('No status fields provided');
 
+  // Stamp paid_at when an admin marks an order paid (e.g. confirming a manual
+  // crypto/bank payment). Mirrors what the Mercado Pago webhook records.
+  if (update.payment_status === 'paid') {
+    patch.paid_at = new Date().toISOString();
+  }
+
   if (!supabase) {
     const row = inMemoryOrders.find((o) => o.id === id);
     if (!row) return null;

@@ -97,13 +97,24 @@ export function buildOrderConfirmationEmail(order: Order, options: OrderEmailOpt
       </tr>`
     : '';
 
+  const isCryptoPending = (order.payment_method || order.paymentMethod) === 'crypto' && !paid;
+
   const credentialsBlock = options.credentials
     ? `
       <div style="margin:24px 0;padding:20px;background-color:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;">
         <p style="margin:0 0 12px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#047857;">🚀 Your Access Details</p>
         <pre style="margin:0;padding:12px;background-color:#ffffff;border:1px solid #d1fae5;border-radius:8px;font-family:'Courier New',monospace;font-size:14px;color:#0f172a;white-space:pre-wrap;word-break:break-word;">${options.credentials}</pre>
       </div>`
-    : `
+    : isCryptoPending
+      ? `
+      <div style="margin:24px 0;padding:16px;background-color:#fffbeb;border:1px solid #fde68a;border-radius:12px;">
+        <p style="margin:0 0 8px;font-size:14px;font-weight:700;color:#b45309;">₿ Crypto payment — manual verification required</p>
+        <p style="margin:0;font-size:14px;color:#92400e;line-height:1.6;">
+          Your order has been received. Please complete the crypto payment and send your transaction hash to support
+          along with your order reference (${invoice}). Delivery will happen after confirmation.
+        </p>
+      </div>`
+      : `
       <div style="margin:24px 0;padding:16px;background-color:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;">
         <p style="margin:0;font-size:14px;color:#1e40af;">
           ⏳ Your digital product will be delivered to this email shortly after payment is confirmed.
