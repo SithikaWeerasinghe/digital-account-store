@@ -279,11 +279,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
             <div className="bg-card border border-border shadow-2xl rounded-3xl p-8 sm:p-10 space-y-8">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-6">
                 <div>
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-black font-heading tracking-widest uppercase px-3.5 py-1.5 rounded-full border mb-4 ${!isOutOfStock ? 'text-success border-success/20 bg-success/5' : 'text-hazard border-hazard/20 bg-hazard/5'}`}>
-                    {isOutOfStock
-                      ? '○ Out of Stock'
-                      : usesVariantInventory && variantStock !== null
-                        ? `● In Stock: ${variantStock}`
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-black font-heading tracking-widest uppercase px-3.5 py-1.5 rounded-full border mb-4 ${
+                    variantStockLabel === 'Checking stock...'
+                      ? 'text-text-secondary border-border bg-slate-50'
+                      : !isOutOfStock
+                        ? 'text-success border-success/20 bg-success/5'
+                        : 'text-hazard border-hazard/20 bg-hazard/5'
+                  }`}>
+                    {variantStockLabel
+                      ? `${variantStockLabel === 'Out of Stock' ? '○' : variantStockLabel === 'Checking stock...' ? '◌' : '●'} ${variantStockLabel}`
+                      : isOutOfStock
+                        ? '○ Out of Stock'
                         : '● In Stock'}
                   </span>
                   <h1 className="text-3xl sm:text-4xl font-black font-heading uppercase tracking-wider text-text-primary leading-tight">{product.name}</h1>
@@ -457,6 +463,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                             </button>
                           ))}
                         </div>
+
+                        {/* Selected option stock count — updates on option change */}
+                        {selectedOption && variantStockLabel && (
+                          <div
+                            className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-black font-heading tracking-widest uppercase border ${
+                              variantStockLabel === 'Checking stock...'
+                                ? 'text-text-secondary border-border bg-slate-50'
+                                : variantOutOfStock
+                                  ? 'text-hazard border-hazard/20 bg-hazard/5'
+                                  : 'text-success border-success/20 bg-success/5'
+                            }`}
+                          >
+                            <span className={variantOutOfStock || variantStockLabel === 'Checking stock...' ? '' : 'w-1.5 h-1.5 rounded-full bg-success inline-block'}></span>
+                            {variantStockLabel === 'Checking stock...'
+                              ? 'Checking stock...'
+                              : `${selectedOption.label}: ${variantStockLabel}`}
+                          </div>
+                        )}
                       </div>
                     ) : null}
 
