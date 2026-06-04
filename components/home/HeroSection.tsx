@@ -89,14 +89,11 @@ export default function HeroSection() {
                       <h3 className="text-base sm:text-lg font-black tracking-wide text-white">Netflix Premium</h3>
                       <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">4K Ultra HD • 1 Month Access</p>
                     </div>
-                    <div className="text-[15px] font-black text-white mt-1 font-mono">
-                      $4.99
-                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Card 2: Xbox Game Pass Ultimate (Middle) */}
+              {/* Card 2: Minecraft Premium (Middle) */}
               <div
                 className="absolute top-[120px] left-[40px] sm:left-[80px] md:left-[90px] z-20 w-[240px] sm:w-[290px] md:w-[300px] animate-float"
                 style={{ animationDuration: '7s', animationDelay: '1.5s' }}
@@ -109,11 +106,8 @@ export default function HeroSection() {
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-base sm:text-lg font-black tracking-wide text-white">Xbox Game Pass Ultimate</h3>
-                      <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">100+ Games • PC/Console</p>
-                    </div>
-                    <div className="text-[15px] font-black text-white mt-1 font-mono">
-                      $9.99
+                      <h3 className="text-base sm:text-lg font-black tracking-wide text-white">Minecraft Premium</h3>
+                      <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">Java & Bedrock • Full Access</p>
                     </div>
                   </div>
                 </div>
@@ -133,10 +127,7 @@ export default function HeroSection() {
                     </div>
                     <div>
                       <h3 className="text-base sm:text-lg font-black tracking-wide text-white">ChatGPT Plus</h3>
-                      <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">GPT-4 access • Shared account</p>
-                    </div>
-                    <div className="text-[15px] font-black text-white mt-1 font-mono">
-                      $6.50
+                      <p className="text-xs sm:text-sm text-white/70 mt-1.5 font-medium">GPT-4 access • Full Access</p>
                     </div>
                   </div>
                 </div>
