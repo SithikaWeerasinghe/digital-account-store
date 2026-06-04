@@ -222,6 +222,22 @@ export async function getAvailableInventoryCount(
   return count ?? 0;
 }
 
+/**
+ * Dev diagnostics: returns the distinct product_option_id values that currently
+ * have available stock for a product. Used to explain a 0 count caused by an
+ * option-id mismatch.
+ */
+export async function getAvailableOptionIdsForProduct(productId: string): Promise<(string | null)[]> {
+  if (!supabaseAdmin || !productId) return [];
+  const { data, error } = await supabaseAdmin
+    .from('inventory_items')
+    .select('product_option_id')
+    .eq('product_id', productId)
+    .eq('status', 'available');
+  if (error) return [];
+  return Array.from(new Set((data || []).map((r: any) => r.product_option_id ?? null)));
+}
+
 export async function assignInventoryItemToOrder(
   productId: string,
   orderId: string,

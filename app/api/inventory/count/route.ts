@@ -28,6 +28,17 @@ export async function GET(request: NextRequest) {
       productOptionId || undefined
     );
 
+    // Dev-only diagnostic: when a specific option returns 0, surface which
+    // option ids actually have stock so a mismatch is easy to spot.
+    if (process.env.NODE_ENV !== 'production' && productOptionId && availableCount === 0) {
+      const existing = await inventoryService.getAvailableOptionIdsForProduct(productId);
+      console.log('[api/inventory/count] 0 stock for selected option — possible id mismatch', {
+        product_id: productId,
+        requested_product_option_id: productOptionId,
+        available_inventory_option_ids: existing,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       data: {
