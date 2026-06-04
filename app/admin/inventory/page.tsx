@@ -69,24 +69,59 @@ function AdminInventoryContent() {
     [products, formData.product_id]
   );
 
+  // The customer-facing selection list keys the variant inventory. Prefer the
+  // product's `options`; fall back to `variants` (DB products often only carry
+  // variants). The chosen id MUST match what the product page sends as
+  // product_option_id, otherwise stock counts won't line up.
+  const variantChoices = useMemo(
+    () => {
+      if (!selectedProduct) return [] as { id: string; label: string; price: number; badge?: string }[];
+      if (selectedProduct.options?.length) {
+        return selectedProduct.options.map((o) => ({
+          id: o.id,
+          label: o.label,
+          price: o.price,
+          badge: o.badge,
+        }));
+      }
+      if (selectedProduct.variants?.length) {
+        return selectedProduct.variants.map((v) => ({
+          id: v.id,
+          label: v.label,
+          price: v.price,
+          badge: undefined,
+        }));
+      }
+      return [];
+    },
+    [selectedProduct]
+  );
+
   // Guarantee options for the selected product/option (provided or generated).
   const guaranteeOptions: GuaranteeOption[] = useMemo(() => {
     if (!selectedProduct) return [];
     if (selectedProduct.guarantee_options?.length) return selectedProduct.guarantee_options;
-    // Only offer generated guarantees when the product actually uses options/guarantees.
-    if (selectedProduct.options?.length || selectedProduct.guarantee_options?.length) {
+    // Only offer generated guarantees when the product actually uses options/variants.
+    if (variantChoices.length) {
       const basePrice =
-        selectedProduct.options?.find((o) => o.id === formData.product_option_id)?.price ??
+        variantChoices.find((c) => c.id === formData.product_option_id)?.price ??
         selectedProduct.price;
       return getDefaultGuaranteeOptions(basePrice);
     }
     return [];
-  }, [selectedProduct, formData.product_option_id]);
+  }, [selectedProduct, variantChoices, formData.product_option_id]);
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.product_id || !formData.delivery_content) {
       setError('Product and delivery content are required');
+      return;
+    }
+
+    // When the product has options/variants, an option is mandatory so the
+    // stock is keyed correctly (otherwise it becomes product-level inventory).
+    if (variantChoices.length > 0 && !formData.product_option_id) {
+      setError('Please select a product option for this inventory item.');
       return;
     }
 
@@ -274,16 +309,16 @@ function AdminInventoryContent() {
               </select>
             </div>
 
-            {/* Product Option / Variant — shown only if the product has options */}
-            {selectedProduct?.options?.length ? (
+            {/* Product Option / Variant — shown only if the product has options/variants */}
+            {variantChoices.length > 0 ? (
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
-                  Product Option / Variant
+                  Option / Variant <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.product_option_id}
                   onChange={(e) => {
-                    const opt = selectedProduct.options?.find((o) => o.id === e.target.value);
+                    const opt = variantChoices.find((o) => o.id === e.target.value);
                     setFormData({
                       ...formData,
                       product_option_id: opt?.id || '',
@@ -295,8 +330,8 @@ function AdminInventoryContent() {
                   }}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500"
                 >
-                  <option value="">Product-level (no specific option)</option>
-                  {selectedProduct.options.map((o) => (
+                  <option value="">Select an option / variant</option>
+                  {variantChoices.map((o) => (
                     <option key={o.id} value={o.id}>
                       {o.label} — €{Number(o.price).toFixed(2)}
                       {o.badge ? ` (${o.badge})` : ''}
