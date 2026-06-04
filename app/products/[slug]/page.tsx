@@ -126,22 +126,29 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     loadData();
   }, [slug]);
 
-  // Whether this product's stock is managed by variant inventory (has options).
-  const usesVariantInventory = !!product?.options?.length;
+  // This product's stock is managed by variant inventory when it has either
+  // product options or variants (the customer-facing selector keys the stock).
+  const usesVariantInventory = !!(product?.options?.length || product?.variants?.length);
 
-  // Fetch available inventory count for the current product + selected option.
-  // For variant products this scopes to the selected option; for simple products
-  // it reads product-level stock (used only for display, never to block).
+  // The active selection drives the stock lookup: prefer the option selector,
+  // otherwise fall back to the variant selector (DB products often only have
+  // variants once mapped).
+  const activeSelectionId = selectedOption?.id ?? selectedVariant?.id ?? null;
+  const activeSelectionLabel = selectedOption?.label ?? selectedVariant?.label ?? null;
+
+  // Fetch available inventory count for the current product + active selection.
+  // For variant products this scopes to the selected option/variant; for simple
+  // products it reads product-level stock (used only for display, never to block).
   useEffect(() => {
     if (!product) return;
     let cancelled = false;
-    const optionId = usesVariantInventory ? selectedOption?.id : undefined;
-    // For a variant product, wait until an option is actually selected.
+    const optionId = usesVariantInventory ? activeSelectionId ?? undefined : undefined;
+    // For a variant product, wait until a selection is actually made.
     if (usesVariantInventory && !optionId) return;
 
     (async () => {
       setStockLoading(true);
-      // Clear the previous option's count so we never flash a stale number.
+      // Clear the previous selection's count so we never flash a stale number.
       setVariantStock(null);
       const result = await fetchInventoryCount(product.id, optionId);
       if (!cancelled) {
@@ -152,7 +159,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     return () => {
       cancelled = true;
     };
-  }, [product, usesVariantInventory, selectedOption?.id]);
+  }, [product, usesVariantInventory, activeSelectionId]);
 
   // Out of stock when a variant product's selected option has 0 inventory.
   // Simple products keep the existing product.inStock behavior (fallback).
@@ -463,24 +470,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                             </button>
                           ))}
                         </div>
-
-                        {/* Selected option stock count — updates on option change */}
-                        {selectedOption && variantStockLabel && (
-                          <div
-                            className={`mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-black font-heading tracking-widest uppercase border ${
-                              variantStockLabel === 'Checking stock...'
-                                ? 'text-text-secondary border-border bg-slate-50'
-                                : variantOutOfStock
-                                  ? 'text-hazard border-hazard/20 bg-hazard/5'
-                                  : 'text-success border-success/20 bg-success/5'
-                            }`}
-                          >
-                            <span className={variantOutOfStock || variantStockLabel === 'Checking stock...' ? '' : 'w-1.5 h-1.5 rounded-full bg-success inline-block'}></span>
-                            {variantStockLabel === 'Checking stock...'
-                              ? 'Checking stock...'
-                              : `${selectedOption.label}: ${variantStockLabel}`}
-                          </div>
-                        )}
                       </div>
                     ) : null}
 
@@ -566,6 +555,30 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       </div>
                     ) : null}
 
+                    {/* Selected option/variant stock count — visible above Quantity,
+                        updates immediately when the selection changes */}
+                    {usesVariantInventory && variantStockLabel && (
+                      <div
+                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-black font-heading tracking-wider uppercase ${
+                          variantStockLabel === 'Checking stock...'
+                            ? 'text-text-secondary border-border bg-slate-50'
+                            : variantOutOfStock
+                              ? 'text-hazard border-hazard/20 bg-hazard/5'
+                              : 'text-success border-success/20 bg-success/5'
+                        }`}
+                      >
+                        {variantStockLabel === 'Checking stock...' ? (
+                          <span className="w-4 h-4 border-2 border-text-secondary/40 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                        ) : (
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${variantOutOfStock ? 'bg-hazard' : 'bg-success animate-pulse'}`} />
+                        )}
+                        <span>
+                          Selected option stock:{' '}
+                          {variantStockLabel === 'Checking stock...' ? 'Checking stock...' : variantStockLabel}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Quantity */}
                     <div>
                       <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Quantity</label>
@@ -649,8 +662,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     {isOutOfStock && (
                       <div className="flex items-center gap-2 bg-hazard/5 border border-hazard/20 text-hazard rounded-xl px-4 py-3 text-sm font-bold">
                         <AlertCircle size={16} className="flex-shrink-0" />
-                        {usesVariantInventory && selectedOption
-                          ? `${selectedOption.label} is out of stock. Please choose another option.`
+                        {usesVariantInventory && activeSelectionLabel
+                          ? `${activeSelectionLabel} is out of stock. Please choose another option.`
                           : 'This product is currently out of stock.'}
                       </div>
                     )}

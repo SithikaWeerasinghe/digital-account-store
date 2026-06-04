@@ -1,4 +1,4 @@
-import { Product, ProductVariant } from '@/types/product';
+import { Product, ProductVariant, ProductOption, GuaranteeOption } from '@/types/product';
 import { sampleProducts } from '@/data/sampleProducts';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import { slugify } from '@/lib/utils';
@@ -16,6 +16,32 @@ export function mapDatabaseProduct(dbRow: any): Product {
         }))
       : undefined;
 
+  // Product options (variant-based inventory keys). Previously dropped here,
+  // which made options invisible on DB-backed products.
+  const options: ProductOption[] | undefined =
+    Array.isArray(dbRow.options) && dbRow.options.length > 0
+      ? dbRow.options.map((o: any) => ({
+          id: o.id,
+          label: o.label,
+          description: o.description ?? undefined,
+          price: Number(o.price),
+          badge: o.badge ?? undefined,
+          is_default: o.is_default ?? undefined,
+        }))
+      : undefined;
+
+  const guarantee_options: GuaranteeOption[] | undefined =
+    Array.isArray(dbRow.guarantee_options) && dbRow.guarantee_options.length > 0
+      ? dbRow.guarantee_options.map((g: any) => ({
+          id: g.id,
+          label: g.label,
+          months: Number(g.months),
+          total_price: Number(g.total_price),
+          monthly_price: Number(g.monthly_price),
+          is_default: g.is_default ?? undefined,
+          badge: g.badge ?? undefined,
+        }))
+      : undefined;
 
   return {
     id: dbRow.id,
@@ -33,6 +59,8 @@ export function mapDatabaseProduct(dbRow: any): Product {
     reviewsCount: dbRow.reviews_count !== undefined ? Number(dbRow.reviews_count) : 0,
     createdAt: dbRow.created_at || new Date().toISOString(),
     variants,
+    options,
+    guarantee_options,
   };
 }
 
