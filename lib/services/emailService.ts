@@ -4,6 +4,7 @@ import {
   buildOrderConfirmationEmail,
   buildAdminNotificationEmail,
   buildDeliveryEmail,
+  buildTicketReplyEmail,
 } from '@/lib/email/templates';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -103,5 +104,16 @@ export async function sendDeliveryEmail(params: {
   productName?: string;
 }): Promise<SendEmailResult> {
   const email = buildDeliveryEmail(params.order, params.inventoryItem.delivery_content, params.productName);
+  return sendEmail(email);
+}
+
+/**
+ * Sends a ticket reply notification email to the customer.
+ */
+export async function sendTicketReplyNotification(
+  ticket: any,
+  replyText: string
+): Promise<SendEmailResult> {
+  const email = buildTicketReplyEmail(ticket, replyText);
   return sendEmail(email);
 }

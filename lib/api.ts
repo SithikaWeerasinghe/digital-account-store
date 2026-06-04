@@ -248,6 +248,18 @@ export async function resendOrderEmail(id: string, credentials?: string): Promis
   });
 }
 
+export async function replyToTicket(
+  id: string,
+  reply: string,
+  status?: 'open' | 'in_progress' | 'resolved' | 'closed'
+): Promise<Ticket> {
+  return fetchAdminApi<Ticket>('/api/tickets', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, reply, status }),
+  });
+}
+
 export async function fetchAdminTickets(): Promise<Ticket[]> {
   return fetchApi<Ticket[]>('/api/tickets');
 }

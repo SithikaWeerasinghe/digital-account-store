@@ -53,6 +53,7 @@ export function mapDatabaseTicket(row: DatabaseTicketRow): Ticket {
   return {
     id: row.id,
     userId: row.email,
+    email: row.email,
     subject: row.subject,
     message: row.message,
     status: row.status,
@@ -61,6 +62,7 @@ export function mapDatabaseTicket(row: DatabaseTicketRow): Ticket {
     updatedAt: row.updated_at,
     name: row.name,
     issueType: row.issue_type,
+    adminReply: row.admin_reply,
   };
 }
 
@@ -178,5 +180,40 @@ export async function updateTicketStatus(
     .eq('id', id)
     .select();
   if (error || !data || data.length === 0) return null;
+  return mapDatabaseTicket(data[0] as DatabaseTicketRow);
+}
+
+export async function replyToTicket(
+  id: string,
+  replyText: string,
+  status?: 'open' | 'in_progress' | 'resolved' | 'closed'
+): Promise<Ticket | null> {
+  const client = supabaseAdmin || supabase;
+  const updateData: any = {
+    admin_reply: replyText,
+    updated_at: new Date().toISOString(),
+  };
+  if (status) {
+    updateData.status = status;
+  }
+
+  if (!client) {
+    const row = inMemoryTickets.find((t) => t.id === id);
+    if (!row) return null;
+    row.admin_reply = replyText;
+    if (status) row.status = status;
+    row.updated_at = new Date().toISOString();
+    return mapDatabaseTicket(row);
+  }
+
+  const { data, error } = await client
+    .from('tickets')
+    .update(updateData)
+    .eq('id', id)
+    .select();
+  if (error || !data || data.length === 0) {
+    console.error("Supabase ticket reply error:", error?.message);
+    return null;
+  }
   return mapDatabaseTicket(data[0] as DatabaseTicketRow);
 }

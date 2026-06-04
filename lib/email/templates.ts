@@ -286,3 +286,39 @@ function escapeHtml(text: string): string {
   };
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }
+
+export function buildTicketReplyEmail(ticket: any, replyText: string) {
+  const ticketIdDisplay = ticket.id.substring(0, 8);
+  const inner = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;">📩 Ticket Reply Received</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.6;">
+      Hi ${ticket.name || 'Customer'}, our support team has replied to your support ticket.
+    </p>
+
+    <div style="margin:24px 0;padding:20px;background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+      <p style="margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;">Ticket Information</p>
+      <span style="font-size:14px;color:#0f172a;"><strong>Ticket ID:</strong> TKT-${ticketIdDisplay.toUpperCase()}</span><br/>
+      <span style="font-size:14px;color:#0f172a;"><strong>Subject:</strong> ${ticket.subject}</span><br/>
+      <span style="font-size:14px;color:#0f172a;"><strong>Status:</strong> ${ticket.status.toUpperCase()}</span>
+    </div>
+
+    <div style="margin:24px 0;padding:20px;background-color:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;">
+      <p style="margin:0 0 12px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;">💬 Support Team Reply</p>
+      <div style="font-size:14px;color:#1e293b;line-height:1.6;white-space:pre-wrap;">${escapeHtml(replyText)}</div>
+    </div>
+
+    <div style="margin:24px 0;padding:20px;background-color:#fafafa;border:1px solid #e5e5e5;border-radius:12px;">
+      <p style="margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#737373;">Your Original Message</p>
+      <div style="font-size:13px;color:#525252;line-height:1.5;white-space:pre-wrap;">${escapeHtml(ticket.message)}</div>
+    </div>
+
+    <p style="margin:20px 0 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+      Please do not reply directly to this automated email. If you need further help, please submit a new ticket or check your status on our platform.
+    </p>`;
+
+  return {
+    to: ticket.email || ticket.userId,
+    subject: `[Support Ticket #${ticketIdDisplay.toUpperCase()}] Re: ${ticket.subject}`,
+    html: wrap(`Support Ticket Reply`, inner),
+  };
+}

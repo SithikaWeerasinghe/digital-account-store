@@ -1,10 +1,52 @@
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 import { Ticket } from '@/types/ticket';
 import { formatDate } from '@/lib/utils';
 import { MessageSquare, MoreVertical, Eye } from 'lucide-react';
+import { replyToTicket } from '@/lib/api';
 
-export default function TicketTable({ tickets }: { tickets: Ticket[] }) {
+export default function TicketTable({ tickets: initialTickets }: { tickets: Ticket[] }) {
+  const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const [replies, setReplies] = useState<Record<string, string>>({});
+  const [selectedStatuses, setSelectedStatuses] = useState<Record<string, 'open' | 'in_progress' | 'resolved' | 'closed'>>({});
+  const [submittingIds, setSubmittingIds] = useState<Record<string, boolean>>({});
+  const [errorMsgs, setErrorMsgs] = useState<Record<string, string>>({});
+  const [successMsgs, setSuccessMsgs] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setTickets(initialTickets);
+  }, [initialTickets]);
+
+  const handleSubmitReply = async (ticketId: string) => {
+    const replyText = replies[ticketId]?.trim() || '';
+    if (!replyText) {
+      setErrorMsgs(prev => ({ ...prev, [ticketId]: 'Reply message is required.' }));
+      return;
+    }
+    setErrorMsgs(prev => ({ ...prev, [ticketId]: '' }));
+    setSuccessMsgs(prev => ({ ...prev, [ticketId]: false }));
+    setSubmittingIds(prev => ({ ...prev, [ticketId]: true }));
+
+    try {
+      const status = selectedStatuses[ticketId] || 'resolved'; // defaults to Answered (resolved)
+      const updated = await replyToTicket(ticketId, replyText, status);
+      
+      // Update local state list
+      setTickets(prev => prev.map(t => t.id === ticketId ? updated : t));
+      
+      // Reset input form and set success state
+      setReplies(prev => ({ ...prev, [ticketId]: '' }));
+      setSuccessMsgs(prev => ({ ...prev, [ticketId]: true }));
+      setTimeout(() => {
+        setSuccessMsgs(prev => ({ ...prev, [ticketId]: false }));
+      }, 3500);
+    } catch (err: any) {
+      setErrorMsgs(prev => ({ ...prev, [ticketId]: err.message || 'Failed to submit reply.' }));
+    } finally {
+      setSubmittingIds(prev => ({ ...prev, [ticketId]: false }));
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch(status) {
@@ -76,7 +118,7 @@ export default function TicketTable({ tickets }: { tickets: Ticket[] }) {
                           ticket.status === 'in_progress' ? 'bg-amber-500 animate-pulse' :
                           ticket.status === 'resolved' ? 'bg-emerald-500' : 'bg-slate-450'
                         }`} />
-                        {ticket.status.replace('_', ' ')}
+                        {ticket.status === 'resolved' ? 'Answered' : ticket.status.replace('_', ' ')}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-xs font-mono text-slate-500">{formatDate(ticket.createdAt)}</td>
@@ -144,6 +186,72 @@ export default function TicketTable({ tickets }: { tickets: Ticket[] }) {
                               </div>
                             </div>
                           )}
+
+                          {ticket.adminReply && (
+                            <div className="border-t border-slate-200/60 pt-4">
+                              <span className="text-[10px] font-mono font-bold tracking-widest uppercase text-slate-400 block mb-1.5">Previous Admin Reply</span>
+                              <div className="p-4 bg-sky-550/5 border border-sky-100 rounded-xl text-slate-800 text-sm whitespace-pre-wrap leading-relaxed shadow-sm font-medium">
+                                {ticket.adminReply}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="border-t border-slate-200/60 pt-6 space-y-4">
+                            <h4 className="text-xs font-black font-heading tracking-widest uppercase text-text-primary flex items-center gap-1.5">
+                              <MessageSquare size={14} className="text-primary" /> Reply to Ticket
+                            </h4>
+                            
+                            {errorMsgs[ticket.id] && (
+                              <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl">
+                                {errorMsgs[ticket.id]}
+                              </div>
+                            )}
+
+                            {successMsgs[ticket.id] && (
+                              <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-xl">
+                                Reply submitted successfully and customer notified by email!
+                              </div>
+                            )}
+
+                            <div className="space-y-3.5">
+                              <div>
+                                <label className="text-[10px] font-mono font-bold tracking-widest uppercase text-slate-400 block mb-1.5">Reply Message</label>
+                                <textarea
+                                  rows={4}
+                                  value={replies[ticket.id] || ''}
+                                  onChange={(e) => setReplies(prev => ({ ...prev, [ticket.id]: e.target.value }))}
+                                  placeholder="Type your response to the customer here..."
+                                  className="w-full px-4 py-3 rounded-xl border border-slate-250 bg-white text-slate-800 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder:text-slate-350"
+                                />
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                  <label className="text-[10px] font-mono font-bold tracking-widest uppercase text-slate-400 whitespace-nowrap">Update Status:</label>
+                                  <select
+                                    value={selectedStatuses[ticket.id] || ticket.status}
+                                    onChange={(e) => setSelectedStatuses(prev => ({ ...prev, [ticket.id]: e.target.value as any }))}
+                                    className="px-3.5 py-2 rounded-xl border border-slate-250 bg-white text-slate-800 text-xs font-bold tracking-wide focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all cursor-pointer select-none"
+                                  >
+                                    <option value="open">Open</option>
+                                    <option value="resolved">Answered</option>
+                                    <option value="closed">Closed</option>
+                                  </select>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleSubmitReply(ticket.id)}
+                                  disabled={submittingIds[ticket.id]}
+                                  className="px-6 py-2.5 bg-primary hover:bg-primary-hover disabled:opacity-50 text-white rounded-xl text-xs font-black font-heading tracking-widest uppercase transition-all shadow-md cursor-pointer flex items-center justify-center min-w-[140px]"
+                                >
+                                  {submittingIds[ticket.id] ? (
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  ) : 'Send Reply'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>

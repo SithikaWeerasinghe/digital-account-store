@@ -9,6 +9,8 @@ export interface Ticket {
   updatedAt: string;
   name?: string;
   issueType?: string;
+  adminReply?: string | null;
+  email?: string;
 }
 
 export interface TicketMessage {
