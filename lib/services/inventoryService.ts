@@ -22,6 +22,23 @@ export async function getInventoryItems(productId?: string): Promise<InventoryIt
   return data || [];
 }
 
+/** Returns the inventory item(s) assigned to a given order (admin use). */
+export async function getInventoryItemsByOrder(orderId: string): Promise<InventoryItem[]> {
+  if (!supabaseAdmin || !orderId) return [];
+
+  const { data, error } = await supabaseAdmin
+    .from('inventory_items')
+    .select('*')
+    .eq('order_id', orderId)
+    .order('sold_at', { ascending: false });
+
+  if (error) {
+    console.error('[inventoryService] Failed to fetch items by order:', error);
+    return [];
+  }
+  return (data as InventoryItem[]) || [];
+}
+
 export async function createInventoryItem(input: CreateInventoryItemInput): Promise<InventoryItem> {
   if (!supabaseAdmin) throw new Error('Supabase admin client not configured');
 
@@ -34,6 +51,10 @@ export async function createInventoryItem(input: CreateInventoryItemInput): Prom
     delivery_content: input.delivery_content,
     title: input.title || null,
     status: 'available' as const,
+    product_option_id: input.product_option_id || null,
+    product_option_label: input.product_option_label || null,
+    guarantee_id: input.guarantee_id || null,
+    guarantee_label: input.guarantee_label || null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -61,6 +82,10 @@ export async function updateInventoryItem(id: string, input: UpdateInventoryItem
   if (input.title !== undefined) updateData.title = input.title;
   if (input.delivery_content !== undefined) updateData.delivery_content = input.delivery_content;
   if (input.status !== undefined) updateData.status = input.status;
+  if (input.product_option_id !== undefined) updateData.product_option_id = input.product_option_id || null;
+  if (input.product_option_label !== undefined) updateData.product_option_label = input.product_option_label || null;
+  if (input.guarantee_id !== undefined) updateData.guarantee_id = input.guarantee_id || null;
+  if (input.guarantee_label !== undefined) updateData.guarantee_label = input.guarantee_label || null;
 
   const { data, error } = await supabaseAdmin
     .from('inventory_items')
@@ -106,44 +131,116 @@ export async function deleteInventoryItem(id: string): Promise<{ id: string }> {
   return { id };
 }
 
-export async function getAvailableInventoryItem(productId: string): Promise<InventoryItem | null> {
+/**
+ * Finds one available inventory item, matching the exact selected product option
+ * when one was chosen.
+ *
+ * Matching rules:
+ *  - When a productOptionId is given, ONLY items with that exact option are
+ *    considered. We never fall back to a different option or to generic
+ *    product-level stock — that would risk sending the wrong account variant.
+ *    If the order also has a guarantee, an item matching that guarantee is
+ *    preferred, otherwise any item for the option (incl. items with no
+ *    guarantee set) is used.
+ *  - When no productOptionId is given (simple products / legacy orders), only
+ *    product-level items (product_option_id IS NULL) are used. Legacy inventory
+ *    created before variant support has a NULL option, so it still works.
+ */
+export async function getAvailableInventoryItem(
+  productId: string,
+  productOptionId?: string | null,
+  guaranteeId?: string | null
+): Promise<InventoryItem | null> {
   if (!supabaseAdmin) return null;
 
-  const { data, error } = await supabaseAdmin
-    .from('inventory_items')
-    .select('*')
-    .eq('product_id', productId)
-    .eq('status', 'available')
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .single();
+  const fetchOne = async (
+    apply: (q: any) => any
+  ): Promise<InventoryItem | null> => {
+    let query = supabaseAdmin!
+      .from('inventory_items')
+      .select('*')
+      .eq('product_id', productId)
+      .eq('status', 'available');
+    query = apply(query);
+    const { data, error } = await query
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
-  if (error) {
-    // Not found is not an error — it just means no inventory
-    if (error.code !== 'PGRST116') {
-      console.error('[inventoryService] Error fetching available item:', error);
+    if (error) {
+      if (error.code !== 'PGRST116') {
+        console.error('[inventoryService] Error fetching available item:', error);
+      }
+      return null;
     }
-    return null;
+    return (data as InventoryItem) || null;
+  };
+
+  // Variant order: exact option match, no cross-option fallback.
+  if (productOptionId) {
+    if (guaranteeId) {
+      const exact = await fetchOne((q) =>
+        q.eq('product_option_id', productOptionId).eq('guarantee_id', guaranteeId)
+      );
+      if (exact) return exact;
+    }
+    // Any item for this exact option (guarantee not required).
+    return fetchOne((q) => q.eq('product_option_id', productOptionId));
   }
 
-  return data as InventoryItem;
+  // Simple / legacy order: product-level stock only.
+  return fetchOne((q) => q.is('product_option_id', null));
+}
+
+/**
+ * Counts available inventory for a product, scoped to an exact option when given.
+ * Returns 0 on any error. Never exposes item contents.
+ */
+export async function getAvailableInventoryCount(
+  productId: string,
+  productOptionId?: string | null
+): Promise<number> {
+  if (!supabaseAdmin || !productId) return 0;
+
+  let query = supabaseAdmin
+    .from('inventory_items')
+    .select('*', { count: 'exact', head: true })
+    .eq('product_id', productId)
+    .eq('status', 'available');
+
+  if (productOptionId) {
+    query = query.eq('product_option_id', productOptionId);
+  } else {
+    query = query.is('product_option_id', null);
+  }
+
+  const { count, error } = await query;
+  if (error) {
+    console.error('[inventoryService] Error counting available items:', error);
+    return 0;
+  }
+  return count ?? 0;
 }
 
 export async function assignInventoryItemToOrder(
   productId: string,
   orderId: string,
-  customerEmail: string
+  customerEmail: string,
+  productOptionId?: string | null,
+  productOptionLabel?: string | null,
+  guaranteeId?: string | null,
+  guaranteeLabel?: string | null
 ): Promise<InventoryItem | null> {
   if (!supabaseAdmin) throw new Error('Supabase admin client not configured');
 
-  // Get one available item for this product
-  const availableItem = await getAvailableInventoryItem(productId);
+  // Get one available item matching the selected option (if any).
+  const availableItem = await getAvailableInventoryItem(productId, productOptionId, guaranteeId);
   if (!availableItem) {
-    return null; // No inventory available
+    return null; // No matching inventory available
   }
 
-  // Atomically update: set status='sold' only if it's still 'available'
-  // This prevents double-selling if two orders try to use the same item
+  // Atomically update: set status='sold' only if it's still 'available'.
+  // This prevents double-selling if two orders try to use the same item.
   const { data, error } = await supabaseAdmin
     .from('inventory_items')
     .update({
@@ -152,6 +249,12 @@ export async function assignInventoryItemToOrder(
       customer_email: customerEmail,
       sold_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      // Persist the option/guarantee this item was delivered for. Prefer the
+      // item's own values; fall back to the order's selection for legacy items.
+      product_option_id: availableItem.product_option_id ?? productOptionId ?? null,
+      product_option_label: availableItem.product_option_label ?? productOptionLabel ?? null,
+      guarantee_id: availableItem.guarantee_id ?? guaranteeId ?? null,
+      guarantee_label: availableItem.guarantee_label ?? guaranteeLabel ?? null,
     })
     .eq('id', availableItem.id)
     .eq('status', 'available') // Atomic check: only update if still available

@@ -235,6 +235,25 @@ export function buildDeliveryEmail(
   const email = order.customer_email || order.userId;
   const productDisplay = productName || order.items?.[0]?.product?.name || 'Digital Product';
 
+  // Selected variant/option and guarantee (shown only when present).
+  const optionLabel = order.order_metadata?.product_option?.label;
+  const guaranteeLabel = order.order_metadata?.guarantee?.label;
+
+  const optionRow = optionLabel
+    ? `
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Selected Option</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${escapeHtml(optionLabel)}</td>
+      </tr>`
+    : '';
+  const guaranteeRow = guaranteeLabel
+    ? `
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Guarantee</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${escapeHtml(guaranteeLabel)}</td>
+      </tr>`
+    : '';
+
   const inner = `
     <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;">✓ Your Digital Access</h1>
     <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.6;">
@@ -250,6 +269,8 @@ export function buildDeliveryEmail(
         <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Product</td>
         <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${productDisplay}</td>
       </tr>
+      ${optionRow}
+      ${guaranteeRow}
     </table>
 
     <div style="margin:24px 0;padding:16px;background-color:#f0fdf4;border:2px solid #16a34a;border-radius:12px;">

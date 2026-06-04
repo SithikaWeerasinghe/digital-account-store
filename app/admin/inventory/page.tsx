@@ -1,11 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import AdminProtected from '@/components/admin/AdminProtected';
 import { InventoryItem } from '@/types/inventory';
-import { Product } from '@/types/product';
+import { Product, GuaranteeOption } from '@/types/product';
 import { fetchProducts, fetchAdminApi } from '@/lib/api';
+import { getDefaultGuaranteeOptions } from '@/lib/productUtils';
 import { Trash2, Eye, EyeOff, Plus, Edit2 } from 'lucide-react';
+
+type FormData = {
+  product_id: string;
+  product_option_id: string;
+  product_option_label: string;
+  guarantee_id: string;
+  guarantee_label: string;
+  title: string;
+  delivery_content: string;
+};
+
+const EMPTY_FORM: FormData = {
+  product_id: '',
+  product_option_id: '',
+  product_option_label: '',
+  guarantee_id: '',
+  guarantee_label: '',
+  title: '',
+  delivery_content: '',
+};
 
 function AdminInventoryContent() {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -16,12 +37,7 @@ function AdminInventoryContent() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Form state
-  const [formData, setFormData] = useState({
-    product_id: '',
-    title: '',
-    delivery_content: '',
-  });
+  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
 
   // Load inventory and products
   useEffect(() => {
@@ -46,6 +62,26 @@ function AdminInventoryContent() {
       setIsLoading(false);
     }
   };
+
+  // The product currently selected in the form (for option/guarantee dropdowns).
+  const selectedProduct = useMemo(
+    () => products.find((p) => p.id === formData.product_id),
+    [products, formData.product_id]
+  );
+
+  // Guarantee options for the selected product/option (provided or generated).
+  const guaranteeOptions: GuaranteeOption[] = useMemo(() => {
+    if (!selectedProduct) return [];
+    if (selectedProduct.guarantee_options?.length) return selectedProduct.guarantee_options;
+    // Only offer generated guarantees when the product actually uses options/guarantees.
+    if (selectedProduct.options?.length || selectedProduct.guarantee_options?.length) {
+      const basePrice =
+        selectedProduct.options?.find((o) => o.id === formData.product_option_id)?.price ??
+        selectedProduct.price;
+      return getDefaultGuaranteeOptions(basePrice);
+    }
+    return [];
+  }, [selectedProduct, formData.product_option_id]);
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,19 +110,30 @@ function AdminInventoryContent() {
       const method = editingId ? 'PATCH' : 'POST';
       const endpoint = editingId ? `/api/admin/inventory/${editingId}` : '/api/admin/inventory';
 
+      // Send null (not empty string) for unset option/guarantee.
+      const payload = {
+        product_id: formData.product_id,
+        title: formData.title,
+        delivery_content: formData.delivery_content,
+        product_option_id: formData.product_option_id || null,
+        product_option_label: formData.product_option_label || null,
+        guarantee_id: formData.guarantee_id || null,
+        guarantee_label: formData.guarantee_label || null,
+      };
+
       const response = await fetch(endpoint, {
         method,
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
       if (data.success) {
         await loadData();
-        setFormData({ product_id: '', title: '', delivery_content: '' });
+        setFormData(EMPTY_FORM);
         setShowForm(false);
         setEditingId(null);
       } else {
@@ -100,11 +147,16 @@ function AdminInventoryContent() {
   const handleEdit = (item: InventoryItem) => {
     setFormData({
       product_id: item.product_id,
+      product_option_id: item.product_option_id || '',
+      product_option_label: item.product_option_label || '',
+      guarantee_id: item.guarantee_id || '',
+      guarantee_label: item.guarantee_label || '',
       title: item.title || '',
       delivery_content: item.delivery_content,
     });
     setEditingId(item.id);
     setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
@@ -174,7 +226,7 @@ function AdminInventoryContent() {
           onClick={() => {
             setShowForm(!showForm);
             setEditingId(null);
-            setFormData({ product_id: '', title: '', delivery_content: '' });
+            setFormData(EMPTY_FORM);
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
         >
@@ -200,7 +252,17 @@ function AdminInventoryContent() {
               <label className="block text-sm font-semibold text-slate-700 mb-1">Product</label>
               <select
                 value={formData.product_id}
-                onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
+                onChange={(e) =>
+                  // Changing the product resets option/guarantee selection.
+                  setFormData({
+                    ...formData,
+                    product_id: e.target.value,
+                    product_option_id: '',
+                    product_option_label: '',
+                    guarantee_id: '',
+                    guarantee_label: '',
+                  })
+                }
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500"
               >
                 <option value="">Select a product</option>
@@ -211,6 +273,69 @@ function AdminInventoryContent() {
                 ))}
               </select>
             </div>
+
+            {/* Product Option / Variant — shown only if the product has options */}
+            {selectedProduct?.options?.length ? (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Product Option / Variant
+                </label>
+                <select
+                  value={formData.product_option_id}
+                  onChange={(e) => {
+                    const opt = selectedProduct.options?.find((o) => o.id === e.target.value);
+                    setFormData({
+                      ...formData,
+                      product_option_id: opt?.id || '',
+                      product_option_label: opt?.label || '',
+                      // Reset guarantee when the option changes.
+                      guarantee_id: '',
+                      guarantee_label: '',
+                    });
+                  }}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500"
+                >
+                  <option value="">Product-level (no specific option)</option>
+                  {selectedProduct.options.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.label} — €{Number(o.price).toFixed(2)}
+                      {o.badge ? ` (${o.badge})` : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-400 mt-1">
+                  Stock added here is delivered only when the customer selects this exact option.
+                </p>
+              </div>
+            ) : null}
+
+            {/* Guarantee — optional, shown when the product uses options/guarantees */}
+            {guaranteeOptions.length > 0 ? (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Guarantee <span className="font-normal text-slate-400">— optional</span>
+                </label>
+                <select
+                  value={formData.guarantee_id}
+                  onChange={(e) => {
+                    const g = guaranteeOptions.find((x) => x.id === e.target.value);
+                    setFormData({
+                      ...formData,
+                      guarantee_id: g?.id || '',
+                      guarantee_label: g?.label || '',
+                    });
+                  }}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500"
+                >
+                  <option value="">Any guarantee</option>
+                  {guaranteeOptions.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1">Title (optional)</label>
@@ -246,7 +371,7 @@ function AdminInventoryContent() {
                 onClick={() => {
                   setShowForm(false);
                   setEditingId(null);
-                  setFormData({ product_id: '', title: '', delivery_content: '' });
+                  setFormData(EMPTY_FORM);
                 }}
                 className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors font-semibold"
               >
@@ -267,12 +392,14 @@ function AdminInventoryContent() {
           <p className="text-slate-600 text-lg">No inventory items yet. Add one to get started.</p>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-          <table className="w-full">
+        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm overflow-x-auto">
+          <table className="w-full min-w-[900px]">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Title</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Product</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Option / Variant</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Guarantee</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Customer Email</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Created</th>
@@ -284,6 +411,16 @@ function AdminInventoryContent() {
                 <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-4 text-sm text-slate-900 font-medium">{item.title || '—'}</td>
                   <td className="px-6 py-4 text-sm text-slate-700">{getProductName(item.product_id)}</td>
+                  <td className="px-6 py-4 text-sm">
+                    {item.product_option_label ? (
+                      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border bg-indigo-50 text-indigo-700 border-indigo-200">
+                        {item.product_option_label}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">Product-level inventory</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-600">{item.guarantee_label || '—'}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(item.status)}`}>
                       {item.status}
@@ -293,7 +430,7 @@ function AdminInventoryContent() {
                   <td className="px-6 py-4 text-sm text-slate-600">
                     {item.created_at ? new Date(item.created_at).toLocaleDateString() : '—'}
                   </td>
-                  <td className="px-6 py-4 text-right space-x-2 flex justify-end">
+                  <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
                     <button
                       onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
                       className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"

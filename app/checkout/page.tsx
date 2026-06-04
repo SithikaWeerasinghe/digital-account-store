@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { CreditCard, Bitcoin, Banknote, ShieldCheck, AlertCircle, Tag, X, Loader2, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { createOrder, startMercadoPagoCheckout, validateCoupon, ApplyDiscountResult } from '@/lib/api';
+import { createOrder, startMercadoPagoCheckout, validateCoupon, ApplyDiscountResult, fetchInventoryCount } from '@/lib/api';
 import { useCart } from '@/lib/contexts/CartContext';
 import { useRouter } from 'next/navigation';
 import PromoBannerList from '@/components/promos/PromoBannerList';
@@ -111,6 +111,21 @@ export default function CheckoutPage() {
 
     setIsLoading(true);
     try {
+      // Inventory safety check: confirm each selected option still has stock
+      // before creating orders or charging. Prevents paying for a sold-out option.
+      for (const item of items) {
+        if (item.selectedOption?.id) {
+          const stock = await fetchInventoryCount(item.product.id, item.selectedOption.id);
+          if (stock.available_count <= 0) {
+            setError(
+              `${item.product.name} — "${item.selectedOption.label}" is out of stock. Please choose another option.`
+            );
+            setIsLoading(false);
+            return;
+          }
+        }
+      }
+
       // Per-item pre-discount amounts.
       const itemAmounts = items.map((item) => {
         const itemPrice = item.selectedGuarantee?.total_price
