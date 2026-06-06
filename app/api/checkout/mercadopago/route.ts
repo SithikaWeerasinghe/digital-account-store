@@ -5,6 +5,7 @@ import {
   createCheckoutPreference,
   PreferenceItemInput,
 } from '@/lib/mercadopago';
+import { isPaymentMethodActive } from '@/lib/services/paymentMethodService';
 import { Order } from '@/types/order';
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,18 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
   try {
+    // Maintenance guard: block the card/online flow if an admin disabled it.
+    if (!(await isPaymentMethodActive('card'))) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: 'method_unavailable',
+          message: 'Card payment is temporarily unavailable. Please choose another payment method.',
+        },
+        { status: 403 }
+      );
+    }
+
     if (!isMercadoPagoConfigured()) {
       return NextResponse.json(
         {

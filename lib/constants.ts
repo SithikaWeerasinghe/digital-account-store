@@ -14,6 +14,7 @@ export const ROUTES = {
     PRODUCTS: '/admin/products',
     ORDERS: '/admin/orders',
     INVENTORY: '/admin/inventory',
+    PAYMENT_METHODS: '/admin/payment-methods',
     DISCOUNTS: '/admin/discounts',
     PROMOS: '/admin/promos',
     TICKETS: '/admin/tickets',

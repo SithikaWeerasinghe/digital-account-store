@@ -44,7 +44,9 @@ export async function POST(request: Request) {
       'Product not found'
     ];
     
-    const isValidationError = validationErrors.includes(error.message);
+    const isMaintenanceError =
+      typeof error.message === 'string' && error.message.includes('temporarily unavailable');
+    const isValidationError = validationErrors.includes(error.message) || isMaintenanceError;
     const status = isValidationError ? 400 : 500;
 
     return NextResponse.json(

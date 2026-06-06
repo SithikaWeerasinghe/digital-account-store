@@ -67,6 +67,33 @@ export async function createOrder(payload: CreateOrderInput): Promise<any> {
   });
 }
 
+// ── Payment methods (maintenance system) ──
+
+export type PublicPaymentMethod = {
+  method_key: 'card' | 'crypto' | 'manual';
+  display_name: string;
+  description: string | null;
+  is_active: boolean;
+  maintenance_message: string | null;
+  sort_order: number;
+};
+
+/**
+ * Public: fetch payment methods + active/maintenance state for checkout.
+ * Never throws — returns an empty list on failure (checkout treats that as
+ * "no maintenance info" and keeps the existing methods usable).
+ */
+export async function fetchPaymentMethods(): Promise<PublicPaymentMethod[]> {
+  try {
+    const response = await fetch('/api/payment-methods', { cache: 'no-store' });
+    const data = await response.json();
+    if (data?.success && Array.isArray(data.data)) return data.data as PublicPaymentMethod[];
+  } catch {
+    // ignore — fall through to empty list
+  }
+  return [];
+}
+
 // ── Manual crypto payment ──
 
 export type CryptoWalletInfo = { id: string; coin: string; network: string; address: string };
