@@ -2,6 +2,7 @@ import { Order, OrderItem, CreateOrderInput } from '@/types/order';
 import { sampleProducts } from '@/data/sampleProducts';
 import { supabase } from '@/lib/supabase';
 import { getRedeemableCoupon, incrementCouponUsage } from '@/lib/services/discountService';
+import { isPaymentMethodActive } from '@/lib/services/paymentMethodService';
 
 export interface DatabaseOrderRow {
   id: string;
@@ -153,6 +154,20 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   if (!productId) throw new Error('Product ID is required');
   if (!quantity || Number(quantity) < 1) throw new Error('Quantity must be at least 1');
   if (!paymentMethod || !['card', 'crypto', 'manual'].includes(paymentMethod)) throw new Error('Payment method must be card, crypto, or manual');
+
+  // Maintenance guard: never create an order for a method an admin has disabled.
+  // Fail-open inside isPaymentMethodActive keeps existing flows working if the
+  // payment_methods table isn't seeded yet. Cannot be bypassed from the frontend.
+  if (!(await isPaymentMethodActive(paymentMethod))) {
+    const labels: Record<string, string> = {
+      card: 'Card payment',
+      crypto: 'Crypto payment',
+      manual: 'Manual payment',
+    };
+    throw new Error(
+      `${labels[paymentMethod] || 'This payment method'} is temporarily unavailable. Please choose another payment method.`
+    );
+  }
 
   const product = sampleProducts.find((p) => p.id === productId);
   if (!product) throw new Error('Product not found');

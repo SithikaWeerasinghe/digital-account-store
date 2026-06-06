@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { CreditCard, Bitcoin, Banknote, ShieldCheck, AlertCircle, Tag, X, Loader2, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { createOrder, startMercadoPagoCheckout, validateCoupon, ApplyDiscountResult, fetchInventoryCount } from '@/lib/api';
+import { createOrder, startMercadoPagoCheckout, validateCoupon, ApplyDiscountResult, fetchInventoryCount, fetchPaymentMethods, PublicPaymentMethod } from '@/lib/api';
 import { useCart } from '@/lib/contexts/CartContext';
 import { useRouter } from 'next/navigation';
 import PromoBannerList from '@/components/promos/PromoBannerList';
@@ -18,6 +18,46 @@ export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState('');
+
+  // Payment method maintenance states (admin-controlled). Keyed by method_key.
+  const [methodStates, setMethodStates] = useState<Record<string, PublicPaymentMethod>>({});
+
+  // A method is usable unless explicitly marked inactive (fail-open if unknown).
+  const isMethodActive = (key: 'card' | 'crypto' | 'manual') => methodStates[key]?.is_active !== false;
+  const maintenanceMsg = (key: 'card' | 'crypto' | 'manual') =>
+    methodStates[key]?.maintenance_message ||
+    'This payment method is currently under maintenance. Please choose another payment method.';
+
+  const handleSelectMethod = (key: 'card' | 'crypto' | 'manual') => {
+    if (!isMethodActive(key)) {
+      setError(maintenanceMsg(key));
+      return;
+    }
+    setError('');
+    setPaymentMethod(key);
+  };
+
+  // Load payment method states for the checkout (which are on maintenance).
+  useEffect(() => {
+    (async () => {
+      const list = await fetchPaymentMethods();
+      if (list.length === 0) return;
+      const map: Record<string, PublicPaymentMethod> = {};
+      list.forEach((m) => { map[m.method_key] = m; });
+      setMethodStates(map);
+    })();
+  }, []);
+
+  // If the selected method becomes unavailable, auto-select the first active one.
+  useEffect(() => {
+    if (Object.keys(methodStates).length === 0) return;
+    const order: ('card' | 'crypto' | 'manual')[] = ['card', 'crypto', 'manual'];
+    if (methodStates[paymentMethod]?.is_active === false) {
+      const firstActive = order.find((k) => methodStates[k]?.is_active !== false);
+      if (firstActive) setPaymentMethod(firstActive);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [methodStates]);
 
   // Coupon / discount state
   const [couponInput, setCouponInput] = useState('');
@@ -106,6 +146,12 @@ export default function CheckoutPage() {
 
     if (items.length === 0) {
       setError('Your cart is empty.');
+      return;
+    }
+
+    // Block a method that is on maintenance (server re-validates too).
+    if (!isMethodActive(paymentMethod)) {
+      setError(maintenanceMsg(paymentMethod));
       return;
     }
 
@@ -402,46 +448,64 @@ export default function CheckoutPage() {
                     {/* Card */}
                     <button
                       type="button"
-                      onClick={() => setPaymentMethod('card')}
-                      className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 ${
-                        paymentMethod === 'card' 
-                          ? 'border-primary bg-primary/5 shadow-[0_0_15px_rgba(0,158,227,0.1)]' 
-                          : 'border-border bg-white hover:border-primary/50 hover:bg-slate-50/50 shadow-sm'
+                      onClick={() => handleSelectMethod('card')}
+                      aria-disabled={!isMethodActive('card')}
+                      className={`relative flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 ${
+                        !isMethodActive('card')
+                          ? 'border-border bg-slate-50 opacity-60 cursor-not-allowed'
+                          : paymentMethod === 'card'
+                            ? 'border-primary bg-primary/5 shadow-[0_0_15px_rgba(0,158,227,0.1)]'
+                            : 'border-border bg-white hover:border-primary/50 hover:bg-slate-50/50 shadow-sm'
                       }`}
                     >
-                      <CreditCard size={24} className={`mb-2 ${paymentMethod === 'card' ? 'text-primary' : 'text-text-secondary'}`} />
+                      <CreditCard size={24} className={`mb-2 ${paymentMethod === 'card' && isMethodActive('card') ? 'text-primary' : 'text-text-secondary'}`} />
                       <span className="font-bold text-text-primary text-base mb-1">Online Payment</span>
                       <span className="text-xs sm:text-sm text-text-secondary leading-tight">Pay securely via Mercado Pago — cards, wallet &amp; local methods.</span>
+                      {!isMethodActive('card') && (
+                        <span className="mt-2 text-[11px] font-black uppercase tracking-widest text-amber-600">Currently unavailable</span>
+                      )}
                     </button>
 
                     {/* Crypto */}
                     <button
                       type="button"
-                      onClick={() => setPaymentMethod('crypto')}
-                      className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 ${
-                        paymentMethod === 'crypto' 
-                          ? 'border-primary bg-primary/5 shadow-[0_0_15px_rgba(0,158,227,0.1)]' 
-                          : 'border-border bg-white hover:border-primary/50 hover:bg-slate-50/50 shadow-sm'
+                      onClick={() => handleSelectMethod('crypto')}
+                      aria-disabled={!isMethodActive('crypto')}
+                      className={`relative flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 ${
+                        !isMethodActive('crypto')
+                          ? 'border-border bg-slate-50 opacity-60 cursor-not-allowed'
+                          : paymentMethod === 'crypto'
+                            ? 'border-primary bg-primary/5 shadow-[0_0_15px_rgba(0,158,227,0.1)]'
+                            : 'border-border bg-white hover:border-primary/50 hover:bg-slate-50/50 shadow-sm'
                       }`}
                     >
-                      <Bitcoin size={24} className={`mb-2 ${paymentMethod === 'crypto' ? 'text-primary' : 'text-text-secondary'}`} />
+                      <Bitcoin size={24} className={`mb-2 ${paymentMethod === 'crypto' && isMethodActive('crypto') ? 'text-primary' : 'text-text-secondary'}`} />
                       <span className="font-bold text-text-primary text-base mb-1">Crypto Payment</span>
                       <span className="text-xs sm:text-sm text-text-secondary leading-tight">Pay using supported cryptocurrency options.</span>
+                      {!isMethodActive('crypto') && (
+                        <span className="mt-2 text-[11px] font-black uppercase tracking-widest text-amber-600">Currently unavailable</span>
+                      )}
                     </button>
 
                     {/* Manual */}
                     <button
                       type="button"
-                      onClick={() => setPaymentMethod('manual')}
-                      className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 ${
-                        paymentMethod === 'manual' 
-                          ? 'border-primary bg-primary/5 shadow-[0_0_15px_rgba(0,158,227,0.1)]' 
-                          : 'border-border bg-white hover:border-primary/50 hover:bg-slate-50/50 shadow-sm'
+                      onClick={() => handleSelectMethod('manual')}
+                      aria-disabled={!isMethodActive('manual')}
+                      className={`relative flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 ${
+                        !isMethodActive('manual')
+                          ? 'border-border bg-slate-50 opacity-60 cursor-not-allowed'
+                          : paymentMethod === 'manual'
+                            ? 'border-primary bg-primary/5 shadow-[0_0_15px_rgba(0,158,227,0.1)]'
+                            : 'border-border bg-white hover:border-primary/50 hover:bg-slate-50/50 shadow-sm'
                       }`}
                     >
-                      <Banknote size={24} className={`mb-2 ${paymentMethod === 'manual' ? 'text-primary' : 'text-text-secondary'}`} />
+                      <Banknote size={24} className={`mb-2 ${paymentMethod === 'manual' && isMethodActive('manual') ? 'text-primary' : 'text-text-secondary'}`} />
                       <span className="font-bold text-text-primary text-base mb-1">Manual Payment</span>
                       <span className="text-xs sm:text-sm text-text-secondary leading-tight">Submit an order request and complete payment manually.</span>
+                      {!isMethodActive('manual') && (
+                        <span className="mt-2 text-[11px] font-black uppercase tracking-widest text-amber-600">Currently unavailable</span>
+                      )}
                     </button>
                   </div>
                 </div>
