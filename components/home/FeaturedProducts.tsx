@@ -4,11 +4,32 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
 import { sampleProducts } from '@/data/sampleProducts';
+import { fetchProducts } from '@/lib/api';
+import { Product } from '@/types/product';
 import ProductCard from '@/components/products/ProductCard';
 import { ArrowRight, Clock, Box } from 'lucide-react';
 
 export default function FeaturedProducts() {
-  const featured = sampleProducts.filter((p) => p.inStock).slice(0, 4);
+  // Live products from Supabase (same source as /products), so admin edits show
+  // here too. Falls back to bundled sample data only if the fetch fails/empties.
+  const [featured, setFeatured] = useState<Product[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchProducts();
+        if (cancelled) return;
+        const inStock = (data || []).filter((p) => p.inStock).slice(0, 4);
+        setFeatured(inStock.length > 0 ? inStock : sampleProducts.filter((p) => p.inStock).slice(0, 4));
+      } catch {
+        if (!cancelled) setFeatured(sampleProducts.filter((p) => p.inStock).slice(0, 4));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Countdown timer for next Supply Drop restock
   const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 12, seconds: 53 });
