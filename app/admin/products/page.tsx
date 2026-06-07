@@ -19,6 +19,7 @@ function AdminProductsContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Modal state
   const [showForm, setShowForm] = useState(false);
@@ -56,13 +57,18 @@ function AdminProductsContent() {
   };
 
   const handleSave = async (input: ProductFormInput) => {
+    // Errors thrown here propagate to ProductForm, which shows them in-modal.
+    setSuccessMessage('');
     if (editingProduct) {
       const updated = await updateProduct(editingProduct.id, input);
       setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+      setSuccessMessage(`"${updated.name}" updated successfully.`);
     } else {
       const created = await createProduct(input);
       setProducts((prev) => [created, ...prev]);
+      setSuccessMessage(`"${created.name}" created successfully.`);
     }
+    setTimeout(() => setSuccessMessage(''), 4000);
   };
 
   const handleDeleteConfirm = async () => {
@@ -95,6 +101,12 @@ function AdminProductsContent() {
           <Plus size={18} /> Add Product
         </button>
       </div>
+
+      {successMessage && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm font-semibold">
+          {successMessage}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center items-center py-12">
