@@ -19,7 +19,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-800 font-sans relative overflow-hidden">
+    <div className="flex h-screen bg-slate-50 text-slate-800 font-sans relative overflow-hidden">
       {/* Background Decorative Soft Gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#009ee3]/3 rounded-full blur-[120px] pointer-events-none z-0"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-[#fff159]/4 rounded-full blur-[150px] pointer-events-none z-0"></div>
