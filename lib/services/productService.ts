@@ -216,14 +216,15 @@ export async function updateProduct(id: string, input: ProductInput): Promise<Pr
   validateProductInput(input);
 
   const row = mapInputToRow(input);
-  // Regenerate slug from the (possibly updated) name
-  row.slug = slugify(input.name) || `product-${Date.now()}`;
+  // Slug is intentionally NOT regenerated on update: product URLs are slug-based,
+  // so renaming a product must not change (and break) its existing public URL.
 
   const client = supabaseAdmin || supabase;
   if (!client) {
     const index = sampleProducts.findIndex((p) => p.id === id);
     if (index === -1) throw new Error('Product not found');
-    sampleProducts[index] = { ...sampleProducts[index], ...mapDatabaseProduct({ ...row, id }) };
+    const existingSlug = sampleProducts[index].slug;
+    sampleProducts[index] = { ...sampleProducts[index], ...mapDatabaseProduct({ ...row, id, slug: existingSlug }) };
     return sampleProducts[index];
   }
 

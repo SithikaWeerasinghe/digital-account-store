@@ -290,15 +290,16 @@ export async function createProduct(payload: ProductFormInput): Promise<Product>
 }
 
 export async function updateProduct(id: string, payload: ProductFormInput): Promise<Product> {
-  return fetchApi<Product>(`/api/admin/products/${id}`, {
+  // Admin route — must send the Supabase Bearer token via fetchAdminApi.
+  return fetchAdminApi<Product>(`/api/admin/products/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
 }
 
 export async function deleteProduct(id: string): Promise<{ id: string }> {
-  return fetchApi<{ id: string }>(`/api/admin/products/${id}`, {
+  // Admin route — must send the Supabase Bearer token via fetchAdminApi.
+  return fetchAdminApi<{ id: string }>(`/api/admin/products/${id}`, {
     method: 'DELETE',
   });
 }
