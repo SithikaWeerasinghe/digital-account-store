@@ -263,7 +263,8 @@ export async function adminLogin(payload: AdminLoginInput): Promise<any> {
 }
 
 export async function fetchAdminProducts(): Promise<Product[]> {
-  return fetchApi<Product[]>('/api/products');
+  // Admin needs archived products too, so they can be viewed/managed.
+  return fetchApi<Product[]>('/api/products?all=true');
 }
 
 // ── Admin Product CRUD ──
@@ -297,11 +298,14 @@ export async function updateProduct(id: string, payload: ProductFormInput): Prom
   });
 }
 
-export async function deleteProduct(id: string): Promise<{ id: string }> {
+export async function deleteProduct(
+  id: string
+): Promise<{ id: string; archived: boolean; message?: string }> {
   // Admin route — must send the Supabase Bearer token via fetchAdminApi.
-  return fetchAdminApi<{ id: string }>(`/api/admin/products/${id}`, {
-    method: 'DELETE',
-  });
+  return fetchAdminApi<{ id: string; archived: boolean; message?: string }>(
+    `/api/admin/products/${id}`,
+    { method: 'DELETE' }
+  );
 }
 
 export async function fetchAdminOrders(): Promise<Order[]> {

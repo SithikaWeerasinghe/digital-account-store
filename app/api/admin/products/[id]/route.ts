@@ -64,7 +64,10 @@ export async function DELETE(
   try {
     const { id } = await params;
     const result = await productService.deleteProduct(id);
-    return NextResponse.json({ success: true, data: result });
+    const message = result.archived
+      ? 'This product has existing orders, so it was archived instead of deleted.'
+      : 'Product deleted successfully.';
+    return NextResponse.json({ success: true, data: { ...result, message } });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message || 'Failed to delete product' },

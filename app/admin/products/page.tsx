@@ -75,9 +75,24 @@ function AdminProductsContent() {
     if (!deletingProduct) return;
     try {
       setIsDeleting(true);
-      await deleteProduct(deletingProduct.id);
-      setProducts((prev) => prev.filter((p) => p.id !== deletingProduct.id));
+      setError('');
+      setSuccessMessage('');
+      const result = await deleteProduct(deletingProduct.id);
+      if (result.archived) {
+        // Has order history → archived, not deleted. Keep it in the list but
+        // reflect the inactive state so the admin can see/manage it.
+        setProducts((prev) =>
+          prev.map((p) => (p.id === deletingProduct.id ? { ...p, is_active: false } : p))
+        );
+        setSuccessMessage(
+          result.message || 'This product has existing orders, so it was archived instead of deleted.'
+        );
+      } else {
+        setProducts((prev) => prev.filter((p) => p.id !== deletingProduct.id));
+        setSuccessMessage(result.message || 'Product deleted successfully.');
+      }
       setDeletingProduct(null);
+      setTimeout(() => setSuccessMessage(''), 5000);
     } catch (err: any) {
       setError(err.message || 'Failed to delete product');
     } finally {

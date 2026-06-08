@@ -3,9 +3,12 @@ import * as productService from '@/lib/services/productService';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const products = await productService.getProducts();
+    // Admin lists pass ?all=true to include archived (is_active=false) products.
+    // Public callers omit it and receive active products only.
+    const includeInactive = new URL(request.url).searchParams.get('all') === 'true';
+    const products = await productService.getProducts(includeInactive);
     return NextResponse.json({ success: true, data: products });
   } catch (error: any) {
     return NextResponse.json(

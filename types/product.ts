@@ -42,4 +42,6 @@ export interface Product {
   variants?: ProductVariant[];
   options?: ProductOption[];
   guarantee_options?: GuaranteeOption[];
+  /** False = archived/unpublished (hidden from the public site). Defaults to true. */
+  is_active?: boolean;
 }

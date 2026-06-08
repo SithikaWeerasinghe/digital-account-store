@@ -61,31 +61,31 @@ export function mapDatabaseProduct(dbRow: any): Product {
     variants,
     options,
     guarantee_options,
+    // Treat as active unless explicitly archived (handles legacy rows w/o column).
+    is_active: dbRow.is_active !== false,
   };
 }
 
-export async function getProducts(): Promise<Product[]> {
+export async function getProducts(includeInactive = false): Promise<Product[]> {
   const client = supabaseAdmin || supabase;
-  console.log('DEBUG: getProducts called. Supabase client initialized:', !!client);
   if (!client) {
-    console.log('DEBUG: Supabase client is null, using local sampleProducts');
-    return sampleProducts;
+    return includeInactive ? sampleProducts : sampleProducts.filter((p) => p.is_active !== false);
   }
   const { data, error } = await client
     .from('products')
     .select('*')
     .order('created_at', { ascending: false });
-  
+
   if (error) {
-    console.error('DEBUG: Supabase query error:', error);
+    console.error('[productService] getProducts query error:', error.message);
   }
   if (!data || data.length === 0) {
-    console.log('DEBUG: Supabase returned empty data, using local sampleProducts');
-    return sampleProducts;
+    return includeInactive ? sampleProducts : sampleProducts.filter((p) => p.is_active !== false);
   }
-  
-  console.log(`DEBUG: Supabase returned ${data.length} products successfully.`);
-  return data.map(mapDatabaseProduct);
+
+  const mapped = data.map(mapDatabaseProduct);
+  // Public callers get active products only; admin passes includeInactive=true.
+  return includeInactive ? mapped : mapped.filter((p) => p.is_active !== false);
 }
 
 export async function getActiveProducts(): Promise<Product[]> {
@@ -109,7 +109,10 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     .eq('slug', slug)
     .single();
   if (error || !data) return sampleProducts.find((p) => p.slug === slug) ?? null;
-  return mapDatabaseProduct(data);
+  const product = mapDatabaseProduct(data);
+  // Archived products are not publicly accessible — behave as "not found".
+  if (product.is_active === false) return null;
+  return product;
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
@@ -240,18 +243,43 @@ export async function updateProduct(id: string, input: ProductInput): Promise<Pr
   return mapDatabaseProduct(data);
 }
 
-export async function deleteProduct(id: string): Promise<{ id: string }> {
+async function archiveProduct(client: NonNullable<typeof supabase>, id: string): Promise<{ id: string; archived: true }> {
+  const { error } = await client.from('products').update({ is_active: false }).eq('id', id);
+  if (error) {
+    throw new Error(error.message || 'Failed to archive product');
+  }
+  return { id, archived: true };
+}
+
+export async function deleteProduct(id: string): Promise<{ id: string; archived: boolean }> {
   const client = supabaseAdmin || supabase;
   if (!client) {
     const index = sampleProducts.findIndex((p) => p.id === id);
     if (index === -1) throw new Error('Product not found');
     sampleProducts.splice(index, 1);
-    return { id };
+    return { id, archived: false };
+  }
+
+  // If any orders reference this product, archive instead of hard-deleting so
+  // order history (and the orders_product_id_fkey constraint) is preserved.
+  try {
+    const { count } = await client
+      .from('orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('product_id', id);
+    if ((count ?? 0) > 0) {
+      return archiveProduct(client, id);
+    }
+  } catch (err: any) {
+    console.error('[productService] Order lookup before delete failed:', err?.message || err);
   }
 
   const { error } = await client.from('products').delete().eq('id', id);
   if (error) {
-    throw new Error(error.message || 'Failed to delete product');
+    // A foreign-key violation (orders/inventory still reference it) must never
+    // surface as a raw DB error — archive instead so nothing is lost.
+    console.error('[productService] Hard delete failed, archiving instead:', error.message);
+    return archiveProduct(client, id);
   }
-  return { id };
+  return { id, archived: false };
 }

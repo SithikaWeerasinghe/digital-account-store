@@ -25,13 +25,20 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
           </thead>
           <tbody className="divide-y divide-slate-150">
             {products.map((product) => (
-              <tr key={product.id} className="hover:bg-slate-50/50 transition-colors">
+              <tr key={product.id} className={`hover:bg-slate-50/50 transition-colors ${product.is_active === false ? 'opacity-60' : ''}`}>
                 <td className="px-6 py-4 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white border border-slate-150 overflow-hidden flex-shrink-0 flex items-center justify-center p-0.5">
                     <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain" />
                   </div>
                   <div>
-                    <div className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-1">{product.name}</div>
+                    <div className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-1 flex items-center gap-2">
+                      {product.name}
+                      {product.is_active === false && (
+                        <span className="bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest uppercase">
+                          Archived
+                        </span>
+                      )}
+                    </div>
                     <div className="text-[10px] font-mono text-slate-400 mt-0.5">ID: {product.id}</div>
                   </div>
                 </td>
