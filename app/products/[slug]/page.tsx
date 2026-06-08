@@ -387,10 +387,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   <div className="w-20 h-20 bg-success/10 border border-success/20 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10 shadow-sm">
                     <Check size={32} className="text-success" />
                   </div>
-                  <h3 className="text-xl font-black font-heading uppercase tracking-widest text-text-primary mb-3 relative z-10">Checkout Initiated!</h3>
+                  <h3 className="text-xl font-black font-heading uppercase tracking-widest text-text-primary mb-3 relative z-10">Checkout Started</h3>
                   <p className="text-sm text-text-secondary font-medium mb-6 relative z-10">
-                    Payment integration will be connected in a future update. Your order will be processed to{' '}
-                    <strong className="text-text-primary bg-secondary-background border border-border px-2 py-0.5 rounded ml-1 font-mono">{email}</strong>.
+                    Complete your secure payment at checkout. Your access details will be sent to{' '}
+                    <strong className="text-text-primary bg-secondary-background border border-border px-2 py-0.5 rounded ml-1 font-mono">{email}</strong>
+                    {' '}automatically after payment confirmation.
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}

@@ -112,11 +112,11 @@ function CheckoutSuccessContent() {
           </div>
 
           <h1 className="text-2xl font-bold font-heading text-text-primary mb-2 uppercase tracking-wide">
-            Order Received
+            Payment Processing
           </h1>
           <p className="text-text-secondary mb-8 text-sm leading-relaxed">
-            Thanks for your order! We&apos;re confirming your payment with Mercado Pago. Once it&apos;s
-            approved, your digital products will be delivered to your email.
+            Your payment is being confirmed. Once the payment is confirmed, your access details will be
+            sent to your email automatically.
           </p>
 
           <div className="bg-slate-50 border border-border rounded-xl p-4 mb-6 text-left text-sm font-mono space-y-2">

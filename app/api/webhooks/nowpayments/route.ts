@@ -4,8 +4,7 @@ import {
   verifyNowPaymentsSignature,
   mapNowPaymentsStatus,
 } from '@/lib/services/nowpaymentsService';
-import { sendOrderConfirmation, sendAdminNotification } from '@/lib/services/emailService';
-import { deliverOrder } from '@/lib/services/deliveryService';
+import { processPaidNowPaymentsOrders } from '@/lib/services/nowpaymentsDelivery';
 import { Order } from '@/types/order';
 
 export const dynamic = 'force-dynamic';
@@ -61,30 +60,8 @@ export async function POST(request: NextRequest) {
     const mapped = mapNowPaymentsStatus(status);
 
     if (mapped === 'paid') {
-      // Idempotency: only act on orders not already marked paid (prevents
-      // duplicate confirmation emails / re-processing on repeated IPNs).
-      const newlyPaid = orders.filter((o) => o.payment_status !== 'paid');
-
-      await Promise.allSettled(
-        newlyPaid.map((o) =>
-          orderService.updateOrderPaymentFields(o.id, {
-            payment_status: 'paid',
-            paid_at: new Date().toISOString(),
-            payment_provider: 'nowpayments',
-            provider_payment_id: providerPaymentId || o.provider_payment_id || null,
-          })
-        )
-      );
-
-      // Confirmation + admin notification emails (best-effort; never blocks).
-      await Promise.allSettled(
-        newlyPaid.flatMap((o) => [sendOrderConfirmation({ ...o, payment_status: 'paid' }), sendAdminNotification(o)])
-      );
-
-      // Automatic delivery. deliverOrder is variant-aware and guards against
-      // re-delivery (already-delivered orders are skipped), so duplicate IPNs
-      // never send duplicate credentials.
-      await Promise.allSettled(orders.map((o) => deliverOrder(o.id, false)));
+      // Idempotent paid+deliver, shared with the admin simulation endpoint.
+      await processPaidNowPaymentsOrders(orders, providerPaymentId);
     } else if (mapped === 'failed') {
       await Promise.allSettled(
         orders

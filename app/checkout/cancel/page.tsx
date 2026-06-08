@@ -21,8 +21,7 @@ function CheckoutCancelContent() {
           Payment Cancelled
         </h1>
         <p className="text-text-secondary mb-8 text-sm sm:text-base leading-relaxed">
-          Your crypto payment was cancelled and no charge was made. Your order is still pending — you can
-          return to checkout and complete the payment whenever you&apos;re ready.
+          Your payment was cancelled or not completed. You can return to checkout and try again.
         </p>
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex gap-2 text-left">

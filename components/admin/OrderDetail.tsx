@@ -143,6 +143,46 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
     }
   };
 
+  // Dev-only / opt-in test tool to simulate a NOWPayments confirmed payment.
+  const testToolsVisible =
+    process.env.NODE_ENV !== 'production' ||
+    process.env.NEXT_PUBLIC_ENABLE_PAYMENT_TEST_TOOLS === 'true';
+
+  const handleSimulateNowPayments = async () => {
+    try {
+      setBusyAction('simulate');
+      setError('');
+      const { supabase } = await import('@/lib/supabase');
+      if (!supabase) {
+        setError('Supabase is not configured');
+        setBusyAction(null);
+        return;
+      }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setError('Session expired. Please log in again.');
+        setBusyAction(null);
+        return;
+      }
+      const headers = { Authorization: `Bearer ${session.access_token}` };
+      const res = await fetch(`/api/admin/orders/${order.id}/simulate-nowpayments`, {
+        method: 'POST',
+        headers,
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.data) setOrder(data.data);
+        setError('');
+      } else {
+        setError(data.message || 'Simulation failed');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Simulation failed');
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
   const InfoRow = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
     <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0">
       <Icon size={16} className="text-slate-400 mt-0.5 flex-shrink-0" />
@@ -382,6 +422,21 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
           {/* Actions */}
           <div className="space-y-3">
             <p className="text-[10px] font-black tracking-widest uppercase text-slate-400">Admin Actions</p>
+
+            {/* TEST TOOL: Simulate a NOWPayments confirmed payment (dev / opt-in only) */}
+            {testToolsVisible &&
+              order.payment_provider === 'nowpayments' &&
+              paymentStatus !== 'paid' && (
+                <button
+                  onClick={handleSimulateNowPayments}
+                  disabled={!!busyAction}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-amber-400 bg-amber-50 text-amber-700 font-black font-heading tracking-widest uppercase text-sm hover:bg-amber-100 transition-all disabled:opacity-50"
+                  title="Developer test tool — simulates a confirmed NOWPayments IPN"
+                >
+                  {busyAction === 'simulate' ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
+                  Simulate NOWPayments Paid
+                </button>
+              )}
 
             {/* Mark Paid */}
             {paymentStatus !== 'paid' && (
