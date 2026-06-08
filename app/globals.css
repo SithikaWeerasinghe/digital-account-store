@@ -26,6 +26,19 @@
   --animate-ticker: ticker 25s linear infinite;
   --animate-spin-slow: spin-slow 20s linear infinite;
   --animate-spin-reverse-slow: spin-reverse-slow 25s linear infinite;
+  --animate-apex-reveal: apexReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-apex-bar: apexBar 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+  @keyframes apexReveal {
+    0% { opacity: 0; transform: translateY(14px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes apexBar {
+    0% { width: 0%; }
+    70% { width: 85%; }
+    100% { width: 100%; }
+  }
 
   @keyframes float {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
@@ -65,6 +78,24 @@
     0% { transform: rotate(360deg); }
     100% { transform: rotate(0deg); }
   }
+}
+
+/* Lenis smooth scroll (recommended baseline styles) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 @layer base {
