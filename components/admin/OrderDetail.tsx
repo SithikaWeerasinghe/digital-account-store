@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Order } from '@/types/order';
 import { InventoryItem } from '@/types/inventory';
-import { OrderStatusUpdate, resendOrderEmail } from '@/lib/api';
+import { OrderStatusUpdate, resendOrderEmail, fetchTestToolsEnabled, simulateNowPaymentsPaid } from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import {
   X, Mail, Package, CreditCard, Hash, Calendar, Loader2,
@@ -35,6 +35,19 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
   const [error, setError] = useState('');
   const [emailSent, setEmailSent] = useState(false);
   const [assignedInventory, setAssignedInventory] = useState<InventoryItem[]>([]);
+  // Whether payment test tools are enabled (server flag) — gates the sim button.
+  const [testToolsEnabled, setTestToolsEnabled] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const enabled = await fetchTestToolsEnabled();
+      if (!cancelled) setTestToolsEnabled(enabled);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Load the inventory item(s) assigned to this order so the admin can confirm
   // the correct account variant was delivered. Best-effort — silent on failure.
@@ -143,41 +156,39 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
     }
   };
 
-  // Dev-only / opt-in test tool to simulate a NOWPayments confirmed payment.
-  const testToolsVisible =
-    process.env.NODE_ENV !== 'production' ||
-    process.env.NEXT_PUBLIC_ENABLE_PAYMENT_TEST_TOOLS === 'true';
-
-  const handleSimulateNowPayments = async () => {
+  // Re-fetch this order from the admin API (used to refresh after an action).
+  const refreshOrder = async () => {
     try {
-      setBusyAction('simulate');
-      setError('');
       const { supabase } = await import('@/lib/supabase');
-      if (!supabase) {
-        setError('Supabase is not configured');
-        setBusyAction(null);
-        return;
-      }
+      if (!supabase) return;
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        setError('Session expired. Please log in again.');
-        setBusyAction(null);
-        return;
-      }
-      const headers = { Authorization: `Bearer ${session.access_token}` };
-      const res = await fetch(`/api/admin/orders/${order.id}/simulate-nowpayments`, {
-        method: 'POST',
-        headers,
+      if (!session?.access_token) return;
+      const res = await fetch(`/api/admin/orders/${order.id}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
       });
       const data = await res.json();
-      if (data.success) {
-        if (data.data) setOrder(data.data);
-        setError('');
-      } else {
-        setError(data.message || 'Simulation failed');
-      }
+      if (data.success && data.data) setOrder(data.data);
+    } catch {
+      // best-effort refresh
+    }
+  };
+
+  // TEST TOOL: simulate a confirmed NOWPayments payment for this pending order.
+  const handleSimulateNowPayments = async () => {
+    const ok = window.confirm(
+      'This will simulate a paid NOWPayments payment and may send account details to the customer. Continue?'
+    );
+    if (!ok) return;
+    setBusyAction('simulate');
+    setError('');
+    try {
+      const updated = await simulateNowPaymentsPaid(order.id);
+      setOrder(updated);
     } catch (err: any) {
+      // Delivery failures (e.g. out of stock) throw here — surface the message
+      // and still refresh so the now-paid state is reflected.
       setError(err.message || 'Simulation failed');
+      await refreshOrder();
     } finally {
       setBusyAction(null);
     }
@@ -423,19 +434,25 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
           <div className="space-y-3">
             <p className="text-[10px] font-black tracking-widest uppercase text-slate-400">Admin Actions</p>
 
-            {/* TEST TOOL: Simulate a NOWPayments confirmed payment (dev / opt-in only) */}
-            {testToolsVisible &&
+            {/* TEST TOOL: Simulate a NOWPayments confirmed payment.
+                Visible only when ENABLE_PAYMENT_TEST_TOOLS=true (server flag). */}
+            {testToolsEnabled &&
               order.payment_provider === 'nowpayments' &&
-              paymentStatus !== 'paid' && (
-                <button
-                  onClick={handleSimulateNowPayments}
-                  disabled={!!busyAction}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-amber-400 bg-amber-50 text-amber-700 font-black font-heading tracking-widest uppercase text-sm hover:bg-amber-100 transition-all disabled:opacity-50"
-                  title="Developer test tool — simulates a confirmed NOWPayments IPN"
-                >
-                  {busyAction === 'simulate' ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
-                  Simulate NOWPayments Paid
-                </button>
+              paymentStatus === 'pending' &&
+              deliveryStatus !== 'delivered' && (
+                <div className="rounded-xl border-2 border-dashed border-amber-400 bg-amber-50 p-3 space-y-2">
+                  <button
+                    onClick={handleSimulateNowPayments}
+                    disabled={!!busyAction}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-amber-500 text-white font-black font-heading tracking-widest uppercase text-sm hover:bg-amber-600 transition-all disabled:opacity-50"
+                  >
+                    {busyAction === 'simulate' ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
+                    Simulate NOWPayments Paid
+                  </button>
+                  <p className="text-[11px] text-amber-700 leading-snug">
+                    Testing only. This marks the order as paid and sends delivery if stock is available.
+                  </p>
+                </div>
               )}
 
             {/* Mark Paid */}

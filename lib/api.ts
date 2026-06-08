@@ -191,6 +191,29 @@ export async function startNowPaymentsCheckout(payload: {
   }
 }
 
+// ── Admin payment test tools (dev only) ──
+
+/** Whether the admin payment test tools are enabled (server flag). Never throws. */
+export async function fetchTestToolsEnabled(): Promise<boolean> {
+  try {
+    const result = await fetchAdminApi<{ paymentTestTools: boolean }>('/api/admin/test-tools');
+    return !!result?.paymentTestTools;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Admin-only: simulate a confirmed NOWPayments payment for a pending order.
+ * Sends the Supabase Bearer token via fetchAdminApi. Throws on failure (incl.
+ * delivery failure) so the caller can surface the message.
+ */
+export async function simulateNowPaymentsPaid(orderId: string): Promise<Order> {
+  return fetchAdminApi<Order>(`/api/admin/orders/${orderId}/simulate-nowpayments-paid`, {
+    method: 'POST',
+  });
+}
+
 // ── Coupons / Discounts ──
 
 export type ApplyDiscountResult = {

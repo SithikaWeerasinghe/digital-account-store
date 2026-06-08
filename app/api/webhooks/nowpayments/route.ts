@@ -4,7 +4,7 @@ import {
   verifyNowPaymentsSignature,
   mapNowPaymentsStatus,
 } from '@/lib/services/nowpaymentsService';
-import { processPaidNowPaymentsOrders } from '@/lib/services/nowpaymentsDelivery';
+import { processPaidNowPaymentsOrders } from '@/lib/services/nowpaymentsProcessingService';
 import { Order } from '@/types/order';
 
 export const dynamic = 'force-dynamic';
