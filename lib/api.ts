@@ -153,6 +153,44 @@ export async function startMercadoPagoCheckout(payload: {
   }
 }
 
+// ── NOWPayments (automatic crypto) ──
+
+export type NowPaymentsCheckoutResult = {
+  success: boolean;
+  code?: string;
+  message?: string;
+  data?: {
+    invoice_id: string;
+    invoice_url: string;
+    checkout_reference: string;
+  };
+};
+
+/**
+ * Starts a NOWPayments crypto checkout for the given order(s).
+ * Does NOT throw on "not configured" — returns the raw response so the checkout
+ * page can fall back to the manual crypto flow gracefully.
+ */
+export async function startNowPaymentsCheckout(payload: {
+  order_id: string;
+  order_ids?: string[];
+}): Promise<NowPaymentsCheckoutResult> {
+  try {
+    const response = await fetch('/api/checkout/nowpayments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify(payload),
+    });
+    return (await response.json()) as NowPaymentsCheckoutResult;
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to start crypto checkout',
+    };
+  }
+}
+
 // ── Coupons / Discounts ──
 
 export type ApplyDiscountResult = {

@@ -243,8 +243,35 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
             </span>
           </div>
 
-          {/* Crypto manual-payment notice (pending crypto orders only) */}
-          {(order.payment_method || order.paymentMethod) === 'crypto' && paymentStatus !== 'paid' && (
+          {/* NOWPayments (automatic crypto) gateway details */}
+          {order.payment_provider === 'nowpayments' && (
+            <div className="bg-slate-50 rounded-xl px-4">
+              <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 pt-3 -mb-1">
+                Crypto · NOWPayments
+              </p>
+              <InfoRow icon={CreditCard} label="Payment Provider" value="NOWPayments" />
+              {order.provider_payment_id && (
+                <InfoRow icon={Hash} label="Provider Payment ID" value={order.provider_payment_id} />
+              )}
+              {order.checkout_reference && (
+                <InfoRow icon={Hash} label="Checkout Reference" value={order.checkout_reference} />
+              )}
+              {order.paid_at && (
+                <InfoRow icon={Calendar} label="Paid At" value={formatDate(order.paid_at)} />
+              )}
+              {paymentStatus === 'paid' && deliveryStatus === 'failed' && (
+                <p className="text-xs text-rose-600 font-semibold py-3">
+                  Payment confirmed but auto-delivery failed (likely out of stock). Add inventory, then
+                  use “Send Delivery / Access Details”.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Crypto manual-payment notice (manual crypto orders only, not NOWPayments) */}
+          {(order.payment_method || order.paymentMethod) === 'crypto' &&
+            order.payment_provider !== 'nowpayments' &&
+            paymentStatus !== 'paid' && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1">
               <div className="flex items-center gap-2">
                 <CreditCard size={14} className="text-amber-600" />

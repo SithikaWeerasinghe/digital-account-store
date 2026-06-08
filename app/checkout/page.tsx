@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { CreditCard, Bitcoin, Banknote, ShieldCheck, AlertCircle, Tag, X, Loader2, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { createOrder, startMercadoPagoCheckout, validateCoupon, ApplyDiscountResult, fetchInventoryCount, fetchPaymentMethods, PublicPaymentMethod } from '@/lib/api';
+import { createOrder, startMercadoPagoCheckout, startNowPaymentsCheckout, validateCoupon, ApplyDiscountResult, fetchInventoryCount, fetchPaymentMethods, PublicPaymentMethod } from '@/lib/api';
 import { useCart } from '@/lib/contexts/CartContext';
 import { useRouter } from 'next/navigation';
 import PromoBannerList from '@/components/promos/PromoBannerList';
@@ -257,11 +257,27 @@ export default function CheckoutPage() {
         }
       }
 
-      // 3. Crypto → manual payment. Never touches Mercado Pago. The order stays
-      //    pending until an admin confirms payment and triggers delivery. We hand
-      //    the customer a lightweight summary (no sensitive data) for the
-      //    instructions page via sessionStorage + a reference in the URL.
+      // 3. Crypto. Prefer automatic NOWPayments (redirect to hosted payment
+      //    page; the IPN webhook confirms payment and triggers delivery). If
+      //    NOWPayments is not configured, fall back to the manual crypto flow.
       if (paymentMethod === 'crypto') {
+        const cryptoIds = createdOrders.map((o) => o?.id).filter(Boolean) as string[];
+        if (cryptoIds.length > 0) {
+          const np = await startNowPaymentsCheckout({ order_id: cryptoIds[0], order_ids: cryptoIds });
+          if (np.success && np.data?.invoice_url) {
+            clearCart();
+            window.location.href = np.data.invoice_url; // leave the app for NOWPayments
+            return;
+          }
+          // Maintenance / amount / API errors (configured but failed) → surface.
+          if (np.code && np.code !== 'not_configured') {
+            throw new Error(np.message || 'Could not start the crypto checkout. Please try again.');
+          }
+          // code === 'not_configured' (or no code) → fall through to manual crypto.
+        }
+
+        // Manual crypto fallback: hand the customer a lightweight summary (no
+        // sensitive data) for the instructions page via sessionStorage + ref.
         const primaryRef =
           createdOrders[0]?.invoice_number || createdOrders[0]?.id || '';
         const summary = {

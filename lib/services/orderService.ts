@@ -29,6 +29,10 @@ export interface DatabaseOrderRow {
   mercadopago_payment_id?: string | null;
   mercadopago_merchant_order_id?: string | null;
   mercadopago_status?: string | null;
+  // Generic payment provider fields (NOWPayments automatic crypto)
+  payment_provider?: string | null;
+  provider_payment_id?: string | null;
+  checkout_reference?: string | null;
   // Product options and guarantee metadata
   order_metadata?: {
     product_option?: {
@@ -130,6 +134,9 @@ export function mapDatabaseOrder(row: DatabaseOrderRow): Order {
     mercadopago_payment_id: row.mercadopago_payment_id || null,
     mercadopago_merchant_order_id: row.mercadopago_merchant_order_id || null,
     mercadopago_status: row.mercadopago_status || null,
+    payment_provider: row.payment_provider || null,
+    provider_payment_id: row.provider_payment_id || null,
+    checkout_reference: row.checkout_reference || null,
     order_metadata: row.order_metadata || null,
     discount_code: row.discount_code ?? null,
     discount_amount: row.discount_amount != null ? Number(row.discount_amount) : 0,
@@ -290,6 +297,28 @@ export async function getOrderByInvoiceNumber(invoiceNumber: string): Promise<Or
   return mapDatabaseOrder(data as DatabaseOrderRow);
 }
 
+/** All orders sharing a checkout reference (one NOWPayments invoice → many orders). */
+export async function getOrdersByCheckoutReference(reference: string): Promise<Order[]> {
+  if (!reference) return [];
+  if (!supabase) {
+    return inMemoryOrders.filter((o) => o.checkout_reference === reference).map(mapDatabaseOrder);
+  }
+  const { data, error } = await supabase.from('orders').select('*').eq('checkout_reference', reference);
+  if (error || !data) return [];
+  return data.map((row) => mapDatabaseOrder(row as DatabaseOrderRow));
+}
+
+/** All orders sharing a provider payment/invoice id. */
+export async function getOrdersByProviderPaymentId(providerPaymentId: string): Promise<Order[]> {
+  if (!providerPaymentId) return [];
+  if (!supabase) {
+    return inMemoryOrders.filter((o) => o.provider_payment_id === providerPaymentId).map(mapDatabaseOrder);
+  }
+  const { data, error } = await supabase.from('orders').select('*').eq('provider_payment_id', providerPaymentId);
+  if (error || !data) return [];
+  return data.map((row) => mapDatabaseOrder(row as DatabaseOrderRow));
+}
+
 // ============================================================
 // ADMIN: UPDATE ORDER STATUS
 // ============================================================
@@ -359,6 +388,9 @@ export interface OrderPaymentFieldsUpdate {
   mercadopago_payment_id?: string | null;
   mercadopago_merchant_order_id?: string | null;
   mercadopago_status?: string | null;
+  payment_provider?: string | null;
+  provider_payment_id?: string | null;
+  checkout_reference?: string | null;
 }
 
 export async function updateOrderPaymentFields(

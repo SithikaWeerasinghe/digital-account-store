@@ -33,6 +33,10 @@ export interface Order {
   mercadopago_payment_id?: string | null;
   mercadopago_merchant_order_id?: string | null;
   mercadopago_status?: string | null;
+  // Generic payment provider fields (NOWPayments automatic crypto)
+  payment_provider?: string | null;
+  provider_payment_id?: string | null;
+  checkout_reference?: string | null;
   // Product options and guarantee metadata
   order_metadata?: {
     product_option?: {
