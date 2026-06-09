@@ -2,8 +2,8 @@ import { Order } from '@/types/order';
 import { InventoryItem } from '@/types/inventory';
 import * as orderService from '@/lib/services/orderService';
 import * as inventoryService from '@/lib/services/inventoryService';
+import * as productService from '@/lib/services/productService';
 import { sendDeliveryEmail } from '@/lib/services/emailService';
-import { sampleProducts } from '@/data/sampleProducts';
 
 export type DeliveryResult = {
   success: boolean;
@@ -84,12 +84,23 @@ export async function deliverOrder(orderId: string, skipPaymentCheck = false): P
       };
     }
 
-    // 5. Send delivery email
-    const product = sampleProducts.find((p) => p.id === productId);
+    // 5. Send delivery email (fetch the real product for its name + usage
+    //    instructions; falls back gracefully if the lookup fails).
+    let productName: string | undefined;
+    let usageInstructions: string | null | undefined;
+    try {
+      const product = await productService.getProductById(productId);
+      productName = product?.name;
+      usageInstructions = product?.usage_instructions ?? null;
+    } catch {
+      // non-fatal — deliver without the enriched product fields
+    }
+
     const emailResult = await sendDeliveryEmail({
       order,
       inventoryItem,
-      productName: product?.name,
+      productName,
+      usageInstructions,
     });
 
     const emailSent = emailResult.success || emailResult.skipped;

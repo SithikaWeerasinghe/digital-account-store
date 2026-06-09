@@ -102,8 +102,14 @@ export async function sendDeliveryEmail(params: {
   order: Order;
   inventoryItem: InventoryItem;
   productName?: string;
+  usageInstructions?: string | null;
 }): Promise<SendEmailResult> {
-  const email = buildDeliveryEmail(params.order, params.inventoryItem.delivery_content, params.productName);
+  const email = buildDeliveryEmail(
+    params.order,
+    params.inventoryItem.delivery_content,
+    params.productName,
+    params.usageInstructions
+  );
   return sendEmail(email);
 }
 

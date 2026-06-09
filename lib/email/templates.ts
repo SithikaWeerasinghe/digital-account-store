@@ -240,11 +240,24 @@ export function buildAdminNotificationEmail(order: Order, adminEmail: string) {
 export function buildDeliveryEmail(
   order: Order,
   deliveryContent: string,
-  productName?: string
+  productName?: string,
+  usageInstructions?: string | null
 ) {
   const invoice = order.invoice_number || order.id;
   const email = order.customer_email || order.userId;
   const productDisplay = productName || order.items?.[0]?.product?.name || 'Digital Product';
+
+  // "How to use" section — uses the product's instructions, or a sensible default.
+  const instructionsText =
+    (usageInstructions && usageInstructions.trim()) ||
+    'Use the access details above to sign in. If you need any help getting started, contact our support team and we\'ll guide you through it.';
+  const instructionsBlock = `
+    <div style="margin:24px 0;padding:16px;background-color:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;">
+      <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:0.5px;">
+        📘 How to use your product
+      </p>
+      <div style="margin:0;font-size:14px;color:#1e3a8a;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;">${escapeHtml(instructionsText)}</div>
+    </div>`;
 
   // Selected variant/option and guarantee (shown only when present).
   const optionLabel = order.order_metadata?.product_option?.label;
@@ -290,6 +303,8 @@ export function buildDeliveryEmail(
       </p>
       <pre style="margin:0;padding:12px;background-color:#ffffff;border:1px solid #dcfce7;border-radius:8px;font-size:13px;font-family:'Courier New',monospace;color:#0f172a;line-height:1.5;overflow-x:auto;white-space:pre-wrap;word-wrap:break-word;">${escapeHtml(deliveryContent)}</pre>
     </div>
+
+    ${instructionsBlock}
 
     <div style="margin:24px 0;padding:16px;background-color:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;">
       <p style="margin:0;font-size:13px;color:#92400e;line-height:1.6;">

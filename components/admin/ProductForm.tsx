@@ -30,6 +30,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
   const [originalPrice, setOriginalPrice] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [features, setFeatures] = useState<string[]>(['']);
+  const [usageInstructions, setUsageInstructions] = useState('');
   const [inStock, setInStock] = useState(true);
   const [isInstantDelivery, setIsInstantDelivery] = useState(true);
   const [variants, setVariants] = useState<VariantRow[]>([]);
@@ -47,6 +48,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
       setOriginalPrice(product.originalPrice ? String(product.originalPrice) : '');
       setImageUrl(product.imageUrl || '');
       setFeatures(product.features?.length ? product.features : ['']);
+      setUsageInstructions(product.usage_instructions || '');
       setInStock(product.inStock);
       setIsInstantDelivery(product.isInstantDelivery);
       setVariants(
@@ -104,6 +106,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
       originalPrice: originalPrice ? Number(originalPrice) : null,
       imageUrl: imageUrl.trim(),
       features: cleanFeatures,
+      usageInstructions: usageInstructions.trim() || null,
       inStock,
       isInstantDelivery,
       variants: cleanVariants.length > 0 ? cleanVariants : null,
@@ -206,6 +209,23 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                 placeholder="Short description of the product"
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900 resize-none"
               />
+            </div>
+
+            {/* Usage Instructions (included in the delivery email) */}
+            <div>
+              <label className="block text-xs font-black tracking-widest uppercase text-slate-600 mb-2">
+                Usage Instructions
+              </label>
+              <textarea
+                value={usageInstructions}
+                onChange={(e) => setUsageInstructions(e.target.value)}
+                rows={4}
+                placeholder="How to use this product — sent to the customer in the delivery email after payment.&#10;e.g. 1) Go to netflix.com  2) Log in with the email/password above  3) Select your profile."
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900 resize-none"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Shown to the customer under &quot;How to use your product&quot; in the delivery email.
+              </p>
             </div>
 
             {/* Price + Original Price */}

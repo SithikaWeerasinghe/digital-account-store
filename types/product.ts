@@ -44,4 +44,6 @@ export interface Product {
   guarantee_options?: GuaranteeOption[];
   /** False = archived/unpublished (hidden from the public site). Defaults to true. */
   is_active?: boolean;
+  /** "How to use this product" text included in the delivery email. */
+  usage_instructions?: string | null;
 }

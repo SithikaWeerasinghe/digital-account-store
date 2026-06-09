@@ -63,6 +63,7 @@ export function mapDatabaseProduct(dbRow: any): Product {
     guarantee_options,
     // Treat as active unless explicitly archived (handles legacy rows w/o column).
     is_active: dbRow.is_active !== false,
+    usage_instructions: dbRow.usage_instructions ?? null,
   };
 }
 
@@ -142,6 +143,7 @@ export interface ProductInput {
   inStock?: boolean;
   isInstantDelivery?: boolean;
   variants?: ProductVariant[] | null;
+  usageInstructions?: string | null;
 }
 
 /**
@@ -162,6 +164,10 @@ function mapInputToRow(input: ProductInput): Record<string, any> {
 
   if (input.inStock !== undefined) {
     row.stock_count = input.inStock ? 20 : 0;
+  }
+
+  if (input.usageInstructions !== undefined) {
+    row.usage_instructions = input.usageInstructions || null;
   }
 
   if (input.variants !== undefined) {

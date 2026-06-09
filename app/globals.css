@@ -27,7 +27,7 @@
   --animate-spin-slow: spin-slow 20s linear infinite;
   --animate-spin-reverse-slow: spin-reverse-slow 25s linear infinite;
   --animate-apex-reveal: apexReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-apex-bar: apexBar 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  --animate-apex-bar: apexBar 3.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 
   @keyframes apexReveal {
     0% { opacity: 0; transform: translateY(14px) scale(0.98); }
@@ -96,6 +96,44 @@ html.lenis body {
 }
 .lenis.lenis-smooth iframe {
   pointer-events: none;
+}
+
+/* Intro splash overlay — shown first, then fades to reveal the site.
+   Visibility is driven by the data-apex-splash attribute on <html>, set by an
+   inline script before paint (no content flash) and cleared after the timer. */
+.apex-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #ffffff;
+  opacity: 1;
+  transition:
+    opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html[data-apex-splash] .apex-splash {
+  display: flex;
+}
+html[data-apex-splash] body {
+  overflow: hidden;
+}
+html[data-apex-splash='hiding'] .apex-splash {
+  opacity: 0;
+  transform: scale(1.03);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .apex-splash {
+    transition: opacity 0.25s ease;
+  }
+  html[data-apex-splash='hiding'] .apex-splash {
+    transform: none;
+  }
 }
 
 @layer base {

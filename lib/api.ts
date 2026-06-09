@@ -341,6 +341,7 @@ export type ProductFormInput = {
   inStock?: boolean;
   isInstantDelivery?: boolean;
   variants?: { id: string; label: string; price: number; originalPrice?: number }[] | null;
+  usageInstructions?: string | null;
 };
 
 export async function createProduct(payload: ProductFormInput): Promise<Product> {
