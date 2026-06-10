@@ -55,6 +55,7 @@ export async function createInventoryItem(input: CreateInventoryItemInput): Prom
     product_option_label: input.product_option_label || null,
     guarantee_id: input.guarantee_id || null,
     guarantee_label: input.guarantee_label || null,
+    usage_instructions: input.usage_instructions || null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -86,6 +87,7 @@ export async function updateInventoryItem(id: string, input: UpdateInventoryItem
   if (input.product_option_label !== undefined) updateData.product_option_label = input.product_option_label || null;
   if (input.guarantee_id !== undefined) updateData.guarantee_id = input.guarantee_id || null;
   if (input.guarantee_label !== undefined) updateData.guarantee_label = input.guarantee_label || null;
+  if (input.usage_instructions !== undefined) updateData.usage_instructions = input.usage_instructions || null;
 
   const { data, error } = await supabaseAdmin
     .from('inventory_items')

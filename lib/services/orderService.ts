@@ -1,7 +1,12 @@
 import { Order, OrderItem, CreateOrderInput } from '@/types/order';
 import { sampleProducts } from '@/data/sampleProducts';
-import { supabase } from '@/lib/supabase';
+import { supabase as anonClient, supabaseAdmin } from '@/lib/supabase';
 import { getRedeemableCoupon, incrementCouponUsage } from '@/lib/services/discountService';
+
+// Orders are only ever accessed server-side (API routes / webhooks). Prefer the
+// service-role client so all reads/writes bypass Row-Level Security; fall back to
+// the anon client (and then in-memory) only when no Supabase env is configured.
+const supabase = supabaseAdmin || anonClient;
 import { isPaymentMethodActive } from '@/lib/services/paymentMethodService';
 
 export interface DatabaseOrderRow {

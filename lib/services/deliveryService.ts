@@ -91,9 +91,11 @@ export async function deliverOrder(orderId: string, skipPaymentCheck = false): P
     try {
       const product = await productService.getProductById(productId);
       productName = product?.name;
-      usageInstructions = product?.usage_instructions ?? null;
+      // Prefer the inventory item's own instructions, then the product's.
+      usageInstructions = inventoryItem.usage_instructions ?? product?.usage_instructions ?? null;
     } catch {
-      // non-fatal — deliver without the enriched product fields
+      // non-fatal — still try the item's own instructions
+      usageInstructions = inventoryItem.usage_instructions ?? null;
     }
 
     const emailResult = await sendDeliveryEmail({

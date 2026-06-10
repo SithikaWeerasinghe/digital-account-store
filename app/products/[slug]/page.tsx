@@ -180,7 +180,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [quantity, setQuantity] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [emailError, setEmailError] = useState('');
-  const [submitted, setSubmitted] = useState(false);
 
   const guaranteeOptions: GuaranteeOption[] = product?.guarantee_options?.length
     ? product.guarantee_options
@@ -193,12 +192,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const total = activePrice * quantity;
 
   const handleCheckout = () => {
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setEmailError('Please enter a valid email address.');
-      return;
-    }
-    setEmailError('');
-    setSubmitted(true);
+    if (!product) return;
+    // Add the selected plan/warranty to the cart and go straight to the real
+    // checkout, which redirects to the chosen payment provider. (No placeholder.)
+    addToCart(product, quantity, selectedVariant || undefined, selectedOption || undefined, selectedGuarantee || undefined);
+    router.push(ROUTES.CHECKOUT);
   };
 
   const handleAddToCart = () => {
@@ -381,26 +379,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           {/* RIGHT COLUMN: Checkout Box */}
           <div className="lg:col-span-1">
             <div className="sticky top-32">
-              {submitted ? (
-                <div className="bg-card border border-success/20 shadow-2xl rounded-3xl p-8 text-center relative overflow-hidden">
-                  <div className="absolute inset-0 bg-success/5"></div>
-                  <div className="w-20 h-20 bg-success/10 border border-success/20 rounded-full flex items-center justify-center mx-auto mb-6 relative z-10 shadow-sm">
-                    <Check size={32} className="text-success" />
-                  </div>
-                  <h3 className="text-xl font-black font-heading uppercase tracking-widest text-text-primary mb-3 relative z-10">Checkout Started</h3>
-                  <p className="text-sm text-text-secondary font-medium mb-6 relative z-10">
-                    Complete your secure payment at checkout. Your access details will be sent to{' '}
-                    <strong className="text-text-primary bg-secondary-background border border-border px-2 py-0.5 rounded ml-1 font-mono">{email}</strong>
-                    {' '}automatically after payment confirmation.
-                  </p>
-                  <button
-                    onClick={() => setSubmitted(false)}
-                    className="text-xs font-black font-heading tracking-widest uppercase text-primary hover:text-primary-hover transition-colors relative z-10 border-b border-primary/35 hover:border-primary pb-0.5"
-                  >
-                    Edit Order
-                  </button>
-                </div>
-              ) : (
+              {(
                 <div className="bg-card border border-border shadow-2xl rounded-3xl overflow-hidden">
                   {/* Header */}
                   <div className="bg-secondary-background border-b border-border px-8 py-6 relative overflow-hidden">

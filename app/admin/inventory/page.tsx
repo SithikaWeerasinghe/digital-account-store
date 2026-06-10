@@ -16,6 +16,7 @@ type FormData = {
   guarantee_label: string;
   title: string;
   delivery_content: string;
+  usage_instructions: string;
 };
 
 const EMPTY_FORM: FormData = {
@@ -26,6 +27,7 @@ const EMPTY_FORM: FormData = {
   guarantee_label: '',
   title: '',
   delivery_content: '',
+  usage_instructions: '',
 };
 
 function AdminInventoryContent() {
@@ -154,6 +156,7 @@ function AdminInventoryContent() {
         product_option_label: formData.product_option_label || null,
         guarantee_id: formData.guarantee_id || null,
         guarantee_label: formData.guarantee_label || null,
+        usage_instructions: formData.usage_instructions || null,
       };
 
       const response = await fetch(endpoint, {
@@ -188,6 +191,7 @@ function AdminInventoryContent() {
       guarantee_label: item.guarantee_label || '',
       title: item.title || '',
       delivery_content: item.delivery_content,
+      usage_instructions: item.usage_instructions || '',
     });
     setEditingId(item.id);
     setShowForm(true);
@@ -392,6 +396,20 @@ function AdminInventoryContent() {
                 rows={6}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 font-mono text-sm"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Usage Instructions (optional)</label>
+              <textarea
+                value={formData.usage_instructions}
+                onChange={(e) => setFormData({ ...formData, usage_instructions: e.target.value })}
+                placeholder="How to use this product — included in the delivery email.&#10;e.g. 1) Go to the site  2) Log in with the details above  3) Enjoy."
+                rows={4}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                Overrides the product-level instructions for this specific item. Leave blank to use the product default.
+              </p>
             </div>
 
             <div className="flex gap-3">

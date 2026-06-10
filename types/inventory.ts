@@ -14,6 +14,8 @@ export interface InventoryItem {
   product_option_label?: string | null;
   guarantee_id?: string | null;
   guarantee_label?: string | null;
+  /** Per-item "how to use" text included in the delivery email. */
+  usage_instructions?: string | null;
 }
 
 export type CreateInventoryItemInput = {
@@ -24,6 +26,7 @@ export type CreateInventoryItemInput = {
   product_option_label?: string;
   guarantee_id?: string;
   guarantee_label?: string;
+  usage_instructions?: string | null;
 };
 
 export type UpdateInventoryItemInput = {
@@ -34,4 +37,5 @@ export type UpdateInventoryItemInput = {
   product_option_label?: string;
   guarantee_id?: string;
   guarantee_label?: string;
+  usage_instructions?: string | null;
 };

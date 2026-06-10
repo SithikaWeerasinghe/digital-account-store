@@ -28,6 +28,7 @@ export async function PATCH(
       product_option_label: body.product_option_label,
       guarantee_id: body.guarantee_id,
       guarantee_label: body.guarantee_label,
+      usage_instructions: body.usage_instructions,
     };
 
     const item = await inventoryService.updateInventoryItem(id, input);
