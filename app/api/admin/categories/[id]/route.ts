@@ -32,3 +32,24 @@ export async function PATCH(
     );
   }
 }
+
+/** DELETE /api/admin/categories/[id] — delete a category if no products use it. */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+  try {
+    const { id } = await params;
+    const result = await categoryService.deleteCategory(id);
+    return NextResponse.json({ success: true, data: result });
+  } catch (error: any) {
+    // Category in use → 409 Conflict with a friendly message.
+    const inUse = error instanceof categoryService.CategoryInUseError || error?.code === 'in_use';
+    return NextResponse.json(
+      { success: false, code: inUse ? 'in_use' : 'error', message: error.message || 'Failed to delete category' },
+      { status: inUse ? 409 : 400 }
+    );
+  }
+}

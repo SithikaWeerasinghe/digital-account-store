@@ -272,6 +272,8 @@ type CategoryCard = {
   name: string;
   description: string;
   icon: (props: { className?: string; isSquare?: boolean }) => ReactNode;
+  /** Admin-selected emoji/text icon; when set it is shown instead of the SVG. */
+  emoji?: string | null;
   query: string;
   color: string;
   bgColor: string;
@@ -348,6 +350,7 @@ export default function CategorySection() {
             name: c.name,
             description: c.description || 'Browse products in this category',
             icon: ICON_BY_NAME[c.name] || DEFAULT_ICON,
+            emoji: c.icon || null,
             query: c.name,
             color: 'text-primary',
             bgColor: 'bg-primary/5',
@@ -436,7 +439,13 @@ export default function CategorySection() {
                 <div className={`flex items-center justify-center flex-shrink-0 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${cat.bgColor} border border-border ${cat.borderColor} ${
                   isRectangular ? 'w-20 h-20 mr-6 ml-0 rounded-[22px]' : 'w-24 h-24 sm:w-28 sm:h-28 rounded-[30px] sm:rounded-[36px] mx-auto'
                 }`}>
-                  <Icon className={cat.iconAnimClass} isSquare={isSquare} />
+                  {cat.emoji ? (
+                    <span className="text-4xl sm:text-5xl leading-none select-none group-hover:scale-105 transition-transform duration-300">
+                      {cat.emoji}
+                    </span>
+                  ) : (
+                    <Icon className={cat.iconAnimClass} isSquare={isSquare} />
+                  )}
                 </div>
                 
                 {/* Content Area */}

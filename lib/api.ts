@@ -280,6 +280,13 @@ export async function updateCategory(id: string, payload: CategoryInput): Promis
   });
 }
 
+/** Admin: delete a category. Throws with a friendly message if products use it. */
+export async function deleteCategory(id: string): Promise<{ id: string }> {
+  return fetchAdminApi<{ id: string }>(`/api/admin/categories/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // ── Admin payment test tools (dev only) ──
 
 /** Whether the admin payment test tools are enabled (server flag). Never throws. */

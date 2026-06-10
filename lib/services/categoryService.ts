@@ -7,11 +7,11 @@ import { Category, CreateCategoryInput, UpdateCategoryInput } from '@/types/cate
  * not configured. Mirrors the migration seed so the storefront keeps working.
  */
 export const DEFAULT_CATEGORIES: Category[] = [
-  { id: 'default-streaming', name: 'Streaming', slug: 'streaming', icon: null, description: 'Entertainment subscriptions & media access', sort_order: 1, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
-  { id: 'default-ai', name: 'AI Tools', slug: 'ai-tools', icon: null, description: 'AI assistants, writing & design tools', sort_order: 2, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
-  { id: 'default-gaming', name: 'Gaming', slug: 'gaming', icon: null, description: 'In-game items, bundles & game passes', sort_order: 3, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
-  { id: 'default-software', name: 'Software', slug: 'software', icon: null, description: 'License keys for essential software', sort_order: 4, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
-  { id: 'default-productivity', name: 'Productivity', slug: 'productivity', icon: null, description: 'Cloud storage, learning & work tools', sort_order: 5, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
+  { id: 'default-streaming', name: 'Streaming', slug: 'streaming', icon: '🎬', description: 'Entertainment subscriptions & media access', sort_order: 1, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
+  { id: 'default-ai', name: 'AI Tools', slug: 'ai-tools', icon: '🤖', description: 'AI assistants, writing & design tools', sort_order: 2, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
+  { id: 'default-gaming', name: 'Gaming', slug: 'gaming', icon: '🎮', description: 'In-game items, bundles & game passes', sort_order: 3, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
+  { id: 'default-software', name: 'Software', slug: 'software', icon: '💻', description: 'License keys for essential software', sort_order: 4, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
+  { id: 'default-productivity', name: 'Productivity', slug: 'productivity', icon: '📄', description: 'Cloud storage, learning & work tools', sort_order: 5, is_active: true, created_at: new Date(0).toISOString(), updated_at: new Date(0).toISOString() },
 ];
 
 /** Admin: all categories ordered by sort_order. Falls back to defaults. */
@@ -80,4 +80,47 @@ export async function updateCategory(id: string, input: UpdateCategoryInput): Pr
     throw new Error(error?.message || 'Failed to update category');
   }
   return data as Category;
+}
+
+/** Error thrown when a category cannot be deleted because products use it. */
+export class CategoryInUseError extends Error {
+  code = 'in_use' as const;
+  constructor(message: string) {
+    super(message);
+    this.name = 'CategoryInUseError';
+  }
+}
+
+/**
+ * Deletes a category, but only if no products reference it (products store the
+ * category NAME in products.category). If products use it, throws
+ * CategoryInUseError so the caller can return a friendly 409 — archive instead.
+ */
+export async function deleteCategory(id: string): Promise<{ id: string }> {
+  if (!supabaseAdmin) throw new Error('Supabase admin client not configured');
+
+  const { data: cat, error: fetchErr } = await supabaseAdmin
+    .from('categories')
+    .select('id, name')
+    .eq('id', id)
+    .single();
+  if (fetchErr || !cat) throw new Error('Category not found');
+
+  // Products reference categories by name (products.category is TEXT).
+  const { count, error: countErr } = await supabaseAdmin
+    .from('products')
+    .select('id', { count: 'exact', head: true })
+    .eq('category', cat.name);
+  if (countErr) {
+    throw new Error(countErr.message || 'Failed to check category usage');
+  }
+  if ((count ?? 0) > 0) {
+    throw new CategoryInUseError(
+      'This category is used by products. Archive it instead, or move products to another category before deleting.'
+    );
+  }
+
+  const { error } = await supabaseAdmin.from('categories').delete().eq('id', id);
+  if (error) throw new Error(error.message || 'Failed to delete category');
+  return { id };
 }
