@@ -191,6 +191,60 @@ export async function startNowPaymentsCheckout(payload: {
   }
 }
 
+// ── Categories ──
+
+export type CategoryDTO = {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string | null;
+  description: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Public: active categories for the storefront. Never throws (returns []). */
+export async function fetchCategories(): Promise<CategoryDTO[]> {
+  try {
+    const response = await fetch('/api/categories', { cache: 'no-store' });
+    const data = await response.json();
+    if (data?.success && Array.isArray(data.data)) return data.data as CategoryDTO[];
+  } catch {
+    /* ignore */
+  }
+  return [];
+}
+
+/** Admin: all categories (incl. inactive). */
+export async function fetchAdminCategories(): Promise<CategoryDTO[]> {
+  return fetchAdminApi<CategoryDTO[]>('/api/admin/categories');
+}
+
+export type CategoryInput = {
+  name?: string;
+  slug?: string;
+  icon?: string | null;
+  description?: string | null;
+  sort_order?: number;
+  is_active?: boolean;
+};
+
+export async function createCategory(payload: CategoryInput): Promise<CategoryDTO> {
+  return fetchAdminApi<CategoryDTO>('/api/admin/categories', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateCategory(id: string, payload: CategoryInput): Promise<CategoryDTO> {
+  return fetchAdminApi<CategoryDTO>(`/api/admin/categories/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
 // ── Admin payment test tools (dev only) ──
 
 /** Whether the admin payment test tools are enabled (server flag). Never throws. */
@@ -342,6 +396,7 @@ export type ProductFormInput = {
   isInstantDelivery?: boolean;
   variants?: { id: string; label: string; price: number; originalPrice?: number }[] | null;
   usageInstructions?: string | null;
+  guaranteeOptions?: { id: string; label: string; months: number; total_price: number; monthly_price: number; badge?: string }[] | null;
 };
 
 export async function createProduct(payload: ProductFormInput): Promise<Product> {

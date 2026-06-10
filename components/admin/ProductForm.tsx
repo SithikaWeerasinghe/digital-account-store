@@ -2,16 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { Product } from '@/types/product';
-import { ProductFormInput } from '@/lib/api';
+import { ProductFormInput, fetchCategories } from '@/lib/api';
 import { X, Plus, Trash2, Loader2 } from 'lucide-react';
 
-const CATEGORIES = ['Streaming', 'Gaming', 'AI Tools', 'Software', 'Productivity'];
+// Fallback used until categories load from the database.
+const FALLBACK_CATEGORIES = ['Streaming', 'Gaming', 'AI Tools', 'Software', 'Productivity'];
 
 interface VariantRow {
   id: string;
   label: string;
   price: string;
   originalPrice: string;
+}
+
+interface GuaranteeRow {
+  id: string;
+  label: string;
+  months: string;
+  total_price: string;
 }
 
 interface ProductFormProps {
@@ -24,7 +32,21 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
   const isEdit = !!product;
 
   const [name, setName] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>(FALLBACK_CATEGORIES);
+  const [category, setCategory] = useState(FALLBACK_CATEGORIES[0]);
+
+  // Load active categories from the database (falls back to the constant list).
+  useEffect(() => {
+    (async () => {
+      const cats = await fetchCategories();
+      if (cats.length > 0) {
+        const names = cats.map((c) => c.name);
+        setCategoryOptions(names);
+        // Keep current selection if valid, else default to the first.
+        setCategory((prev) => (names.includes(prev) ? prev : names[0]));
+      }
+    })();
+  }, []);
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
@@ -34,6 +56,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
   const [inStock, setInStock] = useState(true);
   const [isInstantDelivery, setIsInstantDelivery] = useState(true);
   const [variants, setVariants] = useState<VariantRow[]>([]);
+  const [guarantees, setGuarantees] = useState<GuaranteeRow[]>([]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -59,6 +82,14 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
           originalPrice: v.originalPrice ? String(v.originalPrice) : '',
         })) || []
       );
+      setGuarantees(
+        product.guarantee_options?.map((g) => ({
+          id: g.id,
+          label: g.label,
+          months: String(g.months),
+          total_price: String(g.total_price),
+        })) || []
+      );
     }
   }, [product]);
 
@@ -79,6 +110,16 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
   const removeVariant = (index: number) =>
     setVariants((prev) => prev.filter((_, i) => i !== index));
 
+  const addGuarantee = () =>
+    setGuarantees((prev) => [
+      ...prev,
+      { id: `g-${Math.random().toString(36).substring(2, 8)}`, label: '', months: '', total_price: '' },
+    ]);
+  const updateGuarantee = (index: number, field: keyof GuaranteeRow, value: string) =>
+    setGuarantees((prev) => prev.map((g, i) => (i === index ? { ...g, [field]: value } : g)));
+  const removeGuarantee = (index: number) =>
+    setGuarantees((prev) => prev.filter((_, i) => i !== index));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -98,6 +139,23 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
         originalPrice: v.originalPrice ? Number(v.originalPrice) : undefined,
       }));
 
+    // Warranty/guarantee options: keep rows with a label + price; derive the
+    // monthly price from total ÷ months for display.
+    const cleanGuarantees = guarantees
+      .filter((g) => g.label.trim() && g.total_price)
+      .map((g, i) => {
+        const months = Math.max(1, Number(g.months) || 1);
+        const total = Number(g.total_price);
+        return {
+          id: g.id,
+          label: g.label.trim(),
+          months,
+          total_price: total,
+          monthly_price: Number((total / months).toFixed(2)),
+          is_default: i === 0 ? true : undefined,
+        };
+      });
+
     const input: ProductFormInput = {
       name: name.trim(),
       category,
@@ -110,6 +168,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
       inStock,
       isInstantDelivery,
       variants: cleanVariants.length > 0 ? cleanVariants : null,
+      guaranteeOptions: cleanGuarantees.length > 0 ? cleanGuarantees : null,
     };
 
     try {
@@ -178,7 +237,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900 bg-white"
                 >
-                  {CATEGORIES.map((c) => (
+                  {(categoryOptions.includes(category) ? categoryOptions : [category, ...categoryOptions]).map((c) => (
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
@@ -366,6 +425,67 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                       </button>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Warranty / Guarantee Options */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-black tracking-widest uppercase text-slate-600">
+                  Warranty / Guarantee Options (optional)
+                </label>
+                <button
+                  type="button"
+                  onClick={addGuarantee}
+                  className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-hover"
+                >
+                  <Plus size={14} /> Add Warranty
+                </button>
+              </div>
+              {guarantees.length === 0 ? (
+                <p className="text-xs text-slate-400 italic">
+                  No warranty options. Add options like &quot;1 Month&quot;, &quot;3 Months&quot;, or &quot;Lifetime&quot; with a price.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {guarantees.map((g, index) => (
+                    <div key={g.id} className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        value={g.label}
+                        onChange={(e) => updateGuarantee(index, 'label', e.target.value)}
+                        placeholder="Label (e.g. 3 Months)"
+                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
+                      />
+                      <input
+                        type="number"
+                        min="1"
+                        value={g.months}
+                        onChange={(e) => updateGuarantee(index, 'months', e.target.value)}
+                        placeholder="Months"
+                        className="w-20 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
+                      />
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={g.total_price}
+                        onChange={(e) => updateGuarantee(index, 'total_price', e.target.value)}
+                        placeholder="Total €"
+                        className="w-24 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeGuarantee(index)}
+                        className="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-300 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  <p className="text-[11px] text-slate-400">
+                    Shown on the product page under &quot;Warranty / Guarantee&quot;. Monthly price is calculated from total ÷ months.
+                  </p>
                 </div>
               )}
             </div>

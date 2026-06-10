@@ -501,7 +501,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     {/* Warranty Cards Section (rendered below Product / Plan) */}
                     {product.options?.length || product.guarantee_options?.length ? (
                       <div>
-                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Warranty</label>
+                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Warranty / Guarantee</label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {guaranteeOptions.map((guarantee) => (
                             <button

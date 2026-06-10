@@ -144,6 +144,7 @@ export interface ProductInput {
   isInstantDelivery?: boolean;
   variants?: ProductVariant[] | null;
   usageInstructions?: string | null;
+  guaranteeOptions?: GuaranteeOption[] | null;
 }
 
 /**
@@ -168,6 +169,21 @@ function mapInputToRow(input: ProductInput): Record<string, any> {
 
   if (input.usageInstructions !== undefined) {
     row.usage_instructions = input.usageInstructions || null;
+  }
+
+  if (input.guaranteeOptions !== undefined) {
+    row.guarantee_options =
+      input.guaranteeOptions && input.guaranteeOptions.length > 0
+        ? input.guaranteeOptions.map((g) => ({
+            id: g.id,
+            label: g.label,
+            months: Number(g.months),
+            total_price: Number(g.total_price),
+            monthly_price: Number(g.monthly_price),
+            is_default: g.is_default ?? undefined,
+            badge: g.badge ?? undefined,
+          }))
+        : null;
   }
 
   if (input.variants !== undefined) {

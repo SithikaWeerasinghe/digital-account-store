@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { fetchCategories } from '@/lib/api';
 
 function StreamingIcon({ className }: { className?: string; isSquare?: boolean }) {
   return (
@@ -255,7 +256,30 @@ function GiftCardsIcon({ className, isSquare }: { className?: string; isSquare?:
   );
 }
 
-const categories = [
+// Custom animated icon per known category name; unknown/new categories use a
+// sensible default so the section stays DB-driven without losing the design.
+const ICON_BY_NAME: Record<string, (props: { className?: string; isSquare?: boolean }) => ReactNode> = {
+  Streaming: StreamingIcon,
+  'AI Tools': AIToolsIcon,
+  Gaming: GamingIcon,
+  Software: SoftwareIcon,
+  Productivity: ProductivityIcon,
+  'Gift Cards': GiftCardsIcon,
+};
+const DEFAULT_ICON = GiftCardsIcon;
+
+type CategoryCard = {
+  name: string;
+  description: string;
+  icon: (props: { className?: string; isSquare?: boolean }) => ReactNode;
+  query: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  iconAnimClass: string;
+};
+
+const FALLBACK_CATEGORIES: CategoryCard[] = [
   {
     name: 'Streaming',
     description: 'Entertainment subscriptions & media access',
@@ -311,7 +335,29 @@ const categories = [
 export default function CategorySection() {
   const [isVisible, setIsVisible] = useState(false);
   const [isRectangular, setIsRectangular] = useState(false);
+  const [categories, setCategories] = useState<CategoryCard[]>(FALLBACK_CATEGORIES);
   const sectionRef = useRef<HTMLDivElement>(null);
+
+  // Load active categories from the database; keep custom icons via the name map.
+  useEffect(() => {
+    (async () => {
+      const cats = await fetchCategories();
+      if (cats.length > 0) {
+        setCategories(
+          cats.map((c) => ({
+            name: c.name,
+            description: c.description || 'Browse products in this category',
+            icon: ICON_BY_NAME[c.name] || DEFAULT_ICON,
+            query: c.name,
+            color: 'text-primary',
+            bgColor: 'bg-primary/5',
+            borderColor: 'group-hover:border-primary/40 group-hover:shadow-[0_0_12px_rgba(0,158,227,0.2)]',
+            iconAnimClass: c.name === 'Streaming' ? 'animate-tv' : '',
+          }))
+        );
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

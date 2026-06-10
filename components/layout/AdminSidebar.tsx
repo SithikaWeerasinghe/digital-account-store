@@ -5,7 +5,7 @@ import { fetchAdminTickets, fetchAdminReviews } from '@/lib/api';
 import { Review } from '@/types/review';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingCart, Archive, Ticket, Star, LogOut, X, Globe, Tag, Megaphone, CreditCard } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Archive, Ticket, Star, LogOut, X, Globe, Tag, Megaphone, CreditCard, FolderTree } from 'lucide-react';
 import { ROUTES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import ApexFledLogo from '@/components/ui/ApexFledLogo';
@@ -91,6 +91,7 @@ export default function AdminSidebar({
   const navItems = [
     { href: ROUTES.ADMIN.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
     { href: ROUTES.ADMIN.PRODUCTS, label: 'Products', icon: Package },
+    { href: ROUTES.ADMIN.CATEGORIES, label: 'Categories', icon: FolderTree },
     { href: ROUTES.ADMIN.ORDERS, label: 'Orders', icon: ShoppingCart },
     { href: ROUTES.ADMIN.INVENTORY, label: 'Inventory', icon: Archive },
     { href: ROUTES.ADMIN.PAYMENT_METHODS, label: 'Payment Methods', icon: CreditCard },
