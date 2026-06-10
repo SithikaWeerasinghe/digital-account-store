@@ -153,6 +153,41 @@ export async function startMercadoPagoCheckout(payload: {
   }
 }
 
+// ── OVGC (card) — provider switch ──
+
+export type OvgcCheckoutResult = {
+  success: boolean;
+  code?: string; // provider_disabled | method_unavailable | not_configured | not_implemented | error
+  message?: string;
+  data?: { checkout_url: string; checkout_reference: string };
+};
+
+/**
+ * Attempts an OVGC card checkout. Returns the raw response so the checkout page
+ * can decide: redirect on success, fall back to Mercado Pago when OVGC is not
+ * the active provider (provider_disabled), or show a safe "unavailable" message.
+ */
+export async function startOvgcCheckout(payload: {
+  order_id: string;
+  order_ids?: string[];
+}): Promise<OvgcCheckoutResult> {
+  try {
+    const response = await fetch('/api/checkout/ovgc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify(payload),
+    });
+    return (await response.json()) as OvgcCheckoutResult;
+  } catch (error) {
+    return {
+      success: false,
+      code: 'error',
+      message: error instanceof Error ? error.message : 'Failed to start card checkout',
+    };
+  }
+}
+
 // ── NOWPayments (automatic crypto) ──
 
 export type NowPaymentsCheckoutResult = {

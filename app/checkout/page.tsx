@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { CreditCard, Bitcoin, Banknote, ShieldCheck, AlertCircle, Tag, X, Loader2, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
-import { createOrder, startMercadoPagoCheckout, startNowPaymentsCheckout, validateCoupon, ApplyDiscountResult, fetchInventoryCount, fetchPaymentMethods, PublicPaymentMethod } from '@/lib/api';
+import { createOrder, startMercadoPagoCheckout, startNowPaymentsCheckout, startOvgcCheckout, validateCoupon, ApplyDiscountResult, fetchInventoryCount, fetchPaymentMethods, PublicPaymentMethod } from '@/lib/api';
 import { useCart } from '@/lib/contexts/CartContext';
 import { useRouter } from 'next/navigation';
 import PromoBannerList from '@/components/promos/PromoBannerList';
@@ -231,11 +231,29 @@ export default function CheckoutPage() {
         createdOrders.push(created);
       }
 
-      // 2. Online card payment → Mercado Pago Checkout Pro (redirect).
-      //    Payment is confirmed ONLY by the webhook, never on this redirect.
+      // 2. Online card payment. The provider is chosen server-side via
+      //    CARD_PAYMENT_PROVIDER. We try OVGC first: if it isn't the active
+      //    provider it replies provider_disabled and we fall back to Mercado
+      //    Pago; if OVGC IS active but unavailable, we show a safe message.
       if (paymentMethod === 'card') {
         const ids = createdOrders.map((o) => o?.id).filter(Boolean) as string[];
+
         if (ids.length > 0) {
+          const ovgc = await startOvgcCheckout({ order_id: ids[0], order_ids: ids });
+          if (ovgc.success && ovgc.data?.checkout_url) {
+            clearCart();
+            window.location.href = ovgc.data.checkout_url; // leave for OVGC hosted page
+            return;
+          }
+          // OVGC is the active provider but not usable yet (not_configured /
+          // not_implemented / maintenance / error) → safe message, don't fall back.
+          if (ovgc.code && ovgc.code !== 'provider_disabled') {
+            throw new Error(
+              ovgc.message ||
+                'Card payment is temporarily unavailable. Please choose crypto or manual payment.'
+            );
+          }
+          // ovgc.code === 'provider_disabled' → use Mercado Pago (existing flow).
           const result = await startMercadoPagoCheckout({ order_id: ids[0], order_ids: ids });
           const redirectUrl = result?.data?.init_point || result?.data?.sandbox_init_point;
 

@@ -319,6 +319,25 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
             </div>
           )}
 
+          {/* OVGC (card) gateway details */}
+          {order.payment_provider === 'ovgc' && (
+            <div className="bg-slate-50 rounded-xl px-4">
+              <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 pt-3 -mb-1">
+                Card · OVGC
+              </p>
+              <InfoRow icon={CreditCard} label="Payment Provider" value="OVGC" />
+              {order.provider_payment_id && (
+                <InfoRow icon={Hash} label="Provider Payment ID" value={order.provider_payment_id} />
+              )}
+              {order.checkout_reference && (
+                <InfoRow icon={Hash} label="Checkout Reference" value={order.checkout_reference} />
+              )}
+              {order.paid_at && (
+                <InfoRow icon={Calendar} label="Paid At" value={formatDate(order.paid_at)} />
+              )}
+            </div>
+          )}
+
           {/* Crypto manual-payment notice (manual crypto orders only, not NOWPayments) */}
           {(order.payment_method || order.paymentMethod) === 'crypto' &&
             order.payment_provider !== 'nowpayments' &&
