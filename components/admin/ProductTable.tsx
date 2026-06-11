@@ -1,6 +1,7 @@
 import { Product } from '@/types/product';
 import { formatCurrency } from '@/lib/utils';
 import { Edit, Trash2, Star } from 'lucide-react';
+import ProductImage from '@/components/ui/ProductImage';
 
 interface ProductTableProps {
   products: Product[];
@@ -28,7 +29,7 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
               <tr key={product.id} className={`hover:bg-slate-50/50 transition-colors ${product.is_active === false ? 'opacity-60' : ''}`}>
                 <td className="px-6 py-4 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white border border-slate-150 overflow-hidden flex-shrink-0 flex items-center justify-center p-0.5">
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-contain" />
+                    <ProductImage src={product.imageUrl} productName={product.name} category={product.category} compact />
                   </div>
                   <div>
                     <div className="font-bold text-slate-800 text-xs sm:text-sm line-clamp-1 flex items-center gap-2">

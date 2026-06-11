@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { ROUTES } from '@/lib/constants';
-import { Star, Zap, Package, ArrowRight, ShoppingCart } from 'lucide-react';
+import { Star, ArrowRight, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/lib/contexts/CartContext';
 import { useState } from 'react';
+import ProductImage from '@/components/ui/ProductImage';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
@@ -41,26 +42,7 @@ export default function ProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="relative overflow-hidden bg-white border-b border-slate-100" style={{ aspectRatio: '1.35/1' }}>
-        {product.imageUrl ? (
-          <div className="w-full h-full relative overflow-hidden flex items-center justify-center p-3">
-            <img
-              src={product.imageUrl}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover blur-xl opacity-35 scale-110 pointer-events-none"
-            />
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className="relative w-full h-full object-contain z-10 transition-transform duration-500 ease-out group-hover:scale-105"
-            />
-          </div>
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-900 via-slate-850 to-slate-800 relative">
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,158,227,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,158,227,0.03)_1px,transparent_1px)] bg-[size:12px_12px] pointer-events-none" />
-            <Package size={32} className="text-primary/40 animate-pulse" />
-            <span className="text-[10px] text-slate-400 font-mono tracking-widest uppercase">APEX_LICENSE</span>
-          </div>
-        )}
+        <ProductImage src={product.imageUrl} productName={product.name} category={product.category} />
 
         {/* Subtle gradient overlay at the bottom for blending */}
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/15 to-transparent pointer-events-none" />

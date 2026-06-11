@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/lib/constants';
 import { useCart } from '@/lib/contexts/CartContext';
 import { getDefaultGuaranteeOptions } from '@/lib/productUtils';
+import ProductImage from '@/components/ui/ProductImage';
 import {
   Star, ShieldCheck, Zap, Shield, Package,
   ChevronRight, Mail, CreditCard, Bitcoin, Banknote, Check, AlertCircle, ShoppingCart
@@ -259,24 +260,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent pointer-events-none"></div>
               
               <div className="aspect-[16/10] w-full relative overflow-hidden rounded-2xl flex items-center justify-center bg-slate-50/50 border border-slate-100/70">
-                {product.imageUrl ? (
-                  <>
-                    <img 
-                      src={product.imageUrl} 
-                      alt="" 
-                      className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-20 scale-110 pointer-events-none" 
-                    />
-                    <img 
-                      src={product.imageUrl} 
-                      alt={product.name} 
-                      className="relative max-h-[85%] max-w-[85%] object-contain z-10 transition-transform duration-500 ease-out group-hover:scale-105" 
-                    />
-                  </>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-855 to-slate-800">
-                    <Package size={64} className="text-primary/45 animate-pulse" />
-                  </div>
-                )}
+                <ProductImage
+                  src={product.imageUrl}
+                  productName={product.name}
+                  category={product.category}
+                  imgClassName="relative max-h-[85%] max-w-[85%] object-contain z-10 transition-transform duration-500 ease-out group-hover:scale-105"
+                />
               </div>
             </div>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Product } from '@/types/product';
 import { ProductFormInput, fetchCategories } from '@/lib/api';
-import { X, Plus, Trash2, Loader2 } from 'lucide-react';
+import { X, Plus, Trash2, Loader2, ImageOff } from 'lucide-react';
 
 // Fallback used until categories load from the database.
 const FALLBACK_CATEGORIES = ['Streaming', 'Gaming', 'AI Tools', 'Software', 'Productivity'];
@@ -34,6 +34,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
   const [name, setName] = useState('');
   const [categoryOptions, setCategoryOptions] = useState<string[]>(FALLBACK_CATEGORIES);
   const [category, setCategory] = useState(FALLBACK_CATEGORIES[0]);
+  const [imagePreviewError, setImagePreviewError] = useState(false);
 
   // Load active categories from the database (falls back to the constant list).
   useEffect(() => {
@@ -127,6 +128,14 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
     if (!name.trim()) return setError('Product name is required.');
     if (!price || isNaN(Number(price)) || Number(price) < 0)
       return setError('A valid price is required.');
+
+    // Validate the image URL: allow empty (a clean fallback is shown), an
+    // absolute https URL, or a local path starting with "/". Reject anything
+    // else so obviously-broken URLs aren't saved silently.
+    const trimmedImage = imageUrl.trim();
+    if (trimmedImage && !/^https:\/\//i.test(trimmedImage) && !trimmedImage.startsWith('/')) {
+      return setError('Image URL must start with https:// (or leave it blank to use a fallback image).');
+    }
 
     const cleanFeatures = features.map((f) => f.trim()).filter(Boolean);
 
@@ -249,10 +258,40 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                 <input
                   type="text"
                   value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
+                  onChange={(e) => { setImageUrl(e.target.value); setImagePreviewError(false); }}
                   placeholder="https://... or /images/logos/x.svg"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-slate-900"
                 />
+                <p className="text-[11px] text-slate-400 mt-1.5 leading-snug">
+                  Recommended: 1200×900px, JPG/PNG/WebP, under 3MB. Leave blank to use a fallback image.
+                </p>
+              </div>
+            </div>
+
+            {/* Live image preview */}
+            <div>
+              <label className="block text-xs font-black tracking-widest uppercase text-slate-600 mb-2">
+                Image Preview
+              </label>
+              <div className="w-40 aspect-[4/3] rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center">
+                {imageUrl.trim() && !imagePreviewError ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={imageUrl.trim()}
+                    alt="Preview"
+                    onError={() => setImagePreviewError(true)}
+                    className="w-full h-full object-contain p-2"
+                  />
+                ) : (
+                  <div className="text-center px-3">
+                    <ImageOff size={22} className="mx-auto text-slate-300 mb-1" />
+                    <p className="text-[11px] text-slate-400">
+                      {imageUrl.trim()
+                        ? 'Image preview failed. Check the URL or use another image.'
+                        : 'No image — a branded fallback will be shown.'}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

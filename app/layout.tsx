@@ -7,7 +7,7 @@ import { CartProvider } from '@/lib/contexts/CartContext';
 import SmoothScrollProvider from '@/components/providers/SmoothScrollProvider';
 import SplashScreen from '@/components/ui/SplashScreen';
 import SplashScreenController from '@/components/ui/SplashScreenController';
-import { APP_NAME, APP_DESCRIPTION } from '@/lib/constants';
+import { APP_NAME } from '@/lib/constants';
 
 // Runs before paint: show the splash on the first public-page load of a session
 // (skips /admin and repeat visits) by setting data-apex-splash on <html>.
@@ -23,9 +23,33 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.apexfled.com';
+const SITE_DESCRIPTION =
+  'Browse premium digital subscriptions, accounts, AI tools, gaming products, and software with fast delivery and simple checkout.';
+
 export const metadata: Metadata = {
-  title: APP_NAME,
-  description: APP_DESCRIPTION,
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: APP_NAME,
+    template: `%s — ${APP_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: APP_NAME,
+  // app/icon.svg and app/apple-icon.tsx are auto-detected by Next.js.
+  openGraph: {
+    type: 'website',
+    siteName: APP_NAME,
+    url: SITE_URL,
+    title: APP_NAME,
+    description: SITE_DESCRIPTION,
+    // og image comes from app/opengraph-image.tsx automatically.
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: APP_NAME,
+    description: SITE_DESCRIPTION,
+    // twitter image comes from app/twitter-image.tsx automatically.
+  },
 };
 
 export default function RootLayout({
