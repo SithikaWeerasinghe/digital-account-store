@@ -1,27 +1,29 @@
+import { timingSafeEqual } from 'crypto';
+
 /**
- * OVGC Payments (card) — SCAFFOLD ONLY.
+ * OVGC Payments (card) integration.
  *
- * This is an intentionally INCOMPLETE placeholder. It wires up configuration,
- * the provider switch, and safe fallbacks so the rest of the app can be built
- * around OVGC, but it never creates a real payment session and never marks an
- * order paid. The real API calls are left as clearly-marked TODOs to be filled
- * in once OVGC provides official API documentation + credentials.
+ * Uses OVGC's hosted checkout: we create a payment request server-side and
+ * redirect the customer to the returned hosted checkout URL. We NEVER collect
+ * raw card details, and an order is only marked paid by a verified webhook.
  *
- * Hard rules (do not violate when completing this):
- *  - Server-side only. Never expose OVGC_API_KEY / OVGC_WEBHOOK_SECRET to the browser.
- *  - Use OVGC's HOSTED checkout (redirect) only. NEVER collect raw card details.
- *  - Never mark an order paid without a verified OVGC webhook signature.
+ * Auth model (per OVGC docs):
+ *  - Create payment request: api_key is sent in the JSON BODY.
+ *  - Order status check: api_key is sent as the `x-api-key` HEADER.
+ *  - Webhook: the signing secret arrives in the payload as `webhook_secret`.
  *
- * See docs/ovgc-integration-requirements.md for exactly what is still needed.
+ * Server-side only — OVGC_API_KEY / OVGC_WEBHOOK_SECRET must never reach the browser.
  */
 
 const PROVIDER = (process.env.CARD_PAYMENT_PROVIDER || 'mercadopago').toLowerCase();
 const API_KEY = process.env.OVGC_API_KEY?.trim() || undefined;
 const WEBHOOK_SECRET = process.env.OVGC_WEBHOOK_SECRET?.trim() || undefined;
-const BASE_URL = process.env.OVGC_BASE_URL?.trim() || undefined;
+const BASE_URL = (process.env.OVGC_BASE_URL?.trim() || 'https://billing.ovgcpayments.com/backend/api').replace(/\/$/, '');
+const PAYMENT_ENDPOINT =
+  process.env.OVGC_PAYMENT_ENDPOINT?.trim() ||
+  'https://billing.ovgcpayments.com/backend/api/payment-request-api';
 const SUCCESS_URL = process.env.OVGC_SUCCESS_URL?.trim() || undefined;
 const CANCEL_URL = process.env.OVGC_CANCEL_URL?.trim() || undefined;
-const CURRENCY = (process.env.OVGC_CURRENCY || 'EUR').toUpperCase();
 
 /** Which provider the "card" method should use ('mercadopago' | 'ovgc'). */
 export function getCardPaymentProvider(): string {
@@ -33,93 +35,160 @@ export function isOvgcSelected(): boolean {
   return PROVIDER === 'ovgc';
 }
 
-/**
- * True when the minimum OVGC credentials are present. Note: even when this is
- * true the integration is still NOT implemented (createOvgcCheckout is a TODO),
- * so checkout will report "not_implemented" until the real API is wired in.
- */
+/** True when the minimum OVGC credentials are present. */
 export function isOvgcConfigured(): boolean {
-  return !!(API_KEY && BASE_URL);
+  return !!API_KEY;
 }
 
 export type OvgcCheckoutInput = {
-  reference: string; // shared checkout reference (our order_id)
-  amount: number; // price amount in OVGC_CURRENCY
+  reference: string; // our checkout reference → OVGC order_uuid
+  amount: number; // total in major units (e.g. 25.00 = €25.00)
   orderDescription?: string;
   customerEmail?: string;
+  firstName?: string;
+  lastName?: string;
   siteUrl?: string;
 };
 
 export type OvgcCheckoutResult =
   | { ok: true; checkoutUrl: string; providerPaymentId: string }
-  | { ok: false; code: 'not_configured' | 'not_implemented'; message: string };
+  | { ok: false; code: 'not_configured' | 'no_checkout_url' | 'api_error'; message: string };
+
+/** Pull the hosted checkout URL from whichever field OVGC returns it in. */
+function extractCheckoutUrl(data: any): string | undefined {
+  const v = data?.checkout_url || data?.payment_url || data?.redirect_url || data?.url ||
+    data?.data?.checkout_url || data?.data?.payment_url || data?.data?.redirect_url || data?.data?.url;
+  return typeof v === 'string' && v.length > 0 ? v : undefined;
+}
+
+/** Pull the transaction/payment id from whichever field OVGC returns it in. */
+function extractPaymentId(data: any): string {
+  const v =
+    data?.transaction_id || data?.payment_id || data?.id ||
+    data?.data?.transaction_id || data?.data?.payment_id || data?.data?.id;
+  return v != null ? String(v) : '';
+}
 
 /**
- * Create a hosted OVGC checkout session and return its redirect URL.
- *
- * SCAFFOLD: returns not_configured / not_implemented. It MUST NOT fake a
- * successful session. Fill in the TODOs once OVGC docs are available.
+ * Creates an OVGC hosted-checkout payment request and returns the redirect URL.
  */
-export async function createOvgcCheckout(
-  _input: OvgcCheckoutInput
-): Promise<OvgcCheckoutResult> {
+export async function createOvgcCheckout(input: OvgcCheckoutInput): Promise<OvgcCheckoutResult> {
   if (!isOvgcConfigured()) {
-    return {
-      ok: false,
-      code: 'not_configured',
-      message: 'OVGC is not configured (missing OVGC_API_KEY / OVGC_BASE_URL).',
-    };
+    return { ok: false, code: 'not_configured', message: 'OVGC is not configured (missing OVGC_API_KEY).' };
   }
 
-  // TODO(OVGC): Implement the real hosted-checkout call once docs are provided.
-  //   - Endpoint:        `${BASE_URL}` + <create-checkout path>  (TODO: exact path)
-  //   - Method:          POST (TODO: confirm)
-  //   - Auth header:     TODO: e.g. `Authorization: Bearer ${API_KEY}` OR `x-api-key: ${API_KEY}`
-  //   - Request body:    TODO: amount, currency (CURRENCY), reference (_input.reference),
-  //                      customer email, success_url (SUCCESS_URL), cancel_url (CANCEL_URL),
-  //                      webhook/callback url (OVGC_WEBHOOK_URL).
-  //   - Response:        TODO: extract hosted-page redirect URL + provider payment/session id.
-  //   Then: return { ok: true, checkoutUrl: <redirect>, providerPaymentId: <id> };
-  //
-  // Until then, do NOT create a broken session and do NOT fake success:
-  return {
-    ok: false,
-    code: 'not_implemented',
-    message: 'OVGC card payments are not implemented yet.',
+  const amount = Number(input.amount);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { ok: false, code: 'api_error', message: 'Invalid order amount' };
+  }
+
+  const site = (input.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
+  const baseSuccess = SUCCESS_URL || (site ? `${site}/checkout/success` : '');
+  // Carry the order reference back to the success page (informational only;
+  // payment is confirmed by the webhook, not by this redirect).
+  const successUrl = baseSuccess
+    ? `${baseSuccess}${baseSuccess.includes('?') ? '&' : '?'}order_id=${encodeURIComponent(input.reference)}`
+    : '';
+  const cancelUrl = CANCEL_URL || (site ? `${site}/checkout/cancel` : '');
+
+  const body: Record<string, any> = {
+    api_key: API_KEY,
+    order_uuid: input.reference,
+    total_amount: Number(amount.toFixed(2)),
+    email: input.customerEmail || '',
+    success_url: successUrl,
+    cancel_url: cancelUrl,
   };
+  if (input.orderDescription) body.product_title = input.orderDescription.slice(0, 240);
+  if (input.firstName) body.first_name = input.firstName;
+  if (input.lastName) body.last_name = input.lastName;
+
+  let res: Response;
+  try {
+    res = await fetch(PAYMENT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch (err: any) {
+    console.error('[ovgc] payment request network error:', err?.message || err);
+    return { ok: false, code: 'api_error', message: 'OVGC request failed' };
+  }
+
+  const data = await res.json().catch(() => ({} as any));
+  if (!res.ok) {
+    console.error('[ovgc] payment request failed:', res.status, data?.message || data?.error || '');
+    return { ok: false, code: 'api_error', message: data?.message || `OVGC API error: ${res.status}` };
+  }
+
+  const checkoutUrl = extractCheckoutUrl(data);
+  if (!checkoutUrl) {
+    console.error('[ovgc] payment request returned no checkout URL:', JSON.stringify(data).slice(0, 500));
+    return { ok: false, code: 'no_checkout_url', message: 'OVGC did not return a checkout URL' };
+  }
+
+  return { ok: true, checkoutUrl, providerPaymentId: extractPaymentId(data) };
 }
 
 /**
- * Verify an OVGC webhook/IPN signature.
- *
- * SCAFFOLD: always returns false (cannot verify without the official signature
- * scheme). This guarantees no order is ever marked paid from an unverified
- * payload. Implement once OVGC documents the header name + algorithm.
+ * Verifies a webhook by comparing the `webhook_secret` from the payload to
+ * OVGC_WEBHOOK_SECRET (constant-time). Returns false if either is missing.
  */
-export function verifyOvgcSignature(_rawBody: string, _signature: string | null): boolean {
+export function verifyOvgcWebhookSecret(payloadSecret: unknown): boolean {
   if (!WEBHOOK_SECRET) return false;
-
-  // TODO(OVGC): Implement signature verification per OVGC docs, e.g.:
-  //   - header name:  TODO (e.g. 'x-ovgc-signature')
-  //   - algorithm:    TODO (e.g. HMAC-SHA256 over the raw body, hex/base64)
-  //   - compare with timingSafeEqual against OVGC_WEBHOOK_SECRET.
-  // Returning false until implemented is intentional and safe.
-  return false;
+  if (typeof payloadSecret !== 'string' || payloadSecret.length === 0) return false;
+  try {
+    const a = Buffer.from(payloadSecret);
+    const b = Buffer.from(WEBHOOK_SECRET);
+    if (a.length !== b.length) return false;
+    return timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }
 
-export type OvgcMappedStatus = 'paid' | 'failed' | 'refunded' | 'pending';
+export type OvgcMappedStatus = 'paid' | 'failed' | 'pending';
 
 /**
- * Map an OVGC payment status to our order status.
- *
- * SCAFFOLD: returns 'pending' for everything so nothing is ever treated as paid
- * until the real status values are known. (TODO: map OVGC's paid/failed/expired.)
+ * Maps an OVGC status string to our order status.
+ *   Paid → paid · Declined/Expired → failed · Pending (or unknown) → pending
  */
-export function mapOvgcStatus(_status: string): OvgcMappedStatus {
-  // TODO(OVGC): map real values, e.g.
-  //   'completed' | 'paid' | 'success' -> 'paid'
-  //   'failed' | 'declined' | 'expired' | 'cancelled' -> 'failed'
-  //   'refunded' -> 'refunded'
-  //   else -> 'pending'
-  return 'pending';
+export function mapOvgcStatus(status: string): OvgcMappedStatus {
+  switch ((status || '').trim().toLowerCase()) {
+    case 'paid':
+    case 'completed':
+    case 'success':
+    case 'captured':
+      return 'paid';
+    case 'declined':
+    case 'failed':
+    case 'expired':
+    case 'cancelled':
+    case 'canceled':
+      return 'failed';
+    // 'pending' and anything else → not final
+    default:
+      return 'pending';
+  }
+}
+
+/**
+ * Optional: fetch the authoritative order status from OVGC (admin verification).
+ * Uses the x-api-key header per docs. Not used for delivery decisions.
+ */
+export async function getOvgcPaymentStatus(transactionId: string): Promise<{ ok: boolean; status?: string; raw?: any; message?: string }> {
+  if (!API_KEY) return { ok: false, message: 'OVGC not configured' };
+  if (!transactionId) return { ok: false, message: 'Missing transaction id' };
+  try {
+    const res = await fetch(`${BASE_URL}/order-status/${encodeURIComponent(transactionId)}`, {
+      method: 'GET',
+      headers: { 'x-api-key': API_KEY },
+    });
+    const raw = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, message: raw?.message || `OVGC status error: ${res.status}`, raw };
+    const status = raw?.payment_status || raw?.status || raw?.data?.payment_status || raw?.data?.status;
+    return { ok: true, status, raw };
+  } catch (err: any) {
+    return { ok: false, message: err?.message || 'OVGC status request failed' };
+  }
 }

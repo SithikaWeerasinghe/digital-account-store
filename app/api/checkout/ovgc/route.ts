@@ -127,7 +127,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { checkout_url: result.checkoutUrl, checkout_reference: reference },
+      data: {
+        checkout_url: result.checkoutUrl,
+        checkout_reference: reference,
+        provider_payment_id: result.providerPaymentId || null,
+        order_id: primary.id,
+      },
     });
   } catch (error: any) {
     // Never expose technical errors to the customer.
