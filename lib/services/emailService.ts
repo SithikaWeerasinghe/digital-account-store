@@ -8,8 +8,10 @@ import {
 } from '@/lib/email/templates';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'ApexFled <onboarding@resend.dev>';
-const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL;
+// Accept either naming so env vars work whether set as RESEND_FROM_EMAIL/FROM_EMAIL
+// or ADMIN_NOTIFICATION_EMAIL/ADMIN_EMAIL.
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || process.env.FROM_EMAIL || 'ApexFled <onboarding@resend.dev>';
+const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || process.env.ADMIN_EMAIL;
 
 export interface SendEmailParams {
   to: string;

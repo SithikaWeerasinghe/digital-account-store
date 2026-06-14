@@ -289,6 +289,11 @@ export async function deleteCategory(id: string): Promise<{ id: string }> {
 
 // ── Admin payment test tools (dev only) ──
 
+/** Admin: send a test notification email to the configured admin address. */
+export async function sendTestEmail(): Promise<{ recipient: string }> {
+  return fetchAdminApi<{ recipient: string }>('/api/admin/test-email', { method: 'POST' });
+}
+
 /** Whether the admin payment test tools are enabled (server flag). Never throws. */
 export async function fetchTestToolsEnabled(): Promise<boolean> {
   try {

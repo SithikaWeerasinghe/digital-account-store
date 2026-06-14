@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import AdminProtected from '@/components/admin/AdminProtected';
 import StatCard from '@/components/admin/StatCard';
-import { ShoppingCart, Ticket, RefreshCw, Layers, Radio, Activity, ArrowRight, ShieldCheck, Package, Star } from 'lucide-react';
+import { ShoppingCart, Ticket, RefreshCw, Layers, Radio, Activity, ArrowRight, ShieldCheck, Package, Star, Mail, Loader2, CheckCircle2 } from 'lucide-react';
 import OrderTable from '@/components/admin/OrderTable';
-import { fetchAdminOrders, fetchAdminTickets, fetchAdminProducts, fetchAdminReviews } from '@/lib/api';
+import { fetchAdminOrders, fetchAdminTickets, fetchAdminProducts, fetchAdminReviews, sendTestEmail } from '@/lib/api';
 import { Order } from '@/types/order';
 
 function formatCurrency(n: number) {
@@ -34,6 +34,26 @@ function AdminDashboardContent() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+
+  // Test email state
+  const [testEmailBusy, setTestEmailBusy] = useState(false);
+  const [testEmailMsg, setTestEmailMsg] = useState('');
+  const [testEmailError, setTestEmailError] = useState('');
+
+  const handleSendTestEmail = async () => {
+    setTestEmailBusy(true);
+    setTestEmailMsg('');
+    setTestEmailError('');
+    try {
+      const result = await sendTestEmail();
+      setTestEmailMsg(`Test email sent to ${result.recipient}.`);
+      setTimeout(() => setTestEmailMsg(''), 6000);
+    } catch (err: any) {
+      setTestEmailError(err.message || 'Failed to send test email.');
+    } finally {
+      setTestEmailBusy(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -394,6 +414,29 @@ function AdminDashboardContent() {
                     <span className="text-xs font-bold text-slate-650 group-hover:text-slate-800">Support Queue</span>
                     <ArrowRight size={14} className="text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
                   </a>
+
+                  {/* Send Test Email — verifies Resend admin notifications */}
+                  <button
+                    onClick={handleSendTestEmail}
+                    disabled={testEmailBusy}
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-350 group transition-all disabled:opacity-60"
+                  >
+                    <span className="text-xs font-bold text-slate-650 group-hover:text-slate-800">Send Test Email</span>
+                    {testEmailBusy ? (
+                      <Loader2 size={14} className="text-slate-400 animate-spin" />
+                    ) : (
+                      <Mail size={14} className="text-slate-400 group-hover:text-[#009ee3] transition-transform group-hover:translate-x-1" />
+                    )}
+                  </button>
+
+                  {testEmailMsg && (
+                    <p className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 px-1">
+                      <CheckCircle2 size={12} /> {testEmailMsg}
+                    </p>
+                  )}
+                  {testEmailError && (
+                    <p className="text-[11px] font-semibold text-rose-600 px-1">{testEmailError}</p>
+                  )}
                 </div>
               </div>
 
