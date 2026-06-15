@@ -86,21 +86,24 @@ export async function deliverOrder(orderId: string, skipPaymentCheck = false): P
     // Deliver exactly the purchased quantity — one inventory item per unit.
     const requestedQty = Math.max(1, Number(order.quantity) || 1);
 
-    // Pre-check available stock so we never assign a partial batch. If there
-    // isn't enough for the full order, fail cleanly and let the admin handle it.
-    const available = await inventoryService.getAvailableInventoryCount(productId, optionId);
+    // Pre-check available stock for the EXACT product + plan + warranty
+    // combination so we never assign a partial batch, and never borrow stock
+    // from a different option or warranty. If there isn't enough for the full
+    // order, fail cleanly and let the admin handle it.
+    const comboLabel = [optionLabel, guaranteeLabel].filter(Boolean).join(' · ');
+    const available = await inventoryService.getAvailableInventoryCount(productId, optionId, guaranteeId);
     if (available < requestedQty) {
       await markDeliveryFailed(order, {
         deliveredCount: 0,
         requestedCount: requestedQty,
-        reason: optionLabel
-          ? `Only ${available} of ${requestedQty} available for option "${optionLabel}"`
+        reason: comboLabel
+          ? `Only ${available} of ${requestedQty} available for "${comboLabel}"`
           : `Only ${available} of ${requestedQty} available in inventory`,
       });
       return {
         success: false,
-        message: optionLabel
-          ? `Not enough inventory for selected option "${optionLabel}" (have ${available}, need ${requestedQty})`
+        message: comboLabel
+          ? `Not enough inventory for selected "${comboLabel}" (have ${available}, need ${requestedQty})`
           : `Not enough inventory for this product (have ${available}, need ${requestedQty})`,
         inventoryItem: null,
       };

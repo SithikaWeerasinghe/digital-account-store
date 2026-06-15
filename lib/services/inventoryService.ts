@@ -134,19 +134,40 @@ export async function deleteInventoryItem(id: string): Promise<{ id: string }> {
 }
 
 /**
- * Finds one available inventory item, matching the exact selected product option
- * when one was chosen.
+ * Applies the exact-combination scoping (option + warranty/guarantee) to a
+ * query so stock is never shared across different plans or warranties.
  *
- * Matching rules:
- *  - When a productOptionId is given, ONLY items with that exact option are
- *    considered. We never fall back to a different option or to generic
- *    product-level stock — that would risk sending the wrong account variant.
- *    If the order also has a guarantee, an item matching that guarantee is
- *    preferred, otherwise any item for the option (incl. items with no
- *    guarantee set) is used.
- *  - When no productOptionId is given (simple products / legacy orders), only
- *    product-level items (product_option_id IS NULL) are used. Legacy inventory
- *    created before variant support has a NULL option, so it still works.
+ * Symmetric, strict matching — the inventory item must belong to the SAME
+ * purchasable combination the customer selected:
+ *  - option:    given → product_option_id = id;   absent → product_option_id IS NULL
+ *  - guarantee: given → guarantee_id = id;          absent → guarantee_id IS NULL
+ *
+ * This is the rule that separates inventory by product + plan + warranty.
+ * "No warranty configured" is represented by NULL on both sides, so simple and
+ * legacy (pre-warranty) inventory keeps matching exactly as before.
+ */
+function scopeToCombination(
+  query: any,
+  productOptionId?: string | null,
+  guaranteeId?: string | null
+): any {
+  query = productOptionId
+    ? query.eq('product_option_id', productOptionId)
+    : query.is('product_option_id', null);
+  query = guaranteeId
+    ? query.eq('guarantee_id', guaranteeId)
+    : query.is('guarantee_id', null);
+  return query;
+}
+
+/**
+ * Finds one available inventory item for the EXACT purchased combination of
+ * product + selected option/plan + selected warranty/guarantee.
+ *
+ * There is intentionally NO cross-option or cross-warranty fallback: stock
+ * added for "Plan X + 1 Month" must never be delivered for "Plan X + 3 Months".
+ * If nothing matches the exact combination, returns null and the caller fails
+ * the delivery (the admin is notified) rather than sending the wrong variant.
  */
 export async function getAvailableInventoryItem(
   productId: string,
@@ -155,52 +176,37 @@ export async function getAvailableInventoryItem(
 ): Promise<InventoryItem | null> {
   if (!supabaseAdmin) return null;
 
-  const fetchOne = async (
-    apply: (q: any) => any
-  ): Promise<InventoryItem | null> => {
-    let query = supabaseAdmin!
-      .from('inventory_items')
-      .select('*')
-      .eq('product_id', productId)
-      .eq('status', 'available');
-    query = apply(query);
-    const { data, error } = await query
-      .order('created_at', { ascending: true })
-      .limit(1)
-      .maybeSingle();
+  let query = supabaseAdmin
+    .from('inventory_items')
+    .select('*')
+    .eq('product_id', productId)
+    .eq('status', 'available');
+  query = scopeToCombination(query, productOptionId, guaranteeId);
 
-    if (error) {
-      if (error.code !== 'PGRST116') {
-        console.error('[inventoryService] Error fetching available item:', error);
-      }
-      return null;
-    }
-    return (data as InventoryItem) || null;
-  };
+  const { data, error } = await query
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
 
-  // Variant order: exact option match, no cross-option fallback.
-  if (productOptionId) {
-    if (guaranteeId) {
-      const exact = await fetchOne((q) =>
-        q.eq('product_option_id', productOptionId).eq('guarantee_id', guaranteeId)
-      );
-      if (exact) return exact;
+  if (error) {
+    if (error.code !== 'PGRST116') {
+      console.error('[inventoryService] Error fetching available item:', error);
     }
-    // Any item for this exact option (guarantee not required).
-    return fetchOne((q) => q.eq('product_option_id', productOptionId));
+    return null;
   }
-
-  // Simple / legacy order: product-level stock only.
-  return fetchOne((q) => q.is('product_option_id', null));
+  return (data as InventoryItem) || null;
 }
 
 /**
- * Counts available inventory for a product, scoped to an exact option when given.
- * Returns 0 on any error. Never exposes item contents.
+ * Counts available inventory for the EXACT combination of product + option +
+ * warranty/guarantee. Stock is never shared across different plans or
+ * warranties (see scopeToCombination). Returns 0 on any error. Never exposes
+ * item contents.
  */
 export async function getAvailableInventoryCount(
   productId: string,
-  productOptionId?: string | null
+  productOptionId?: string | null,
+  guaranteeId?: string | null
 ): Promise<number> {
   if (!supabaseAdmin || !productId) return 0;
 
@@ -209,12 +215,7 @@ export async function getAvailableInventoryCount(
     .select('*', { count: 'exact', head: true })
     .eq('product_id', productId)
     .eq('status', 'available');
-
-  if (productOptionId) {
-    query = query.eq('product_option_id', productOptionId);
-  } else {
-    query = query.is('product_option_id', null);
-  }
+  query = scopeToCombination(query, productOptionId, guaranteeId);
 
   const { count, error } = await query;
   if (error) {
@@ -230,24 +231,33 @@ export async function getAvailableInventoryCount(
  *
  * "tracked" rules (mirrors the storefront's behaviour exactly):
  *  - A variant/option order (productOptionId given) ALWAYS uses variant
- *    inventory, so tracked = true. If the option has no stock, available = 0.
- *  - A simple product (no option) is only tracked when at least one
- *    product-level inventory row exists. Products that don't use the inventory
- *    table at all return tracked = false and are never blocked by stock checks.
+ *    inventory, so tracked = true. If the exact option+warranty has no stock,
+ *    available = 0.
+ *  - A product where the customer selected a warranty/guarantee is likewise
+ *    inventory-tracked (tracked = true), so its exact-combination stock is
+ *    enforced even when the product has no plan dropdown.
+ *  - A simple product (no option, no guarantee) is only tracked when at least
+ *    one product-level inventory row exists. Products that don't use the
+ *    inventory table at all return tracked = false and are never blocked.
+ *
+ * `available` is always counted for the EXACT product + option + warranty
+ * combination, so a 1-month order can never consume 3-month stock.
  *
  * On any error this fails OPEN (tracked = false) so a transient DB issue can
  * never block a legitimate checkout.
  */
 export async function getInventoryStockStatus(
   productId: string,
-  productOptionId?: string | null
+  productOptionId?: string | null,
+  guaranteeId?: string | null
 ): Promise<{ tracked: boolean; available: number }> {
   if (!supabaseAdmin || !productId) return { tracked: false, available: 0 };
 
-  const available = await getAvailableInventoryCount(productId, productOptionId);
+  const available = await getAvailableInventoryCount(productId, productOptionId, guaranteeId);
 
-  // Variant/option orders are always inventory-tracked.
-  if (productOptionId) return { tracked: true, available };
+  // Variant/option orders, and any order that selected a warranty, are always
+  // inventory-tracked for their exact combination.
+  if (productOptionId || guaranteeId) return { tracked: true, available };
 
   // Simple product: tracked only when product-level inventory rows exist.
   const { count, error } = await supabaseAdmin

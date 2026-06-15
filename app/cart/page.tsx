@@ -17,9 +17,10 @@ export default function CartPage() {
   const [stockNotice, setStockNotice] = useState('');
 
   // Stable key over item identities + selections (not quantities) so we only
-  // re-fetch stock when the lines change, not on every +/- click.
+  // re-fetch stock when the lines change, not on every +/- click. Includes the
+  // warranty so stock re-fetches for the exact plan + warranty combination.
   const itemsKey = items
-    .map((i) => `${i.id}:${i.selectedOption?.id ?? i.selectedVariant?.id ?? ''}`)
+    .map((i) => `${i.id}:${i.selectedOption?.id ?? i.selectedVariant?.id ?? ''}:${i.selectedGuarantee?.id ?? ''}`)
     .join(',');
 
   useEffect(() => {
@@ -29,11 +30,13 @@ export default function CartPage() {
       await Promise.all(
         items.map(async (item) => {
           const selId = item.selectedOption?.id ?? item.selectedVariant?.id;
-          if (!selId) {
+          const guaranteeId = item.selectedGuarantee?.id;
+          if (!selId && !guaranteeId) {
             map[item.id] = null; // not variant-tracked on the client
             return;
           }
-          const result = await fetchInventoryCount(item.product.id, selId);
+          // Count stock for the EXACT plan + warranty this line represents.
+          const result = await fetchInventoryCount(item.product.id, selId, guaranteeId);
           map[item.id] = result.available_count;
         })
       );

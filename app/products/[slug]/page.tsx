@@ -139,14 +139,19 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   // variants once mapped).
   const activeSelectionId = selectedOption?.id ?? selectedVariant?.id ?? null;
   const activeSelectionLabel = selectedOption?.label ?? selectedVariant?.label ?? null;
+  // Stock is scoped to the EXACT plan + warranty the customer has selected, so
+  // the badge/cap never reflects another warranty's stock.
+  const activeGuaranteeId = selectedGuarantee?.id ?? null;
 
   // Fetch available inventory count for the current product + active selection.
-  // For variant products this scopes to the selected option/variant; for simple
-  // products it reads product-level stock (used only for display, never to block).
+  // For variant products this scopes to the selected option/variant AND the
+  // selected warranty; for simple products it reads product-level stock (used
+  // only for display, never to block).
   useEffect(() => {
     if (!product) return;
     let cancelled = false;
     const optionId = usesVariantInventory ? activeSelectionId ?? undefined : undefined;
+    const guaranteeId = activeGuaranteeId ?? undefined;
     // For a variant product, wait until a selection is actually made.
     if (usesVariantInventory && !optionId) return;
 
@@ -154,7 +159,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
       setStockLoading(true);
       // Clear the previous selection's count so we never flash a stale number.
       setVariantStock(null);
-      const result = await fetchInventoryCount(product.id, optionId);
+      const result = await fetchInventoryCount(product.id, optionId, guaranteeId);
       if (!cancelled) {
         setVariantStock(result.available_count);
         setStockLoading(false);
@@ -163,7 +168,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     return () => {
       cancelled = true;
     };
-  }, [product, usesVariantInventory, activeSelectionId]);
+  }, [product, usesVariantInventory, activeSelectionId, activeGuaranteeId]);
 
   // Out of stock when a variant product's selected option has 0 inventory.
   // Simple products keep the existing product.inStock behavior (fallback).

@@ -369,21 +369,25 @@ export async function fetchActivePromos(placement: PromoPlacement): Promise<Prom
 export type InventoryCountResult = {
   product_id: string | null;
   product_option_id: string | null;
+  guarantee_id?: string | null;
   available_count: number;
 };
 
 /**
- * Fetches the available stock count for a product (optionally scoped to a
- * selected option). Never throws — returns 0 on any failure so the product
- * page stays usable and falls back to the product's own inStock flag.
+ * Fetches the available stock count for the EXACT product + plan/option +
+ * warranty/guarantee combination. Stock is never shared across different plans
+ * or warranties. Never throws — returns 0 on any failure so the product page
+ * stays usable and falls back to the product's own inStock flag.
  */
 export async function fetchInventoryCount(
   productId: string,
-  productOptionId?: string
+  productOptionId?: string,
+  guaranteeId?: string
 ): Promise<InventoryCountResult> {
   try {
     const params = new URLSearchParams({ product_id: productId });
     if (productOptionId) params.append('product_option_id', productOptionId);
+    if (guaranteeId) params.append('guarantee_id', guaranteeId);
     const response = await fetch(`/api/inventory/count?${params.toString()}`, {
       cache: 'no-store',
     });
@@ -392,11 +396,17 @@ export async function fetchInventoryCount(
       (data?.data as InventoryCountResult) ?? {
         product_id: productId,
         product_option_id: productOptionId ?? null,
+        guarantee_id: guaranteeId ?? null,
         available_count: 0,
       }
     );
   } catch {
-    return { product_id: productId, product_option_id: productOptionId ?? null, available_count: 0 };
+    return {
+      product_id: productId,
+      product_option_id: productOptionId ?? null,
+      guarantee_id: guaranteeId ?? null,
+      available_count: 0,
+    };
   }
 }
 

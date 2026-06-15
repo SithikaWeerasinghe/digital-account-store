@@ -164,18 +164,23 @@ export default function CheckoutPage() {
       for (const item of items) {
         const selId = item.selectedOption?.id ?? item.selectedVariant?.id;
         const selLabel = item.selectedOption?.label ?? item.selectedVariant?.label;
-        if (selId) {
-          const stock = await fetchInventoryCount(item.product.id, selId);
+        const guaranteeId = item.selectedGuarantee?.id;
+        const guaranteeLabel = item.selectedGuarantee?.label;
+        // Validate against the EXACT plan + warranty combination so stock from a
+        // different warranty is never counted toward this line.
+        const comboLabel = [selLabel, guaranteeLabel].filter(Boolean).join(' · ');
+        if (selId || guaranteeId) {
+          const stock = await fetchInventoryCount(item.product.id, selId, guaranteeId);
           if (stock.available_count <= 0) {
             setError(
-              `${item.product.name} — "${selLabel}" is out of stock. Please choose another plan.`
+              `${item.product.name}${comboLabel ? ` — "${comboLabel}"` : ''} is out of stock. Please choose another option.`
             );
             setIsLoading(false);
             return;
           }
           if (stock.available_count < item.quantity) {
             setError(
-              `Only ${stock.available_count} account(s) available for ${item.product.name}${selLabel ? ` — ${selLabel}` : ''}. Please update your cart.`
+              `Only ${stock.available_count} account(s) available for ${item.product.name}${comboLabel ? ` — ${comboLabel}` : ''}. Please update your cart.`
             );
             setIsLoading(false);
             return;

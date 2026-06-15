@@ -4,17 +4,19 @@ import * as inventoryService from '@/lib/services/inventoryService';
 export const dynamic = 'force-dynamic';
 
 /**
- * GET /api/inventory/count?product_id=xxx&product_option_id=yyy
+ * GET /api/inventory/count?product_id=xxx&product_option_id=yyy&guarantee_id=zzz
  *
- * Public — returns ONLY the available stock count for a product (optionally
- * scoped to an exact option). Never exposes delivery_content, customer emails,
- * or sold credentials.
+ * Public — returns ONLY the available stock count for the exact product +
+ * plan/option + warranty/guarantee combination. Stock is never shared across
+ * different plans or warranties. Never exposes delivery_content, customer
+ * emails, or sold credentials.
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('product_id');
     const productOptionId = searchParams.get('product_option_id');
+    const guaranteeId = searchParams.get('guarantee_id');
 
     if (!productId) {
       return NextResponse.json(
@@ -25,7 +27,8 @@ export async function GET(request: NextRequest) {
 
     const availableCount = await inventoryService.getAvailableInventoryCount(
       productId,
-      productOptionId || undefined
+      productOptionId || undefined,
+      guaranteeId || undefined
     );
 
     // Dev-only diagnostic: when a specific option returns 0, surface which
@@ -44,6 +47,7 @@ export async function GET(request: NextRequest) {
       data: {
         product_id: productId,
         product_option_id: productOptionId || null,
+        guarantee_id: guaranteeId || null,
         available_count: availableCount,
       },
     });

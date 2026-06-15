@@ -194,11 +194,16 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   const requestedQty = Number(quantity);
   const selectedOptionId = input.selectedOptionId || null;
   const selectedOptionLabel = input.selectedOptionLabel || null;
-  const stock = await getInventoryStockStatus(productId, selectedOptionId);
+  const selectedGuaranteeId = input.selectedGuaranteeId || null;
+  const selectedGuaranteeLabel = input.selectedGuaranteeLabel || null;
+  // Stock is checked for the EXACT product + plan + warranty combination, so an
+  // order for one warranty can never be created against another warranty's stock.
+  const stock = await getInventoryStockStatus(productId, selectedOptionId, selectedGuaranteeId);
   if (stock.tracked && stock.available < requestedQty) {
     const planSuffix = selectedOptionLabel ? ` — ${selectedOptionLabel}` : '';
+    const warrantySuffix = selectedGuaranteeLabel ? ` (${selectedGuaranteeLabel})` : '';
     throw new Error(
-      `Only ${stock.available} account(s) available for ${product.name}${planSuffix}. Please update your cart.`
+      `Only ${stock.available} account(s) available for ${product.name}${planSuffix}${warrantySuffix}. Please update your cart.`
     );
   }
 

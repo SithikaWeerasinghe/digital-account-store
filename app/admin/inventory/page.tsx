@@ -5,7 +5,7 @@ import AdminProtected from '@/components/admin/AdminProtected';
 import { InventoryItem } from '@/types/inventory';
 import { Product, GuaranteeOption } from '@/types/product';
 import { fetchProducts, fetchAdminApi } from '@/lib/api';
-import { getDefaultGuaranteeOptions } from '@/lib/productUtils';
+import { resolveGuaranteeOptions } from '@/lib/productUtils';
 import { Trash2, Eye, EyeOff, Plus, Edit2 } from 'lucide-react';
 
 type FormData = {
@@ -99,19 +99,20 @@ function AdminInventoryContent() {
     [selectedProduct]
   );
 
-  // Guarantee options for the selected product/option (provided or generated).
-  const guaranteeOptions: GuaranteeOption[] = useMemo(() => {
-    if (!selectedProduct) return [];
-    if (selectedProduct.guarantee_options?.length) return selectedProduct.guarantee_options;
-    // Only offer generated guarantees when the product actually uses options/variants.
-    if (variantChoices.length) {
-      const basePrice =
-        variantChoices.find((c) => c.id === formData.product_option_id)?.price ??
-        selectedProduct.price;
-      return getDefaultGuaranteeOptions(basePrice);
-    }
-    return [];
-  }, [selectedProduct, variantChoices, formData.product_option_id]);
+  // Warranty/duration options for the selected product/plan. Resolved with the
+  // SAME logic the customer product page uses (resolveGuaranteeOptions), so the
+  // guarantee IDs the admin tags here line up exactly with what an order
+  // carries — otherwise warranty-scoped stock would never match. For an
+  // options-based product the selected option drives per-option warranties;
+  // variant-only products use product-level warranties (no generated defaults).
+  const selectedOptionObj = useMemo(
+    () => selectedProduct?.options?.find((o) => o.id === formData.product_option_id) ?? null,
+    [selectedProduct, formData.product_option_id]
+  );
+  const guaranteeOptions: GuaranteeOption[] = useMemo(
+    () => resolveGuaranteeOptions(selectedProduct ?? null, selectedOptionObj),
+    [selectedProduct, selectedOptionObj]
+  );
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,6 +125,15 @@ function AdminInventoryContent() {
     // stock is keyed correctly (otherwise it becomes product-level inventory).
     if (variantChoices.length > 0 && !formData.product_option_id) {
       setError('Please select a product option for this inventory item.');
+      return;
+    }
+
+    // When the selected product/plan has warranty options, a warranty is
+    // mandatory: inventory is separated per warranty, so an untagged item would
+    // never match any warranty-specific order. If no warranty exists for the
+    // plan, the item is saved without one (product/plan-level stock).
+    if (guaranteeOptions.length > 0 && !formData.guarantee_id) {
+      setError('Please select a warranty / duration for this inventory item.');
       return;
     }
 
@@ -348,11 +358,13 @@ function AdminInventoryContent() {
               </div>
             ) : null}
 
-            {/* Guarantee — optional, shown when the product uses options/guarantees */}
+            {/* Warranty / Duration — required when the plan has warranties, so
+                inventory is separated per warranty (1 Month stock is never
+                delivered for a 3 Months order). */}
             {guaranteeOptions.length > 0 ? (
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
-                  Guarantee <span className="font-normal text-slate-400">— optional</span>
+                  Warranty / Duration <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.guarantee_id}
@@ -366,13 +378,16 @@ function AdminInventoryContent() {
                   }}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500"
                 >
-                  <option value="">Any guarantee</option>
+                  <option value="">Select a warranty / duration</option>
                   {guaranteeOptions.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.label}
                     </option>
                   ))}
                 </select>
+                <p className="text-xs text-slate-400 mt-1">
+                  Stock added here is delivered only when the customer selects this exact warranty / duration.
+                </p>
               </div>
             ) : null}
 
