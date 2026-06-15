@@ -109,10 +109,34 @@ function AdminInventoryContent() {
     () => selectedProduct?.options?.find((o) => o.id === formData.product_option_id) ?? null,
     [selectedProduct, formData.product_option_id]
   );
-  const guaranteeOptions: GuaranteeOption[] = useMemo(
+  // The product's real warranty axis — i.e. what a customer can actually pick.
+  const resolvedGuarantees: GuaranteeOption[] = useMemo(
     () => resolveGuaranteeOptions(selectedProduct ?? null, selectedOptionObj),
     [selectedProduct, selectedOptionObj]
   );
+  // Whether this product/plan genuinely offers warranties to customers. Only
+  // then is a warranty selection required (and only then can stock be split by
+  // warranty). Products that just use plans/variants have no warranty axis.
+  const productHasWarranties = resolvedGuarantees.length > 0;
+
+  // The list rendered in the warranty dropdown. When editing an item whose
+  // stored guarantee is no longer part of the product's resolved set (e.g.
+  // legacy data created before this product's warranties changed/were removed),
+  // we still surface it so the admin can SEE it and correct or clear it — it is
+  // never silently stuck/hidden.
+  const guaranteeChoices: GuaranteeOption[] = useMemo(() => {
+    const list = [...resolvedGuarantees];
+    if (formData.guarantee_id && !list.some((g) => g.id === formData.guarantee_id)) {
+      list.push({
+        id: formData.guarantee_id,
+        label: formData.guarantee_label || formData.guarantee_id,
+        months: 0,
+        total_price: 0,
+        monthly_price: 0,
+      });
+    }
+    return list;
+  }, [resolvedGuarantees, formData.guarantee_id, formData.guarantee_label]);
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,11 +152,11 @@ function AdminInventoryContent() {
       return;
     }
 
-    // When the selected product/plan has warranty options, a warranty is
-    // mandatory: inventory is separated per warranty, so an untagged item would
-    // never match any warranty-specific order. If no warranty exists for the
-    // plan, the item is saved without one (product/plan-level stock).
-    if (guaranteeOptions.length > 0 && !formData.guarantee_id) {
+    // When the selected product/plan actually offers warranties to customers, a
+    // warranty is mandatory: inventory is separated per warranty, so an untagged
+    // item would never match any warranty-specific order. Products that only use
+    // plans/variants have no warranty axis and are saved without one.
+    if (productHasWarranties && !formData.guarantee_id) {
       setError('Please select a warranty / duration for this inventory item.');
       return;
     }
@@ -358,18 +382,26 @@ function AdminInventoryContent() {
               </div>
             ) : null}
 
-            {/* Warranty / Duration — required when the plan has warranties, so
-                inventory is separated per warranty (1 Month stock is never
-                delivered for a 3 Months order). */}
-            {guaranteeOptions.length > 0 ? (
+            {/* Warranty / Duration — shown whenever the product/plan offers
+                warranties to customers, OR when the item being edited already
+                carries a stored warranty (so legacy/orphaned values stay
+                visible and editable). Required only when the product genuinely
+                has a warranty axis, so inventory is separated per warranty
+                (1 Month stock is never delivered for a 3 Months order). */}
+            {guaranteeChoices.length > 0 ? (
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">
-                  Warranty / Duration <span className="text-red-500">*</span>
+                  Warranty / Duration{' '}
+                  {productHasWarranties ? (
+                    <span className="text-red-500">*</span>
+                  ) : (
+                    <span className="font-normal text-slate-400">— stored on this item</span>
+                  )}
                 </label>
                 <select
                   value={formData.guarantee_id}
                   onChange={(e) => {
-                    const g = guaranteeOptions.find((x) => x.id === e.target.value);
+                    const g = guaranteeChoices.find((x) => x.id === e.target.value);
                     setFormData({
                       ...formData,
                       guarantee_id: g?.id || '',
@@ -378,15 +410,19 @@ function AdminInventoryContent() {
                   }}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500"
                 >
-                  <option value="">Select a warranty / duration</option>
-                  {guaranteeOptions.map((g) => (
+                  <option value="">
+                    {productHasWarranties ? 'Select a warranty / duration' : 'No warranty (clear)'}
+                  </option>
+                  {guaranteeChoices.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.label}
                     </option>
                   ))}
                 </select>
                 <p className="text-xs text-slate-400 mt-1">
-                  Stock added here is delivered only when the customer selects this exact warranty / duration.
+                  {productHasWarranties
+                    ? 'Stock added here is delivered only when the customer selects this exact warranty / duration.'
+                    : 'This product has no warranty options, so this item is delivered for any purchase of the selected plan. Choose “No warranty (clear)” to remove a leftover warranty tag.'}
                 </p>
               </div>
             ) : null}
