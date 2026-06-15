@@ -12,6 +12,13 @@ export interface ProductOption {
   price: number;
   badge?: string;
   is_default?: boolean;
+  /**
+   * Optional per-option warranty/duration choices. When present, the storefront
+   * shows these (instead of the product-level guarantee_options) for this plan,
+   * so a product can control its own warranty pricing per tier. Backward
+   * compatible — omit it to use product-level / generated warranties.
+   */
+  guarantee_options?: GuaranteeOption[];
 }
 
 export interface GuaranteeOption {

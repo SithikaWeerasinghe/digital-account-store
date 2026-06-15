@@ -8,8 +8,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/lib/constants';
 import { useCart } from '@/lib/contexts/CartContext';
-import { getDefaultGuaranteeOptions } from '@/lib/productUtils';
+import { getDefaultGuaranteeOptions, resolveGuaranteeOptions } from '@/lib/productUtils';
 import ProductImage from '@/components/ui/ProductImage';
+import ProductConfigurator, { ConfiguratorPlan } from '@/components/products/ProductConfigurator';
 import {
   Star, ShieldCheck, Zap, Shield, Package,
   ChevronRight, Mail, CreditCard, Bitcoin, Banknote, Check, AlertCircle, ShoppingCart
@@ -184,9 +185,46 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [emailError, setEmailError] = useState('');
 
-  const guaranteeOptions: GuaranteeOption[] = product?.guarantee_options?.length
-    ? product.guarantee_options
-    : product ? getDefaultGuaranteeOptions(selectedOption?.price ?? selectedVariant?.price ?? product.price) : [];
+  // Warranty/duration options for the current plan. Resolves per-option →
+  // product-level → generated (options only); variant-only products with no
+  // warranty data resolve to [] so the charged price stays the plan price.
+  const guaranteeOptions: GuaranteeOption[] = resolveGuaranteeOptions(product, selectedOption);
+
+  // Plans shown in the configurator dropdown — built from the product's REAL
+  // data: options if it has them, otherwise variants. No hardcoded content.
+  const planSource: 'option' | 'variant' = product?.options?.length ? 'option' : 'variant';
+  const plans: ConfiguratorPlan[] = product?.options?.length
+    ? product.options.map((o) => ({ id: o.id, label: o.label, price: o.price, badge: o.badge, description: o.description }))
+    : product?.variants?.length
+      ? product.variants.map((v) => ({ id: v.id, label: v.label, price: v.price }))
+      : [];
+  const selectedPlanId = selectedOption?.id ?? selectedVariant?.id ?? null;
+
+  // Selecting a plan updates the option/variant state (whichever this product
+  // uses) and resets the warranty to that plan's default — without changing any
+  // cart/checkout/order logic, which keys off selectedOption/selectedVariant.
+  const handleSelectPlan = (planId: string) => {
+    if (!product) return;
+    if (planSource === 'option') {
+      const opt = product.options?.find((o) => o.id === planId);
+      if (!opt) return;
+      setSelectedOption(opt);
+      const g = resolveGuaranteeOptions(product, opt);
+      setSelectedGuarantee(g.find((x) => x.is_default) || g[0] || null);
+    } else {
+      const v = product.variants?.find((x) => x.id === planId);
+      if (!v) return;
+      setSelectedVariant(v);
+      const g = resolveGuaranteeOptions(product, null);
+      setSelectedGuarantee(g.find((x) => x.is_default) || g[0] || null);
+    }
+    setStockMsg('');
+  };
+
+  const handleSelectGuarantee = (g: GuaranteeOption) => {
+    setSelectedGuarantee(g);
+    setStockMsg('');
+  };
 
   const activePrice = selectedGuarantee?.total_price
     ?? selectedOption?.price
@@ -439,145 +477,18 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       {emailError && <p className="text-xs font-black tracking-wide text-hazard mt-2">{emailError}</p>}
                     </div>
 
-                    {/* Product / Plan — option picker */}
-                    {product.options?.length ? (
-                      <div>
-                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Product / Plan</label>
-                        <div className="space-y-2">
-                          {product.options.map((option) => (
-                            <button
-                              key={option.id}
-                              type="button"
-                              onClick={() => {
-                                setSelectedOption(option);
-                                // Reset guarantee to default when option changes
-                                const newGOptions = product.guarantee_options?.length
-                                  ? product.guarantee_options
-                                  : getDefaultGuaranteeOptions(option.price);
-                                setSelectedGuarantee(newGOptions.find(g => g.is_default) || newGOptions[0]);
-                              }}
-                              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
-                                selectedOption?.id === option.id
-                                  ? 'border-primary bg-primary/10 shadow-[0_0_12px_rgba(0,158,227,0.12)]'
-                                  : 'border-border bg-white hover:border-primary/50'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                                  selectedOption?.id === option.id ? 'border-primary bg-primary/10' : 'border-slate-300'
-                                }`}>
-                                  {selectedOption?.id === option.id && (
-                                    <Check size={12} className="text-primary" />
-                                  )}
-                                </div>
-                                <div className="flex flex-col gap-0.5">
-                                  <span className={`text-xs sm:text-[13px] font-black font-heading tracking-wider uppercase ${selectedOption?.id === option.id ? 'text-text-primary' : 'text-text-secondary'}`}>
-                                    {option.label}
-                                    {option.badge && <span className="text-primary text-[10px] ml-2">{option.badge}</span>}
-                                  </span>
-                                  {option.description && (
-                                    <span className="text-[11px] text-text-secondary/60 font-normal">{option.description}</span>
-                                  )}
-                                </div>
-                              </div>
-                              <span className={`text-sm sm:text-base font-black font-heading flex-shrink-0 ${selectedOption?.id === option.id ? 'text-primary' : 'text-text-secondary'}`}>
-                                {formatCurrency(option.price)}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {/* Product / Plan — variant picker (products without options).
-                        Shown directly under the options block; only one renders. */}
-                    {!product.options?.length && product.variants?.length ? (
-                      <div>
-                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Product / Plan</label>
-                        <div className="flex flex-col gap-2">
-                          {product.variants.map((v) => (
-                            <button
-                              key={v.id}
-                              type="button"
-                              onClick={() => {
-                                setSelectedVariant(v);
-                                // Keep warranty selection/pricing in sync with the chosen plan.
-                                if (product.guarantee_options?.length) {
-                                  const g = product.guarantee_options;
-                                  setSelectedGuarantee(g.find((x) => x.is_default) || g[0]);
-                                }
-                              }}
-                              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
-                                selectedVariant?.id === v.id
-                                  ? 'border-primary bg-primary/10 shadow-[0_0_12px_rgba(0,158,227,0.12)]'
-                                  : 'border-border bg-white hover:border-primary/50'
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                                  selectedVariant?.id === v.id ? 'border-primary bg-primary/10' : 'border-slate-300'
-                                }`}>
-                                  {selectedVariant?.id === v.id && (
-                                    <div className="w-2.5 h-2.5 rounded-full bg-primary" />
-                                  )}
-                                </div>
-                                <span className={`text-xs sm:text-[13px] font-black font-heading tracking-wider uppercase ${selectedVariant?.id === v.id ? 'text-text-primary' : 'text-text-secondary'}`}>
-                                  {v.label}
-                                </span>
-                              </div>
-                              <span className={`text-sm sm:text-base font-black font-heading ${selectedVariant?.id === v.id ? 'text-primary' : 'text-text-secondary'}`}>
-                                {formatCurrency(v.price)}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {/* Warranty Cards Section (rendered below Product / Plan) */}
-                    {product.options?.length || product.guarantee_options?.length ? (
-                      <div>
-                        <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Warranty / Guarantee</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {guaranteeOptions.map((guarantee) => (
-                            <button
-                              key={guarantee.id}
-                              type="button"
-                              onClick={() => setSelectedGuarantee(guarantee)}
-                              className={`p-4 rounded-xl border-2 text-left transition-all cursor-pointer relative ${
-                                selectedGuarantee?.id === guarantee.id
-                                  ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(0,158,227,0.1)]'
-                                  : 'border-border bg-white hover:border-primary/30'
-                              }`}
-                            >
-                              {selectedGuarantee?.id === guarantee.id && (
-                                <Check size={18} className="absolute top-2 right-2 text-primary" />
-                              )}
-                              <div className="flex flex-col gap-2">
-                                <span className={`text-xs font-black font-heading tracking-wider uppercase leading-tight ${selectedGuarantee?.id === guarantee.id ? 'text-text-primary' : 'text-text-secondary'}`}>
-                                  {guarantee.label}
-                                  {guarantee.badge && (
-                                    <span className={`text-[9px] ml-1 px-2 py-0.5 rounded-full inline-block ${
-                                      selectedGuarantee?.id === guarantee.id
-                                        ? 'bg-primary text-white'
-                                        : 'bg-primary/20 text-primary'
-                                    }`}>
-                                      {guarantee.badge}
-                                    </span>
-                                  )}
-                                </span>
-                                <span className="text-2xl font-black font-heading text-primary">
-                                  {formatCurrency(guarantee.total_price)}
-                                </span>
-                                <span className={`text-xs font-semibold ${selectedGuarantee?.id === guarantee.id ? 'text-text-secondary' : 'text-text-secondary/70'}`}>
-                                  {formatCurrency(guarantee.monthly_price)}/mo
-                                </span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
+                    {/* Product / Plan dropdown + Warranty cards (data-driven). */}
+                    {(plans.length > 0 || guaranteeOptions.length > 0) && (
+                      <ProductConfigurator
+                        product={product}
+                        plans={plans}
+                        selectedPlanId={selectedPlanId}
+                        onSelectPlan={handleSelectPlan}
+                        guaranteeOptions={guaranteeOptions}
+                        selectedGuaranteeId={selectedGuarantee?.id ?? null}
+                        onSelectGuarantee={handleSelectGuarantee}
+                      />
+                    )}
 
                     {/* Selected option/variant stock count — visible above Quantity,
                         updates immediately when the selection changes */}

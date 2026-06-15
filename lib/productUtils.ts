@@ -40,6 +40,34 @@ export function getDefaultGuaranteeOptions(basePrice: number): GuaranteeOption[]
 }
 
 /**
+ * Resolves the warranty/duration options to show for the currently selected
+ * plan, in priority order:
+ *   1. The selected option's own `guarantee_options` (per-tier warranties).
+ *   2. The product-level `guarantee_options` (admin-editable, shared).
+ *   3. Generated defaults from the option price — ONLY when an option is
+ *      selected (keeps the existing options-product behaviour unchanged).
+ *   4. Otherwise [] — e.g. a variant-only product with no warranty data shows
+ *      no warranty cards (the plan IS the duration), so the charged price stays
+ *      the plan price and order logic is unchanged.
+ *
+ * `selectedOption` is null for variant-based / simple products.
+ */
+export function resolveGuaranteeOptions(
+  product: Product | null,
+  selectedOption?: { price: number; guarantee_options?: GuaranteeOption[] } | null
+): GuaranteeOption[] {
+  if (!product) return [];
+  if (selectedOption?.guarantee_options && selectedOption.guarantee_options.length > 0) {
+    return selectedOption.guarantee_options;
+  }
+  if (product.guarantee_options && product.guarantee_options.length > 0) {
+    return product.guarantee_options;
+  }
+  if (selectedOption) return getDefaultGuaranteeOptions(selectedOption.price);
+  return [];
+}
+
+/**
  * Enrich a product with guarantee options if not already present.
  * Products without guarantee_options get smart defaults based on price.
  */

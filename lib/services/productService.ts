@@ -27,6 +27,20 @@ export function mapDatabaseProduct(dbRow: any): Product {
           price: Number(o.price),
           badge: o.badge ?? undefined,
           is_default: o.is_default ?? undefined,
+          // Optional per-option warranty/duration choices (JSONB). Backward
+          // compatible: undefined when not authored for this option.
+          guarantee_options:
+            Array.isArray(o.guarantee_options) && o.guarantee_options.length > 0
+              ? o.guarantee_options.map((g: any) => ({
+                  id: g.id,
+                  label: g.label,
+                  months: Number(g.months),
+                  total_price: Number(g.total_price),
+                  monthly_price: Number(g.monthly_price),
+                  is_default: g.is_default ?? undefined,
+                  badge: g.badge ?? undefined,
+                }))
+              : undefined,
         }))
       : undefined;
 

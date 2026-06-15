@@ -422,7 +422,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-xs font-black tracking-widest uppercase text-slate-600">
-                  Variants / Plans (optional)
+                  Product Options / Plans (optional)
                 </label>
                 <button
                   type="button"
@@ -434,26 +434,38 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
               </div>
               {variants.length === 0 ? (
                 <p className="text-xs text-slate-400 italic">
-                  No variants. The base price will be used. Add plans like "1 Month", "3 Months", etc.
+                  No plans. The base price will be used. Add plans like &quot;1 Month&quot;, &quot;3 Months&quot;, etc.
+                  These appear in the customer-facing product dropdown.
                 </p>
               ) : (
                 <div className="space-y-2">
                   {variants.map((variant, index) => (
-                    <div key={variant.id} className="flex gap-2 items-center">
+                    <div key={variant.id} className="flex flex-wrap gap-2 items-center">
                       <input
                         type="text"
                         value={variant.label}
                         onChange={(e) => updateVariant(index, 'label', e.target.value)}
-                        placeholder="Plan label (e.g. 3 Months)"
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
+                        placeholder="Plan name / duration (e.g. 3 Months)"
+                        className="flex-1 min-w-[140px] px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
                       />
                       <input
                         type="number"
                         step="0.01"
+                        min="0"
                         value={variant.price}
                         onChange={(e) => updateVariant(index, 'price', e.target.value)}
-                        placeholder="Price"
+                        placeholder="Price €"
                         className="w-24 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
+                      />
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={variant.originalPrice}
+                        onChange={(e) => updateVariant(index, 'originalPrice', e.target.value)}
+                        placeholder="Compare-at €"
+                        title="Optional compare-at (original) price for showing a discount"
+                        className="w-28 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
                       />
                       <button
                         type="button"
@@ -464,6 +476,10 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                       </button>
                     </div>
                   ))}
+                  <p className="text-[11px] text-slate-400">
+                    Shown in the customer&apos;s &quot;Product / Plan&quot; dropdown. The price appears in the green pill;
+                    Compare-at is optional (for showing a discount).
+                  </p>
                 </div>
               )}
             </div>
