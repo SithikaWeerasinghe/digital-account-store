@@ -158,8 +158,9 @@ export default function CheckoutPage() {
     setIsLoading(true);
     try {
       // Inventory safety check: confirm each selected plan (option or variant)
-      // still has stock before creating orders or charging. Prevents paying for
-      // a sold-out plan. Applies to every payment method, including crypto.
+      // still has enough stock for the requested quantity before creating orders
+      // or charging. Prevents paying for more than is available. Applies to every
+      // payment method, including crypto. The server re-validates in createOrder.
       for (const item of items) {
         const selId = item.selectedOption?.id ?? item.selectedVariant?.id;
         const selLabel = item.selectedOption?.label ?? item.selectedVariant?.label;
@@ -168,6 +169,13 @@ export default function CheckoutPage() {
           if (stock.available_count <= 0) {
             setError(
               `${item.product.name} — "${selLabel}" is out of stock. Please choose another plan.`
+            );
+            setIsLoading(false);
+            return;
+          }
+          if (stock.available_count < item.quantity) {
+            setError(
+              `Only ${stock.available_count} account(s) available for ${item.product.name}${selLabel ? ` — ${selLabel}` : ''}. Please update your cart.`
             );
             setIsLoading(false);
             return;

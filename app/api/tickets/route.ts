@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as ticketService from '@/lib/services/ticketService';
 import { requireAdminAuth } from '@/lib/apiAuth';
-import { sendTicketReplyNotification } from '@/lib/services/emailService';
+import {
+  sendTicketReplyNotification,
+  sendTicketConfirmation,
+  sendTicketAdminNotification,
+} from '@/lib/services/emailService';
 
 export async function GET() {
   try {
@@ -20,6 +24,17 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const newTicket = await ticketService.createTicket(body);
+
+    // Fire ticket emails (best-effort): a confirmation to the customer and a
+    // notification to support/admin. Email failures never fail ticket creation.
+    try {
+      await Promise.allSettled([
+        sendTicketConfirmation(newTicket),
+        sendTicketAdminNotification(newTicket),
+      ]);
+    } catch (emailErr: any) {
+      console.error('[tickets POST] Email dispatch failed (ticket still created):', emailErr?.message || emailErr);
+    }
 
     return NextResponse.json({ success: true, data: newTicket }, { status: 201 });
   } catch (error: any) {

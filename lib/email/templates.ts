@@ -334,6 +334,182 @@ function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (m) => map[m]);
 }
 
+/**
+ * Removes an appended base64 screenshot block from a ticket message so it is
+ * never dumped into an email body. Returns a short note in its place.
+ */
+function stripScreenshot(message: string): string {
+  const marker = '---SCREENSHOT---';
+  const idx = message.indexOf(marker);
+  if (idx < 0) return message;
+  const text = message.slice(0, idx).trim();
+  return `${text}\n\n(A screenshot was attached to this ticket.)`;
+}
+
+/** Human-readable ticket reference, e.g. TKT-1A2B3C4D. */
+function ticketRef(ticket: any): string {
+  return `TKT-${String(ticket.id || '').substring(0, 8).toUpperCase()}`;
+}
+
+/**
+ * Customer-facing confirmation sent immediately when a support ticket is created.
+ * Confirms we received the request and will respond.
+ */
+export function buildTicketConfirmationEmail(ticket: any) {
+  const ref = ticketRef(ticket);
+  const messageText = stripScreenshot(String(ticket.message || ''));
+  const inner = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;">✓ We received your request</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.6;">
+      Hi ${escapeHtml(ticket.name || 'there')}, thanks for contacting ApexFled support. Your ticket has been
+      created and our team will respond as soon as possible. Please keep this reference for your records.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;background-color:#f8fafc;border-bottom:1px solid #e2e8f0;">Ticket Reference</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:700;color:#0f172a;background-color:#f8fafc;border-bottom:1px solid #e2e8f0;text-align:right;font-family:'Courier New',monospace;">${ref}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Your Email</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${escapeHtml(ticket.email || ticket.userId || '')}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;${ticket.issueType ? 'border-bottom:1px solid #e2e8f0;' : ''}">Subject</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;${ticket.issueType ? 'border-bottom:1px solid #e2e8f0;' : ''}text-align:right;">${escapeHtml(ticket.subject || '')}</td>
+      </tr>
+      ${ticket.issueType ? `
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;">Issue Type</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;text-align:right;">${escapeHtml(ticket.issueType)}</td>
+      </tr>` : ''}
+    </table>
+
+    <div style="margin:24px 0;padding:20px;background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+      <p style="margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;">Your Message</p>
+      <div style="font-size:14px;color:#334155;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;">${escapeHtml(messageText)}</div>
+    </div>
+
+    <p style="margin:20px 0 0;font-size:13px;color:#94a3b8;line-height:1.6;">
+      Our support team typically responds within 24 hours. You'll receive a reply at this email address.
+    </p>`;
+
+  return {
+    to: ticket.email || ticket.userId,
+    subject: `We received your support request — ${ref}`,
+    html: wrap('Support Request Received', inner),
+  };
+}
+
+/**
+ * Internal notification sent to support/admin when a new support ticket arrives.
+ */
+export function buildTicketAdminNotificationEmail(ticket: any, recipient: string) {
+  const ref = ticketRef(ticket);
+  const messageText = stripScreenshot(String(ticket.message || ''));
+  const inner = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:#0f172a;">🎫 New Support Ticket</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.6;">
+      A new support ticket has been submitted on the store.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;background-color:#f8fafc;border-bottom:1px solid #e2e8f0;">Reference</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:700;color:#0f172a;background-color:#f8fafc;border-bottom:1px solid #e2e8f0;text-align:right;font-family:'Courier New',monospace;">${ref}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Customer</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${escapeHtml(ticket.email || ticket.userId || '')}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Subject</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${escapeHtml(ticket.subject || '')}</td>
+      </tr>
+      ${ticket.issueType ? `
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;">Issue Type</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;text-align:right;">${escapeHtml(ticket.issueType)}</td>
+      </tr>` : ''}
+    </table>
+
+    <div style="margin:24px 0;padding:20px;background-color:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;">
+      <p style="margin:0 0 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;">Message</p>
+      <div style="font-size:14px;color:#1e293b;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;">${escapeHtml(messageText)}</div>
+    </div>
+
+    <div style="text-align:center;margin:28px 0 8px;">
+      <a href="${SITE_URL}/admin/tickets" style="display:inline-block;padding:12px 32px;background-color:#0f172a;color:#ffffff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-decoration:none;border-radius:10px;">Open Tickets</a>
+    </div>`;
+
+  return {
+    to: recipient,
+    subject: `New Support Ticket — ${ref}: ${ticket.subject || ''}`.trim(),
+    html: wrap(`New Support Ticket ${ref}`, inner),
+  };
+}
+
+/**
+ * Internal notification sent to the admin about a delivery outcome (success,
+ * failed, or short on inventory). Used so the store owner can act on failed
+ * deliveries even though the customer-facing flow stays best-effort.
+ */
+export function buildAdminDeliveryEmail(
+  order: Order,
+  adminEmail: string,
+  info: { ok: boolean; deliveredCount?: number; requestedCount?: number; reason?: string }
+) {
+  const invoice = order.invoice_number || order.id;
+  const email = order.customer_email || order.userId;
+  const productName = order.items?.[0]?.product?.name || order.product_id || 'Digital Product';
+  const optionLabel = order.order_metadata?.product_option?.label;
+  const heading = info.ok ? '✅ Order Delivered' : '⚠️ Delivery Needs Attention';
+  const headColor = info.ok ? '#047857' : '#b45309';
+  const summary = info.ok
+    ? 'Digital access was delivered to the customer successfully.'
+    : 'Automatic delivery could not be completed. Please review the order and deliver manually.';
+
+  const inner = `
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:800;color:${headColor};">${heading}</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.6;">${summary}</p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;background-color:#f8fafc;border-bottom:1px solid #e2e8f0;">Invoice</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:700;color:#0f172a;background-color:#f8fafc;border-bottom:1px solid #e2e8f0;text-align:right;font-family:'Courier New',monospace;">${invoice}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Customer</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${escapeHtml(email || '')}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;border-bottom:1px solid #e2e8f0;">Product</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#0f172a;border-bottom:1px solid #e2e8f0;text-align:right;">${escapeHtml(productName)}${optionLabel ? ` — ${escapeHtml(optionLabel)}` : ''}</td>
+      </tr>
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;${info.reason ? 'border-bottom:1px solid #e2e8f0;' : ''}">Delivered / Requested</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:700;color:${info.ok ? '#047857' : '#b45309'};${info.reason ? 'border-bottom:1px solid #e2e8f0;' : ''}text-align:right;">${info.deliveredCount ?? 0} / ${info.requestedCount ?? order.quantity ?? 1}</td>
+      </tr>
+      ${info.reason ? `
+      <tr>
+        <td style="padding:14px 16px;font-size:13px;color:#64748b;">Reason</td>
+        <td style="padding:14px 16px;font-size:14px;font-weight:600;color:#b45309;text-align:right;">${escapeHtml(info.reason)}</td>
+      </tr>` : ''}
+    </table>
+
+    <div style="text-align:center;margin:28px 0 8px;">
+      <a href="${SITE_URL}/admin/orders" style="display:inline-block;padding:12px 32px;background-color:#0f172a;color:#ffffff;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;text-decoration:none;border-radius:10px;">Open Admin Dashboard</a>
+    </div>`;
+
+  return {
+    to: adminEmail,
+    subject: info.ok
+      ? `Delivered — ${invoice}`
+      : `⚠️ Delivery failed — ${invoice} (inventory)`,
+    html: wrap(`Delivery ${invoice}`, inner),
+  };
+}
+
 export function buildTicketReplyEmail(ticket: any, replyText: string) {
   const ticketIdDisplay = ticket.id.substring(0, 8);
   const inner = `

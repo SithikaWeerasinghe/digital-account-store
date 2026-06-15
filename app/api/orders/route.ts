@@ -46,8 +46,11 @@ export async function POST(request: Request) {
     
     const isMaintenanceError =
       typeof error.message === 'string' && error.message.includes('temporarily unavailable');
+    // Out-of-stock at order creation → 409 Conflict (stock changed / insufficient).
+    const isStockError =
+      typeof error.message === 'string' && error.message.includes('Please update your cart');
     const isValidationError = validationErrors.includes(error.message) || isMaintenanceError;
-    const status = isValidationError ? 400 : 500;
+    const status = isStockError ? 409 : isValidationError ? 400 : 500;
 
     return NextResponse.json(
       { success: false, message: error.message || 'Failed to process checkout order' },

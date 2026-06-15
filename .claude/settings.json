@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "PowerShell($env:NODE_OPTIONS='--max-old-space-size=4096'; Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; npm run build 2>&1 | Select-Object -Last 35)",
-      "PowerShell($env:NODE_OPTIONS=''; Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; npm run build 2>&1 | Select-Object -Last 40)"
+      "PowerShell($env:NODE_OPTIONS=''; Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; npm run build 2>&1 | Select-Object -Last 40)",
+      "Bash(echo \"=== tsc exit: $? ===\")",
+      "Bash(echo \"\\(check-ignore exit: $?\\)\")"
     ]
   }
 }

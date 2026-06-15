@@ -2,6 +2,7 @@ import { Order, OrderItem, CreateOrderInput } from '@/types/order';
 import { sampleProducts } from '@/data/sampleProducts';
 import { supabase as anonClient, supabaseAdmin } from '@/lib/supabase';
 import { getRedeemableCoupon, incrementCouponUsage } from '@/lib/services/discountService';
+import { getInventoryStockStatus } from '@/lib/services/inventoryService';
 
 // Orders are only ever accessed server-side (API routes / webhooks). Prefer the
 // service-role client so all reads/writes bypass Row-Level Security; fall back to
@@ -183,6 +184,23 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
 
   const product = sampleProducts.find((p) => p.id === productId);
   if (!product) throw new Error('Product not found');
+
+  // ── Stock protection (server-side, authoritative) ──
+  // Never let an order be created for more units than the exact selected
+  // variant currently has available. Every payment method (card/crypto/manual)
+  // creates its order here first, so this gate cannot be bypassed from the
+  // frontend or by calling the API directly. Inventory-untracked products are
+  // not affected (getInventoryStockStatus returns tracked=false for them).
+  const requestedQty = Number(quantity);
+  const selectedOptionId = input.selectedOptionId || null;
+  const selectedOptionLabel = input.selectedOptionLabel || null;
+  const stock = await getInventoryStockStatus(productId, selectedOptionId);
+  if (stock.tracked && stock.available < requestedQty) {
+    const planSuffix = selectedOptionLabel ? ` — ${selectedOptionLabel}` : '';
+    throw new Error(
+      `Only ${stock.available} account(s) available for ${product.name}${planSuffix}. Please update your cart.`
+    );
+  }
 
   // Pre-discount amount for this order line.
   const originalAmount =

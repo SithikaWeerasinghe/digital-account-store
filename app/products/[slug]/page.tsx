@@ -71,7 +71,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
   const router = useRouter();
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +80,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [selectedOption, setSelectedOption] = useState<ProductOption | null>(null);
   const [selectedGuarantee, setSelectedGuarantee] = useState<GuaranteeOption | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+  // Inline message when a stock limit blocks adding more to the cart.
+  const [stockMsg, setStockMsg] = useState('');
   // Variant-aware stock: available inventory count for the selected option.
   // null = not loaded yet / not applicable.
   const [variantStock, setVariantStock] = useState<number | null>(null);
@@ -192,8 +194,52 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     ?? product?.price ?? 0;
   const total = activePrice * quantity;
 
+  // Cap the quantity selector at the available stock for the selected plan
+  // (variant products), keeping the existing sane upper bound for simple ones.
+  const HARD_MAX_QTY = 10;
+  const maxSelectableQty = usesVariantInventory
+    ? Math.min(HARD_MAX_QTY, Math.max(1, variantStock ?? 1))
+    : HARD_MAX_QTY;
+
+  // How many of this exact selection (same product + variant + option +
+  // guarantee) are already in the cart, so we never exceed stock in total.
+  const selectionCartId = product
+    ? `${product.id}-${selectedVariant?.id || 'base'}-${selectedOption?.id || 'noopt'}-${selectedGuarantee?.id || 'noguar'}`
+    : '';
+  const cartQtyForSelection = items.find((i) => i.id === selectionCartId)?.quantity ?? 0;
+
+  // If the selected plan's stock drops below the chosen quantity (e.g. the
+  // selection changed, or stock was just refreshed), clamp the quantity down.
+  useEffect(() => {
+    if (!usesVariantInventory || variantStock === null) return;
+    setQuantity((q) => Math.min(Math.max(1, q), Math.max(1, variantStock)));
+    setStockMsg('');
+  }, [variantStock, usesVariantInventory]);
+
+  /**
+   * Validates the combined (cart + requested) quantity against stock for the
+   * current selection. Returns true when it's safe to add; otherwise sets a
+   * clear message and returns false.
+   */
+  const canAddSelectedQuantity = (): boolean => {
+    if (!usesVariantInventory || variantStock === null) return true;
+    if (cartQtyForSelection + quantity > variantStock) {
+      const remaining = Math.max(0, variantStock - cartQtyForSelection);
+      setStockMsg(
+        cartQtyForSelection > 0
+          ? `Only ${variantStock} available in stock. You already have ${cartQtyForSelection} in your cart${remaining > 0 ? ` — you can add ${remaining} more.` : '.'}`
+          : `Only ${variantStock} available in stock for this option.`
+      );
+      return false;
+    }
+    setStockMsg('');
+    return true;
+  };
+
   const handleCheckout = () => {
     if (!product) return;
+    // Never let the combined cart quantity exceed available stock.
+    if (!canAddSelectedQuantity()) return;
     // Add the selected plan/warranty to the cart and go straight to the real
     // checkout, which redirects to the chosen payment provider. (No placeholder.)
     addToCart(product, quantity, selectedVariant || undefined, selectedOption || undefined, selectedGuarantee || undefined);
@@ -202,6 +248,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
 
   const handleAddToCart = () => {
     if (!product) return;
+    if (!canAddSelectedQuantity()) return;
     addToCart(product, quantity, selectedVariant || undefined, selectedOption || undefined, selectedGuarantee || undefined);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
@@ -561,19 +608,37 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       <label className="block text-sm font-black font-heading tracking-widest uppercase text-text-secondary mb-3">Quantity</label>
                       <div className="flex items-center gap-4">
                         <button
-                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-10 h-10 rounded-xl bg-slate-50 border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-primary transition-colors font-bold"
+                          onClick={() => { setStockMsg(''); setQuantity(Math.max(1, quantity - 1)); }}
+                          disabled={quantity <= 1}
+                          className="w-10 h-10 rounded-xl bg-slate-50 border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-primary transition-colors font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           −
                         </button>
                         <span className="w-10 text-center font-black text-text-primary text-lg font-mono">{quantity}</span>
                         <button
-                          onClick={() => setQuantity(Math.min(10, quantity + 1))}
-                          className="w-10 h-10 rounded-xl bg-slate-50 border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-primary transition-colors font-bold"
+                          onClick={() => {
+                            if (quantity >= maxSelectableQty) {
+                              if (usesVariantInventory && variantStock !== null) {
+                                setStockMsg(`Only ${variantStock} available in stock for this option.`);
+                              }
+                              return;
+                            }
+                            setStockMsg('');
+                            setQuantity(quantity + 1);
+                          }}
+                          disabled={quantity >= maxSelectableQty}
+                          className="w-10 h-10 rounded-xl bg-slate-50 border border-border flex items-center justify-center text-text-secondary hover:text-text-primary hover:border-primary transition-colors font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           +
                         </button>
                       </div>
+                      {usesVariantInventory && variantStock !== null && variantStock > 0 && (
+                        <p className="mt-2 text-xs font-semibold text-text-secondary">
+                          {cartQtyForSelection > 0
+                            ? `${variantStock} in stock · ${cartQtyForSelection} already in cart`
+                            : `${variantStock} available in stock for this option`}
+                        </p>
+                      )}
                     </div>
 
                     {/* Payment Method */}
@@ -642,6 +707,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                         {usesVariantInventory && activeSelectionLabel
                           ? `${activeSelectionLabel} is out of stock. Please choose another plan.`
                           : 'This product is currently out of stock.'}
+                      </div>
+                    )}
+
+                    {/* Stock limit message (combined cart + requested quantity) */}
+                    {stockMsg && (
+                      <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-4 py-3 text-sm font-bold">
+                        <AlertCircle size={16} className="flex-shrink-0" />
+                        {stockMsg}
                       </div>
                     )}
 

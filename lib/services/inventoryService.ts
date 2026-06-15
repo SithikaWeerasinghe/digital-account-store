@@ -225,6 +225,45 @@ export async function getAvailableInventoryCount(
 }
 
 /**
+ * Returns whether a product/variant is inventory-tracked and how much stock is
+ * currently available. Used by checkout/order creation to enforce stock limits.
+ *
+ * "tracked" rules (mirrors the storefront's behaviour exactly):
+ *  - A variant/option order (productOptionId given) ALWAYS uses variant
+ *    inventory, so tracked = true. If the option has no stock, available = 0.
+ *  - A simple product (no option) is only tracked when at least one
+ *    product-level inventory row exists. Products that don't use the inventory
+ *    table at all return tracked = false and are never blocked by stock checks.
+ *
+ * On any error this fails OPEN (tracked = false) so a transient DB issue can
+ * never block a legitimate checkout.
+ */
+export async function getInventoryStockStatus(
+  productId: string,
+  productOptionId?: string | null
+): Promise<{ tracked: boolean; available: number }> {
+  if (!supabaseAdmin || !productId) return { tracked: false, available: 0 };
+
+  const available = await getAvailableInventoryCount(productId, productOptionId);
+
+  // Variant/option orders are always inventory-tracked.
+  if (productOptionId) return { tracked: true, available };
+
+  // Simple product: tracked only when product-level inventory rows exist.
+  const { count, error } = await supabaseAdmin
+    .from('inventory_items')
+    .select('*', { count: 'exact', head: true })
+    .eq('product_id', productId)
+    .is('product_option_id', null);
+
+  if (error) {
+    console.error('[inventoryService] Error checking inventory tracking:', error);
+    return { tracked: false, available };
+  }
+  return { tracked: (count ?? 0) > 0, available };
+}
+
+/**
  * Dev diagnostics: returns the distinct product_option_id values that currently
  * have available stock for a product. Used to explain a 0 count caused by an
  * option-id mismatch.

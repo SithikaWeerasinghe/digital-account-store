@@ -24,14 +24,21 @@ environment variables** — there is no code change required to turn it on or of
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `RESEND_API_KEY` | Yes (to send) | Resend API key. Secret — never commit it. |
-| `RESEND_FROM_EMAIL` | Recommended | The "from" address, e.g. `ApexFled <onboarding@resend.dev>`. Defaults to `onboarding@resend.dev` if unset. |
-| `ADMIN_NOTIFICATION_EMAIL` | Optional | Where new/paid order notifications go. If unset, admin emails are skipped. |
-| `SUPPORT_EMAIL` | Optional | Shown in email footers. Defaults to `support@apexfled.com`. |
+| `RESEND_API_KEY` | Yes (to send) | Resend API key. Secret — server-side only, never commit it, never prefix `NEXT_PUBLIC_`. |
+| `RESEND_FROM_EMAIL` *or* `FROM_EMAIL` | Recommended | The "from" address, e.g. `ApexFled <onboarding@resend.dev>`. Defaults to `onboarding@resend.dev` if unset. |
+| `ADMIN_NOTIFICATION_EMAIL` *or* `ADMIN_EMAIL` | Optional | Where new-order / paid / delivery notifications go. If unset, admin emails are safely skipped (logged), checkout unaffected. |
+| `SUPPORT_EMAIL` | Optional | Shown in email footers **and** used as the recipient for new support-ticket notifications (falls back to the admin address if unset). |
 | `NEXT_PUBLIC_SITE_URL` | Recommended | Used for buttons/links inside emails. |
 
-> **Naming:** this project standardizes on `RESEND_FROM_EMAIL` (not `FROM_EMAIL`).
-> If you see `FROM_EMAIL` referenced anywhere, use `RESEND_FROM_EMAIL` instead.
+> **Env naming (aliases):** the code accepts **either** name in each pair —
+> `RESEND_FROM_EMAIL` **or** `FROM_EMAIL`, and `ADMIN_NOTIFICATION_EMAIL` **or**
+> `ADMIN_EMAIL`. You do not need to rename anything; both work.
+
+> **#1 cause of "emails not arriving":** the **FROM domain must be verified in
+> Resend**. Until you verify your own domain, you must use
+> `onboarding@resend.dev` as the from address, and Resend test mode only delivers
+> to the Resend account owner's email. A from-address on an unverified domain is
+> rejected — look for `[email] failed ...` lines in the Vercel logs.
 
 ---
 
@@ -40,10 +47,18 @@ environment variables** — there is no code change required to turn it on or of
 | Event | To | When |
 |-------|----|------|
 | Order confirmation | Customer | Order created (`POST /api/orders`). Shows **pending** until paid — never a fake "paid". |
-| New order notification | Admin | Order created (only if `ADMIN_NOTIFICATION_EMAIL` is set). |
-| Payment confirmation | Customer | Mercado Pago webhook marks the order **paid**. |
-| Paid order notification | Admin | Mercado Pago webhook marks the order **paid**. |
+| New order notification | Admin | Order created (only if an admin email is set). |
+| Payment confirmation | Customer | Webhook (Mercado Pago / NOWPayments / OVGC) marks the order **paid**. |
+| Paid order notification | Admin | Webhook marks the order **paid**. |
+| Delivery email | Customer | Inventory assigned on delivery (one email with all purchased accounts). |
+| Delivery notification | Admin | On delivery success, and on **failed / short inventory** (so it can be handled manually). |
+| Ticket confirmation | Customer | A support ticket is created (`POST /api/tickets`). |
+| Ticket notification | Support/Admin | A support ticket is created → `SUPPORT_EMAIL`, else admin email. |
+| Ticket reply | Customer | Admin replies to a ticket. |
 | Resend confirmation | Customer | Admin clicks **Resend Email** in the order detail (admin-protected route). |
+| Test email | Admin | Admin clicks **Send Test Email** in the dashboard (`POST /api/admin/test-email`). |
+
+All sends are logged server-side as `[email] sending/sent/failed/skipped <type> to <recipient> for <ref>` — no API keys, credentials, or email bodies are ever logged.
 
 ---
 

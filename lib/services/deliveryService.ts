@@ -3,7 +3,7 @@ import { InventoryItem } from '@/types/inventory';
 import * as orderService from '@/lib/services/orderService';
 import * as inventoryService from '@/lib/services/inventoryService';
 import * as productService from '@/lib/services/productService';
-import { sendDeliveryEmail } from '@/lib/services/emailService';
+import { sendDeliveryEmail, sendAdminDeliveryNotification } from '@/lib/services/emailService';
 
 export type DeliveryResult = {
   success: boolean;
@@ -11,6 +11,31 @@ export type DeliveryResult = {
   emailSent?: boolean;
   inventoryItem?: InventoryItem | null;
 };
+
+/**
+ * Marks an order's delivery as failed and notifies the admin once. The admin
+ * email is only sent when the order was not already in 'failed' state, so a
+ * retried webhook for the same un-deliverable order doesn't spam the inbox.
+ */
+async function markDeliveryFailed(
+  order: Order,
+  info: { deliveredCount: number; requestedCount: number; reason: string }
+): Promise<void> {
+  const wasAlreadyFailed = order.delivery_status === 'failed';
+
+  await orderService.updateOrderPaymentFields(order.id, { delivery_status: 'failed' });
+
+  if (!wasAlreadyFailed) {
+    await sendAdminDeliveryNotification(order, {
+      ok: false,
+      deliveredCount: info.deliveredCount,
+      requestedCount: info.requestedCount,
+      reason: info.reason,
+    }).catch((e) =>
+      console.error('[deliveryService] Admin delivery-failure notice failed:', e?.message || e)
+    );
+  }
+}
 
 /**
  * Deliver order: find inventory, assign to order, send email, mark delivered
@@ -58,29 +83,60 @@ export async function deliverOrder(orderId: string, skipPaymentCheck = false): P
     const guaranteeId = selectedGuarantee?.id || null;
     const guaranteeLabel = selectedGuarantee?.label || null;
 
-    const inventoryItem = await inventoryService.assignInventoryItemToOrder(
-      productId,
-      orderId,
-      customerEmail,
-      optionId,
-      optionLabel,
-      guaranteeId,
-      guaranteeLabel
-    );
+    // Deliver exactly the purchased quantity — one inventory item per unit.
+    const requestedQty = Math.max(1, Number(order.quantity) || 1);
 
-    if (!inventoryItem) {
-      // No matching inventory — update order delivery_status to failed.
-      // For variant orders, never substitute a different option's credentials.
-      await orderService.updateOrderPaymentFields(orderId, {
-        delivery_status: 'failed',
+    // Pre-check available stock so we never assign a partial batch. If there
+    // isn't enough for the full order, fail cleanly and let the admin handle it.
+    const available = await inventoryService.getAvailableInventoryCount(productId, optionId);
+    if (available < requestedQty) {
+      await markDeliveryFailed(order, {
+        deliveredCount: 0,
+        requestedCount: requestedQty,
+        reason: optionLabel
+          ? `Only ${available} of ${requestedQty} available for option "${optionLabel}"`
+          : `Only ${available} of ${requestedQty} available in inventory`,
       });
-      const message = optionLabel
-        ? `No available inventory for selected option: ${optionLabel}`
-        : 'No available inventory item for this product';
       return {
         success: false,
-        message,
+        message: optionLabel
+          ? `Not enough inventory for selected option "${optionLabel}" (have ${available}, need ${requestedQty})`
+          : `Not enough inventory for this product (have ${available}, need ${requestedQty})`,
         inventoryItem: null,
+      };
+    }
+
+    // Assign one available item per unit. Each assignment is atomic (only
+    // flips an item that is still 'available'), so concurrent deliveries can't
+    // double-sell the same item.
+    const assignedItems: InventoryItem[] = [];
+    for (let i = 0; i < requestedQty; i++) {
+      const item = await inventoryService.assignInventoryItemToOrder(
+        productId,
+        orderId,
+        customerEmail,
+        optionId,
+        optionLabel,
+        guaranteeId,
+        guaranteeLabel
+      );
+      if (!item) break; // stock raced out from under us
+      assignedItems.push(item);
+    }
+
+    if (assignedItems.length < requestedQty) {
+      // Short delivery (e.g. a concurrent order took the last item). The items
+      // we did assign stay attached to this order for the admin to complete.
+      // Do NOT send partial credentials as a success.
+      await markDeliveryFailed(order, {
+        deliveredCount: assignedItems.length,
+        requestedCount: requestedQty,
+        reason: `Assigned ${assignedItems.length} of ${requestedQty} (stock changed during delivery)`,
+      });
+      return {
+        success: false,
+        message: `Delivery incomplete: assigned ${assignedItems.length} of ${requestedQty}. Admin notified.`,
+        inventoryItem: assignedItems[0] ?? null,
       };
     }
 
@@ -92,17 +148,27 @@ export async function deliverOrder(orderId: string, skipPaymentCheck = false): P
       const product = await productService.getProductById(productId);
       productName = product?.name;
       // Prefer the inventory item's own instructions, then the product's.
-      usageInstructions = inventoryItem.usage_instructions ?? product?.usage_instructions ?? null;
+      usageInstructions = assignedItems[0].usage_instructions ?? product?.usage_instructions ?? null;
     } catch {
       // non-fatal — still try the item's own instructions
-      usageInstructions = inventoryItem.usage_instructions ?? null;
+      usageInstructions = assignedItems[0].usage_instructions ?? null;
     }
+
+    // Combine every assigned account's credentials into one delivery email.
+    const deliveryContent = assignedItems
+      .map((item, idx) =>
+        requestedQty > 1
+          ? `Account ${idx + 1} of ${requestedQty}\n${item.delivery_content}`
+          : item.delivery_content
+      )
+      .join('\n\n──────────\n\n');
 
     const emailResult = await sendDeliveryEmail({
       order,
-      inventoryItem,
+      inventoryItem: assignedItems[0],
       productName,
       usageInstructions,
+      deliveryContent,
     });
 
     const emailSent = emailResult.success || emailResult.skipped;
@@ -115,11 +181,18 @@ export async function deliverOrder(orderId: string, skipPaymentCheck = false): P
       delivery_status: 'delivered',
     });
 
+    // Best-effort admin success notification (never blocks delivery).
+    await sendAdminDeliveryNotification(order, {
+      ok: true,
+      deliveredCount: assignedItems.length,
+      requestedCount: requestedQty,
+    }).catch(() => {});
+
     return {
       success: true,
       message: 'Order delivered successfully',
       emailSent,
-      inventoryItem,
+      inventoryItem: assignedItems[0],
     };
   } catch (error: any) {
     console.error('[deliveryService] Delivery failed:', error);

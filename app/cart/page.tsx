@@ -2,12 +2,72 @@
 
 import { useCart } from '@/lib/contexts/CartContext';
 import Link from 'next/link';
-import { Trash2, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingCart, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { fetchInventoryCount } from '@/lib/api';
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
   const router = useRouter();
+
+  // Available stock per cart line (only for items that track variant inventory).
+  // null = not tracked / not loaded — those rely on the server-side checkout gate.
+  const [stockMap, setStockMap] = useState<Record<string, number | null>>({});
+  const [stockNotice, setStockNotice] = useState('');
+
+  // Stable key over item identities + selections (not quantities) so we only
+  // re-fetch stock when the lines change, not on every +/- click.
+  const itemsKey = items
+    .map((i) => `${i.id}:${i.selectedOption?.id ?? i.selectedVariant?.id ?? ''}`)
+    .join(',');
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const map: Record<string, number | null> = {};
+      await Promise.all(
+        items.map(async (item) => {
+          const selId = item.selectedOption?.id ?? item.selectedVariant?.id;
+          if (!selId) {
+            map[item.id] = null; // not variant-tracked on the client
+            return;
+          }
+          const result = await fetchInventoryCount(item.product.id, selId);
+          map[item.id] = result.available_count;
+        })
+      );
+      if (cancelled) return;
+      setStockMap(map);
+
+      // Clamp any line whose quantity now exceeds available stock.
+      let clamped = false;
+      for (const item of items) {
+        const stock = map[item.id];
+        if (stock !== null && stock !== undefined && item.quantity > stock) {
+          updateQuantity(item.id, Math.max(0, stock));
+          clamped = true;
+        }
+      }
+      if (clamped) {
+        setStockNotice('Some items were updated to match the latest available stock.');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemsKey]);
+
+  const handleIncrease = (itemId: string, currentQty: number) => {
+    const stock = stockMap[itemId];
+    if (stock !== null && stock !== undefined && currentQty >= stock) {
+      setStockNotice(`Only ${stock} available in stock for this option.`);
+      return;
+    }
+    setStockNotice('');
+    updateQuantity(itemId, currentQty + 1);
+  };
 
   const handleCheckout = () => {
     if (items.length === 0) return;
@@ -24,6 +84,13 @@ export default function CartPage() {
           </h1>
           <p className="text-sm sm:text-base text-slate-600">Review your items and proceed to checkout</p>
         </div>
+
+        {stockNotice && (
+          <div className="mb-6 flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl px-4 py-3 text-sm font-semibold">
+            <AlertCircle size={16} className="flex-shrink-0" />
+            {stockNotice}
+          </div>
+        )}
 
         {items.length === 0 ? (
           <div className="text-center py-20">
@@ -107,24 +174,36 @@ export default function CartPage() {
                             </div>
 
                             {/* Quantity Controls */}
-                            <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
-                              <button
-                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                className="p-1.5 hover:bg-white rounded transition-colors"
-                                aria-label="Decrease quantity"
-                              >
-                                <Minus size={16} className="text-slate-600" />
-                              </button>
-                              <span className="w-8 text-center font-semibold text-slate-900">
-                                {item.quantity}
-                              </span>
-                              <button
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                className="p-1.5 hover:bg-white rounded transition-colors"
-                                aria-label="Increase quantity"
-                              >
-                                <Plus size={16} className="text-slate-600" />
-                              </button>
+                            <div className="flex flex-col items-end gap-1">
+                              <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
+                                <button
+                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                  className="p-1.5 hover:bg-white rounded transition-colors"
+                                  aria-label="Decrease quantity"
+                                >
+                                  <Minus size={16} className="text-slate-600" />
+                                </button>
+                                <span className="w-8 text-center font-semibold text-slate-900">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => handleIncrease(item.id, item.quantity)}
+                                  disabled={
+                                    stockMap[item.id] !== null &&
+                                    stockMap[item.id] !== undefined &&
+                                    item.quantity >= (stockMap[item.id] as number)
+                                  }
+                                  className="p-1.5 hover:bg-white rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus size={16} className="text-slate-600" />
+                                </button>
+                              </div>
+                              {stockMap[item.id] !== null && stockMap[item.id] !== undefined && (
+                                <span className="text-[11px] font-semibold text-slate-500">
+                                  {stockMap[item.id]} in stock
+                                </span>
+                              )}
                             </div>
 
                             {/* Remove Button */}
