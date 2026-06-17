@@ -451,7 +451,15 @@ export type ProductFormInput = {
   features?: string[];
   inStock?: boolean;
   isInstantDelivery?: boolean;
-  variants?: { id: string; label: string; price: number; originalPrice?: number }[] | null;
+  variants?: {
+    id: string;
+    label: string;
+    price: number;
+    originalPrice?: number;
+    // Per-plan warranty/duration prices (optional). Overrides the product-level
+    // guaranteeOptions for this plan when present.
+    guarantee_options?: { id: string; label: string; months: number; total_price: number; monthly_price: number; is_default?: boolean; badge?: string }[];
+  }[] | null;
   usageInstructions?: string | null;
   guaranteeOptions?: { id: string; label: string; months: number; total_price: number; monthly_price: number; badge?: string }[] | null;
 };

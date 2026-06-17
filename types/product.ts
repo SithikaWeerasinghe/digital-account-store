@@ -3,6 +3,14 @@ export interface ProductVariant {
   label: string;
   price: number;
   originalPrice?: number;
+  /**
+   * Optional per-plan warranty/duration choices with their OWN prices. When
+   * present, the storefront shows these for this plan instead of the
+   * product-level guarantee_options, so each plan can price its warranties
+   * differently (e.g. "Fan + 1 Month" ≠ "Mega Fan + 1 Month"). Backward
+   * compatible — omit it to use product-level / no warranties.
+   */
+  guarantee_options?: GuaranteeOption[];
 }
 
 export interface ProductOption {

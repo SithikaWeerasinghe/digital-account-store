@@ -73,6 +73,52 @@ export async function createInventoryItem(input: CreateInventoryItemInput): Prom
   return data as InventoryItem;
 }
 
+/**
+ * Bulk-creates inventory from a single paste: one row per account so each
+ * pasted credential becomes its own deliverable stock unit. The whole batch
+ * shares the same product + option/plan + warranty, preserving stock
+ * separation. Stock count therefore equals the number of accounts, and
+ * delivery still hands out exactly the purchased quantity (one row per unit).
+ */
+export async function createInventoryItemsBulk(
+  base: Omit<CreateInventoryItemInput, 'delivery_content'>,
+  contents: string[]
+): Promise<InventoryItem[]> {
+  if (!supabaseAdmin) throw new Error('Supabase admin client not configured');
+  if (!base.product_id) throw new Error('product_id is required');
+
+  const cleaned = (contents || []).map((c) => (c ?? '').trim()).filter(Boolean);
+  if (cleaned.length === 0) {
+    throw new Error('At least one account is required');
+  }
+
+  const now = new Date().toISOString();
+  const rows = cleaned.map((delivery_content) => ({
+    product_id: base.product_id,
+    delivery_content,
+    title: base.title || null,
+    status: 'available' as const,
+    product_option_id: base.product_option_id || null,
+    product_option_label: base.product_option_label || null,
+    guarantee_id: base.guarantee_id || null,
+    guarantee_label: base.guarantee_label || null,
+    usage_instructions: base.usage_instructions || null,
+    created_at: now,
+    updated_at: now,
+  }));
+
+  const { data, error } = await supabaseAdmin
+    .from('inventory_items')
+    .insert(rows)
+    .select();
+
+  if (error) {
+    throw new Error(`Failed to create inventory items: ${error.message}`);
+  }
+
+  return (data as InventoryItem[]) || [];
+}
+
 export async function updateInventoryItem(id: string, input: UpdateInventoryItemInput): Promise<InventoryItem> {
   if (!supabaseAdmin) throw new Error('Supabase admin client not configured');
 

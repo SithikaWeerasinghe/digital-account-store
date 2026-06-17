@@ -13,6 +13,20 @@ export function mapDatabaseProduct(dbRow: any): Product {
           label: v.label,
           price: Number(v.price),
           originalPrice: v.original_price ? Number(v.original_price) : undefined,
+          // Optional per-plan warranty/duration choices (JSONB). Backward
+          // compatible: undefined when not authored for this plan.
+          guarantee_options:
+            Array.isArray(v.guarantee_options) && v.guarantee_options.length > 0
+              ? v.guarantee_options.map((g: any) => ({
+                  id: g.id,
+                  label: g.label,
+                  months: Number(g.months),
+                  total_price: Number(g.total_price),
+                  monthly_price: Number(g.monthly_price),
+                  is_default: g.is_default ?? undefined,
+                  badge: g.badge ?? undefined,
+                }))
+              : undefined,
         }))
       : undefined;
 
@@ -208,6 +222,20 @@ function mapInputToRow(input: ProductInput): Record<string, any> {
             label: v.label,
             price: Number(v.price),
             original_price: v.originalPrice ? Number(v.originalPrice) : undefined,
+            // Persist this plan's own warranty/duration prices (if any) so each
+            // plan can price its warranties independently.
+            guarantee_options:
+              v.guarantee_options && v.guarantee_options.length > 0
+                ? v.guarantee_options.map((g) => ({
+                    id: g.id,
+                    label: g.label,
+                    months: Number(g.months),
+                    total_price: Number(g.total_price),
+                    monthly_price: Number(g.monthly_price),
+                    is_default: g.is_default ?? undefined,
+                    badge: g.badge ?? undefined,
+                  }))
+                : undefined,
           }))
         : null;
   }

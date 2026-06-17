@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/lib/constants';
 import { useCart } from '@/lib/contexts/CartContext';
-import { getDefaultGuaranteeOptions, resolveGuaranteeOptions } from '@/lib/productUtils';
+import { resolveGuaranteeOptions, guaranteeSourceForPlan } from '@/lib/productUtils';
 import ProductImage from '@/components/ui/ProductImage';
 import ProductConfigurator, { ConfiguratorPlan } from '@/components/products/ProductConfigurator';
 import {
@@ -95,27 +95,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         setIsLoading(true);
         const productData = await fetchProductBySlug(slug);
         setProduct(productData);
-        if (productData?.variants?.length) {
-          setSelectedVariant(productData.variants[0]);
-        }
 
-        // Initialize selected option (if available)
-        if (productData?.options?.length) {
-          setSelectedOption(productData.options.find(o => o.is_default) || productData.options[0]);
-        }
+        // Initialize the selected plan: a variant and/or an option.
+        const initialVariant = productData?.variants?.length ? productData.variants[0] : null;
+        const initialOption = productData?.options?.length
+          ? (productData.options.find((o) => o.is_default) || productData.options[0])
+          : null;
+        if (initialVariant) setSelectedVariant(initialVariant);
+        if (initialOption) setSelectedOption(initialOption);
 
-        // Initialize selected guarantee (use provided or generate defaults)
-        const hasGuaranteesOrOptions = productData?.options?.length || productData?.guarantee_options?.length;
-        if (hasGuaranteesOrOptions) {
-          const gOptions = productData?.guarantee_options?.length
-            ? productData.guarantee_options
-            : productData ? getDefaultGuaranteeOptions(productData.price) : [];
-          if (gOptions.length > 0) {
-            setSelectedGuarantee(gOptions.find(g => g.is_default) || gOptions[0]);
-          }
-        } else {
-          setSelectedGuarantee(null);
-        }
+        // Initialize the selected warranty from the SAME resolver the rest of
+        // the page uses, so per-plan warranty prices are picked up on load.
+        const gOptions = resolveGuaranteeOptions(
+          productData ?? null,
+          guaranteeSourceForPlan(initialOption, initialVariant)
+        );
+        setSelectedGuarantee(
+          gOptions.length > 0 ? (gOptions.find((g) => g.is_default) || gOptions[0]) : null
+        );
 
         if (productData) {
           const reviewsData = await fetchReviews({ productId: productData.id });
@@ -190,10 +187,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [emailError, setEmailError] = useState('');
 
-  // Warranty/duration options for the current plan. Resolves per-option →
-  // product-level → generated (options only); variant-only products with no
-  // warranty data resolve to [] so the charged price stays the plan price.
-  const guaranteeOptions: GuaranteeOption[] = resolveGuaranteeOptions(product, selectedOption);
+  // Warranty/duration options for the current plan. Resolves per-plan (the
+  // selected option OR variant's own guarantee_options) → product-level →
+  // generated (options only); variant plans with no warranty data resolve to []
+  // so the charged price stays the plan price.
+  const guaranteeOptions: GuaranteeOption[] = resolveGuaranteeOptions(
+    product,
+    guaranteeSourceForPlan(selectedOption, selectedVariant)
+  );
 
   // Plans shown in the configurator dropdown — built from the product's REAL
   // data: options if it has them, otherwise variants. No hardcoded content.
@@ -214,13 +215,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
       const opt = product.options?.find((o) => o.id === planId);
       if (!opt) return;
       setSelectedOption(opt);
-      const g = resolveGuaranteeOptions(product, opt);
+      const g = resolveGuaranteeOptions(product, guaranteeSourceForPlan(opt, null));
       setSelectedGuarantee(g.find((x) => x.is_default) || g[0] || null);
     } else {
       const v = product.variants?.find((x) => x.id === planId);
       if (!v) return;
       setSelectedVariant(v);
-      const g = resolveGuaranteeOptions(product, null);
+      // Use THIS plan's own warranties (per-plan pricing) when it has them.
+      const g = resolveGuaranteeOptions(product, guaranteeSourceForPlan(null, v));
       setSelectedGuarantee(g.find((x) => x.is_default) || g[0] || null);
     }
     setStockMsg('');

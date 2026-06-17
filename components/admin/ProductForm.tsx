@@ -8,18 +8,89 @@ import { X, Plus, Trash2, Loader2, ImageOff } from 'lucide-react';
 // Fallback used until categories load from the database.
 const FALLBACK_CATEGORIES = ['Streaming', 'Gaming', 'AI Tools', 'Software', 'Productivity'];
 
-interface VariantRow {
-  id: string;
-  label: string;
-  price: string;
-  originalPrice: string;
-}
-
 interface GuaranteeRow {
   id: string;
   label: string;
   months: string;
   total_price: string;
+}
+
+interface VariantRow {
+  id: string;
+  label: string;
+  price: string;
+  originalPrice: string;
+  /** Per-plan warranty/duration prices. Empty = use the shared options below. */
+  guarantees: GuaranteeRow[];
+}
+
+const newGuaranteeRow = (): GuaranteeRow => ({
+  id: `g-${Math.random().toString(36).substring(2, 8)}`,
+  label: '',
+  months: '',
+  total_price: '',
+});
+
+const mapGuaranteeRows = (options?: { id: string; label: string; months: number; total_price: number }[]): GuaranteeRow[] =>
+  options?.map((g) => ({
+    id: g.id,
+    label: g.label,
+    months: String(g.months),
+    total_price: String(g.total_price),
+  })) || [];
+
+/**
+ * One editable warranty/duration row (label · months · total €) + delete.
+ * Responsive: a single stacked column on mobile (no horizontal cut-off), a
+ * compact aligned row on sm+. Reused for both shared and per-plan warranties.
+ */
+function GuaranteeRowEditor({
+  row,
+  onChange,
+  onRemove,
+}: {
+  row: GuaranteeRow;
+  onChange: (field: keyof GuaranteeRow, value: string) => void;
+  onRemove: () => void;
+}) {
+  const inputClass =
+    'w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900';
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_5rem_6rem_auto] gap-2 sm:items-center">
+      <input
+        type="text"
+        value={row.label}
+        onChange={(e) => onChange('label', e.target.value)}
+        placeholder="Label (e.g. 3 Months)"
+        className={inputClass}
+      />
+      <input
+        type="number"
+        min="1"
+        value={row.months}
+        onChange={(e) => onChange('months', e.target.value)}
+        placeholder="Months"
+        className={inputClass}
+      />
+      <input
+        type="number"
+        step="0.01"
+        min="0"
+        value={row.total_price}
+        onChange={(e) => onChange('total_price', e.target.value)}
+        placeholder="Total €"
+        className={inputClass}
+      />
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label="Remove warranty"
+        className="justify-self-start sm:justify-self-auto p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-300 transition-colors"
+      >
+        <Trash2 size={16} />
+      </button>
+    </div>
+  );
 }
 
 interface ProductFormProps {
@@ -81,16 +152,10 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
           label: v.label,
           price: String(v.price),
           originalPrice: v.originalPrice ? String(v.originalPrice) : '',
+          guarantees: mapGuaranteeRows(v.guarantee_options),
         })) || []
       );
-      setGuarantees(
-        product.guarantee_options?.map((g) => ({
-          id: g.id,
-          label: g.label,
-          months: String(g.months),
-          total_price: String(g.total_price),
-        })) || []
-      );
+      setGuarantees(mapGuaranteeRows(product.guarantee_options));
     }
   }, [product]);
 
@@ -104,18 +169,32 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
   const addVariant = () =>
     setVariants((prev) => [
       ...prev,
-      { id: `v-${Math.random().toString(36).substring(2, 8)}`, label: '', price: '', originalPrice: '' },
+      { id: `v-${Math.random().toString(36).substring(2, 8)}`, label: '', price: '', originalPrice: '', guarantees: [] },
     ]);
-  const updateVariant = (index: number, field: keyof VariantRow, value: string) =>
+  const updateVariant = (index: number, field: 'label' | 'price' | 'originalPrice', value: string) =>
     setVariants((prev) => prev.map((v, i) => (i === index ? { ...v, [field]: value } : v)));
   const removeVariant = (index: number) =>
     setVariants((prev) => prev.filter((_, i) => i !== index));
 
-  const addGuarantee = () =>
-    setGuarantees((prev) => [
-      ...prev,
-      { id: `g-${Math.random().toString(36).substring(2, 8)}`, label: '', months: '', total_price: '' },
-    ]);
+  // Per-plan warranty rows (live inside a single variant).
+  const addVariantGuarantee = (vIndex: number) =>
+    setVariants((prev) =>
+      prev.map((v, i) => (i === vIndex ? { ...v, guarantees: [...v.guarantees, newGuaranteeRow()] } : v))
+    );
+  const updateVariantGuarantee = (vIndex: number, gIndex: number, field: keyof GuaranteeRow, value: string) =>
+    setVariants((prev) =>
+      prev.map((v, i) =>
+        i === vIndex
+          ? { ...v, guarantees: v.guarantees.map((g, j) => (j === gIndex ? { ...g, [field]: value } : g)) }
+          : v
+      )
+    );
+  const removeVariantGuarantee = (vIndex: number, gIndex: number) =>
+    setVariants((prev) =>
+      prev.map((v, i) => (i === vIndex ? { ...v, guarantees: v.guarantees.filter((_, j) => j !== gIndex) } : v))
+    );
+
+  const addGuarantee = () => setGuarantees((prev) => [...prev, newGuaranteeRow()]);
   const updateGuarantee = (index: number, field: keyof GuaranteeRow, value: string) =>
     setGuarantees((prev) => prev.map((g, i) => (i === index ? { ...g, [field]: value } : g)));
   const removeGuarantee = (index: number) =>
@@ -139,31 +218,43 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
 
     const cleanFeatures = features.map((f) => f.trim()).filter(Boolean);
 
+    // Warranty/guarantee options: keep rows with a label + price; derive the
+    // monthly price from total ÷ months. Shared by the product-level list and
+    // each plan's own list, so pricing rules stay identical everywhere.
+    const cleanGuaranteeRows = (rows: GuaranteeRow[]) =>
+      rows
+        .filter((g) => g.label.trim() && g.total_price)
+        .map((g, i) => {
+          const months = Math.max(1, Number(g.months) || 1);
+          const total = Number(g.total_price);
+          return {
+            id: g.id,
+            label: g.label.trim(),
+            months,
+            total_price: total,
+            monthly_price: Number((total / months).toFixed(2)),
+            is_default: i === 0 ? true : undefined,
+          };
+        });
+
     const cleanVariants = variants
       .filter((v) => v.label.trim() && v.price)
-      .map((v) => ({
-        id: v.id,
-        label: v.label.trim(),
-        price: Number(v.price),
-        originalPrice: v.originalPrice ? Number(v.originalPrice) : undefined,
-      }));
-
-    // Warranty/guarantee options: keep rows with a label + price; derive the
-    // monthly price from total ÷ months for display.
-    const cleanGuarantees = guarantees
-      .filter((g) => g.label.trim() && g.total_price)
-      .map((g, i) => {
-        const months = Math.max(1, Number(g.months) || 1);
-        const total = Number(g.total_price);
+      .map((v) => {
+        const planGuarantees = cleanGuaranteeRows(v.guarantees);
         return {
-          id: g.id,
-          label: g.label.trim(),
-          months,
-          total_price: total,
-          monthly_price: Number((total / months).toFixed(2)),
-          is_default: i === 0 ? true : undefined,
+          id: v.id,
+          label: v.label.trim(),
+          price: Number(v.price),
+          originalPrice: v.originalPrice ? Number(v.originalPrice) : undefined,
+          // This plan's own warranty prices (overrides the shared list for this
+          // plan). Omitted when the admin left it empty.
+          guarantee_options: planGuarantees.length > 0 ? planGuarantees : undefined,
         };
       });
+
+    // Product-level (shared) warranty options — used for any plan that doesn't
+    // define its own.
+    const cleanGuarantees = cleanGuaranteeRows(guarantees);
 
     const input: ProductFormInput = {
       name: name.trim(),
@@ -438,57 +529,106 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                   These appear in the customer-facing product dropdown.
                 </p>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {variants.map((variant, index) => (
-                    <div key={variant.id} className="flex flex-wrap gap-2 items-center">
-                      <input
-                        type="text"
-                        value={variant.label}
-                        onChange={(e) => updateVariant(index, 'label', e.target.value)}
-                        placeholder="Plan name / duration (e.g. 3 Months)"
-                        className="flex-1 min-w-[140px] px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
-                      />
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={variant.price}
-                        onChange={(e) => updateVariant(index, 'price', e.target.value)}
-                        placeholder="Price €"
-                        className="w-24 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
-                      />
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={variant.originalPrice}
-                        onChange={(e) => updateVariant(index, 'originalPrice', e.target.value)}
-                        placeholder="Compare-at €"
-                        title="Optional compare-at (original) price for showing a discount"
-                        className="w-28 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeVariant(index)}
-                        className="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-300 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                    <div key={variant.id} className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 space-y-3">
+                      {/* Plan name + remove */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={variant.label}
+                          onChange={(e) => updateVariant(index, 'label', e.target.value)}
+                          placeholder="Plan name / tier (e.g. Mega Fan)"
+                          className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeVariant(index)}
+                          aria-label="Remove plan"
+                          className="flex-shrink-0 p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-300 transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      {/* Plan price + compare-at — stack on mobile */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                            Plan Price €
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={variant.price}
+                            onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                            placeholder="9.99"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                            Compare-at € (optional)
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={variant.originalPrice}
+                            onChange={(e) => updateVariant(index, 'originalPrice', e.target.value)}
+                            placeholder="For showing a discount"
+                            className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Per-plan warranty prices */}
+                      <div className="rounded-lg border border-dashed border-slate-300 bg-white p-3">
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 min-w-0 truncate">
+                            Warranty prices for &ldquo;{variant.label.trim() || 'this plan'}&rdquo;
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => addVariantGuarantee(index)}
+                            className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-hover flex-shrink-0"
+                          >
+                            <Plus size={14} /> Add
+                          </button>
+                        </div>
+                        {variant.guarantees.length === 0 ? (
+                          <p className="text-[11px] text-slate-400">
+                            Uses the shared warranty options below. Add rows here to give THIS plan its own warranty prices.
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {variant.guarantees.map((g, gIndex) => (
+                              <GuaranteeRowEditor
+                                key={g.id}
+                                row={g}
+                                onChange={(field, value) => updateVariantGuarantee(index, gIndex, field, value)}
+                                onRemove={() => removeVariantGuarantee(index, gIndex)}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                   <p className="text-[11px] text-slate-400">
-                    Shown in the customer&apos;s &quot;Product / Plan&quot; dropdown. The price appears in the green pill;
-                    Compare-at is optional (for showing a discount).
+                    Shown in the customer&apos;s &quot;Product / Plan&quot; dropdown. Each plan can set its own
+                    warranty prices; leave a plan&apos;s warranty list empty to use the shared options below.
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Warranty / Guarantee Options */}
+            {/* Shared Warranty / Guarantee Options (fallback for plans without their own) */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-xs font-black tracking-widest uppercase text-slate-600">
-                  Warranty / Guarantee Options (optional)
+                  Shared Warranty / Guarantee Options (optional)
                 </label>
                 <button
                   type="button"
@@ -500,46 +640,29 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
               </div>
               {guarantees.length === 0 ? (
                 <p className="text-xs text-slate-400 italic">
-                  No warranty options. Add options like &quot;1 Month&quot;, &quot;3 Months&quot;, or &quot;Lifetime&quot; with a price.
+                  No shared warranty options. These apply to any plan that doesn&apos;t set its own warranty
+                  prices above. Add options like &quot;1 Month&quot;, &quot;3 Months&quot;, or &quot;Lifetime&quot; with a price.
                 </p>
               ) : (
                 <div className="space-y-2">
+                  {/* Column hints on sm+ */}
+                  <div className="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_5rem_6rem_auto] gap-2 px-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Label</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Months</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total €</span>
+                    <span />
+                  </div>
                   {guarantees.map((g, index) => (
-                    <div key={g.id} className="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        value={g.label}
-                        onChange={(e) => updateGuarantee(index, 'label', e.target.value)}
-                        placeholder="Label (e.g. 3 Months)"
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
-                      />
-                      <input
-                        type="number"
-                        min="1"
-                        value={g.months}
-                        onChange={(e) => updateGuarantee(index, 'months', e.target.value)}
-                        placeholder="Months"
-                        className="w-20 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
-                      />
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={g.total_price}
-                        onChange={(e) => updateGuarantee(index, 'total_price', e.target.value)}
-                        placeholder="Total €"
-                        className="w-24 px-3 py-2 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm text-slate-900"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeGuarantee(index)}
-                        className="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-300 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                    <GuaranteeRowEditor
+                      key={g.id}
+                      row={g}
+                      onChange={(field, value) => updateGuarantee(index, field, value)}
+                      onRemove={() => removeGuarantee(index)}
+                    />
                   ))}
                   <p className="text-[11px] text-slate-400">
-                    Shown on the product page under &quot;Warranty / Guarantee&quot;. Monthly price is calculated from total ÷ months.
+                    Shown on the product page under &quot;Warranty / Guarantee&quot; for plans without their own
+                    prices. Monthly price is calculated from total ÷ months.
                   </p>
                 </div>
               )}

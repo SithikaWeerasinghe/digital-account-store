@@ -5,7 +5,8 @@ import AdminProtected from '@/components/admin/AdminProtected';
 import { InventoryItem } from '@/types/inventory';
 import { Product, GuaranteeOption } from '@/types/product';
 import { fetchProducts, fetchAdminApi } from '@/lib/api';
-import { resolveGuaranteeOptions } from '@/lib/productUtils';
+import { resolveGuaranteeOptions, guaranteeSourceForPlan } from '@/lib/productUtils';
+import { parseBulkAccounts, type BulkSplitMode } from '@/lib/utils';
 import { Trash2, Eye, EyeOff, Plus, Edit2 } from 'lucide-react';
 
 type FormData = {
@@ -38,6 +39,11 @@ function AdminInventoryContent() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // How a paste is split into individual accounts. 'single' = one item (legacy
+  // flow); 'lines'/'blocks' = bulk, one deliverable stock unit per account.
+  const [splitMode, setSplitMode] = useState<'single' | BulkSplitMode>('single');
 
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
 
@@ -105,14 +111,18 @@ function AdminInventoryContent() {
   // carries — otherwise warranty-scoped stock would never match. For an
   // options-based product the selected option drives per-option warranties;
   // variant-only products use product-level warranties (no generated defaults).
-  const selectedOptionObj = useMemo(
-    () => selectedProduct?.options?.find((o) => o.id === formData.product_option_id) ?? null,
-    [selectedProduct, formData.product_option_id]
-  );
+  // The selected plan as a guarantee source — option OR variant — using the
+  // SAME rule as the storefront so per-plan warranties resolve identically.
+  const selectedPlanObj = useMemo(() => {
+    if (!selectedProduct) return null;
+    const opt = selectedProduct.options?.find((o) => o.id === formData.product_option_id) ?? null;
+    const v = selectedProduct.variants?.find((x) => x.id === formData.product_option_id) ?? null;
+    return guaranteeSourceForPlan(opt, v);
+  }, [selectedProduct, formData.product_option_id]);
   // The product's real warranty axis — i.e. what a customer can actually pick.
   const resolvedGuarantees: GuaranteeOption[] = useMemo(
-    () => resolveGuaranteeOptions(selectedProduct ?? null, selectedOptionObj),
-    [selectedProduct, selectedOptionObj]
+    () => resolveGuaranteeOptions(selectedProduct ?? null, selectedPlanObj),
+    [selectedProduct, selectedPlanObj]
   );
   // Whether this product/plan genuinely offers warranties to customers. Only
   // then is a warranty selection required (and only then can stock be split by
@@ -137,6 +147,12 @@ function AdminInventoryContent() {
     }
     return list;
   }, [resolvedGuarantees, formData.guarantee_id, formData.guarantee_label]);
+
+  // Live preview of how many stock items a bulk paste will create.
+  const bulkAccounts = useMemo(
+    () => (splitMode === 'single' ? [] : parseBulkAccounts(formData.delivery_content, splitMode)),
+    [splitMode, formData.delivery_content]
+  );
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,17 +197,31 @@ function AdminInventoryContent() {
       const method = editingId ? 'PATCH' : 'POST';
       const endpoint = editingId ? `/api/admin/inventory/${editingId}` : '/api/admin/inventory';
 
-      // Send null (not empty string) for unset option/guarantee.
-      const payload = {
+      // Bulk only applies when creating: split the paste into one account each.
+      const isBulk = !editingId && splitMode !== 'single';
+      const accounts = isBulk ? parseBulkAccounts(formData.delivery_content, splitMode) : [];
+      if (isBulk && accounts.length === 0) {
+        setError('Paste at least one account.');
+        return;
+      }
+
+      // Send null (not empty string) for unset option/guarantee. For bulk we
+      // send delivery_contents[] (one row per account); otherwise a single
+      // delivery_content (unchanged single-item flow).
+      const payload: Record<string, any> = {
         product_id: formData.product_id,
         title: formData.title,
-        delivery_content: formData.delivery_content,
         product_option_id: formData.product_option_id || null,
         product_option_label: formData.product_option_label || null,
         guarantee_id: formData.guarantee_id || null,
         guarantee_label: formData.guarantee_label || null,
         usage_instructions: formData.usage_instructions || null,
       };
+      if (isBulk) {
+        payload.delivery_contents = accounts;
+      } else {
+        payload.delivery_content = formData.delivery_content;
+      }
 
       const response = await fetch(endpoint, {
         method,
@@ -204,10 +234,18 @@ function AdminInventoryContent() {
 
       const data = await response.json();
       if (data.success) {
+        const count = Number(data.count ?? 1);
+        const message = editingId
+          ? 'Inventory item updated.'
+          : count > 1
+            ? `Created ${count} stock items from your paste.`
+            : 'Inventory item added.';
         await loadData();
         setFormData(EMPTY_FORM);
+        setSplitMode('single');
         setShowForm(false);
         setEditingId(null);
+        setSuccessMessage(message);
       } else {
         setError(data.message || 'Failed to save item');
       }
@@ -227,6 +265,8 @@ function AdminInventoryContent() {
       delivery_content: item.delivery_content,
       usage_instructions: item.usage_instructions || '',
     });
+    setSplitMode('single'); // editing is always a single item
+    setSuccessMessage('');
     setEditingId(item.id);
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -300,6 +340,8 @@ function AdminInventoryContent() {
             setShowForm(!showForm);
             setEditingId(null);
             setFormData(EMPTY_FORM);
+            setSplitMode('single');
+            setSuccessMessage('');
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
         >
@@ -307,6 +349,12 @@ function AdminInventoryContent() {
           {showForm ? 'Cancel' : 'Add Item'}
         </button>
       </div>
+
+      {successMessage && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          {successMessage}
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -439,14 +487,57 @@ function AdminInventoryContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">Delivery Content (required)</label>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
+                <label className="block text-sm font-semibold text-slate-700">
+                  {editingId || splitMode === 'single' ? 'Delivery Content (required)' : 'Accounts (required)'}
+                </label>
+                {/* Bulk control — only when adding (editing is a single item). */}
+                {!editingId && (
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="split-mode" className="text-xs font-medium text-slate-500 whitespace-nowrap">
+                      Add as
+                    </label>
+                    <select
+                      id="split-mode"
+                      value={splitMode}
+                      onChange={(e) => setSplitMode(e.target.value as 'single' | BulkSplitMode)}
+                      className="px-2 py-1.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="single">Single item</option>
+                      <option value="lines">Multiple — one account per line</option>
+                      <option value="blocks">Multiple — one account per blank-line block</option>
+                    </select>
+                  </div>
+                )}
+              </div>
               <textarea
                 value={formData.delivery_content}
                 onChange={(e) => setFormData({ ...formData, delivery_content: e.target.value })}
-                placeholder="Email / Password&#10;License Key&#10;Activation Code&#10;Setup Notes"
-                rows={6}
+                placeholder={
+                  !editingId && splitMode === 'blocks'
+                    ? 'Email / Password\nExtra notes\n\nEmail / Password\nExtra notes\n\n(separate each account with a blank line)'
+                    : !editingId && splitMode === 'lines'
+                      ? 'email1:password1\nemail2:password2\nemail3:password3'
+                      : 'Email / Password\nLicense Key\nActivation Code\nSetup Notes'
+                }
+                rows={!editingId && splitMode !== 'single' ? 10 : 6}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 font-mono text-sm"
               />
+              {!editingId && splitMode !== 'single' ? (
+                <p className="text-xs text-slate-500 mt-1">
+                  {splitMode === 'lines'
+                    ? 'One account per line — each non-empty line becomes a separate deliverable stock item.'
+                    : 'One account per block, separated by a blank line — each block becomes a separate deliverable stock item.'}{' '}
+                  <span className="font-semibold text-slate-700">
+                    {bulkAccounts.length} stock item{bulkAccounts.length === 1 ? '' : 's'}
+                  </span>{' '}
+                  will be created for the selected product / plan / warranty.
+                </p>
+              ) : (
+                <p className="text-xs text-slate-400 mt-1">
+                  The exact credentials delivered to the customer for this one account.
+                </p>
+              )}
             </div>
 
             <div>
@@ -476,6 +567,7 @@ function AdminInventoryContent() {
                   setShowForm(false);
                   setEditingId(null);
                   setFormData(EMPTY_FORM);
+                  setSplitMode('single');
                 }}
                 className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors font-semibold"
               >

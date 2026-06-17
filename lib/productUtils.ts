@@ -68,6 +68,26 @@ export function resolveGuaranteeOptions(
 }
 
 /**
+ * Builds the `selectedOption` argument for resolveGuaranteeOptions from the
+ * currently selected plan — which may be an option OR a variant.
+ *
+ *  - An option always passes through, so options-based products keep their
+ *    per-option → product-level → generated-default warranty behaviour.
+ *  - A variant only passes its OWN warranties when it actually has them. This
+ *    is what lets each plan price its warranties independently, while variant
+ *    products WITHOUT per-plan warranties keep their existing behaviour
+ *    (product-level warranties, or none) and never get fabricated cards.
+ */
+export function guaranteeSourceForPlan(
+  option?: { price: number; guarantee_options?: GuaranteeOption[] } | null,
+  variant?: { price: number; guarantee_options?: GuaranteeOption[] } | null
+): { price: number; guarantee_options?: GuaranteeOption[] } | null {
+  if (option) return option;
+  if (variant?.guarantee_options && variant.guarantee_options.length > 0) return variant;
+  return null;
+}
+
+/**
  * Enrich a product with guarantee options if not already present.
  * Products without guarantee_options get smart defaults based on price.
  */

@@ -37,9 +37,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const input: CreateInventoryItemInput = {
+
+    // Shared product + plan/option + warranty for the created item(s).
+    const base = {
       product_id: body.product_id,
-      delivery_content: body.delivery_content,
       title: body.title,
       product_option_id: body.product_option_id,
       product_option_label: body.product_option_label,
@@ -48,8 +49,23 @@ export async function POST(request: NextRequest) {
       usage_instructions: body.usage_instructions,
     };
 
+    // Bulk: one row per pasted account so each becomes its own stock unit.
+    if (Array.isArray(body.delivery_contents) && body.delivery_contents.length > 0) {
+      const items = await inventoryService.createInventoryItemsBulk(base, body.delivery_contents);
+      return NextResponse.json(
+        { success: true, data: items, count: items.length },
+        { status: 201 }
+      );
+    }
+
+    // Single item (unchanged flow).
+    const input: CreateInventoryItemInput = {
+      ...base,
+      delivery_content: body.delivery_content,
+    };
+
     const item = await inventoryService.createInventoryItem(input);
-    return NextResponse.json({ success: true, data: item }, { status: 201 });
+    return NextResponse.json({ success: true, data: item, count: 1 }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, message: error.message || 'Failed to create inventory item' },
