@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import AdminProtected from '@/components/admin/AdminProtected';
 import { InventoryItem } from '@/types/inventory';
 import { Product, GuaranteeOption } from '@/types/product';
 import { fetchProducts, fetchAdminApi } from '@/lib/api';
 import { resolveGuaranteeOptions, guaranteeSourceForPlan } from '@/lib/productUtils';
 import { parseBulkAccounts, type BulkSplitMode } from '@/lib/utils';
-import { Trash2, Eye, EyeOff, Plus, Edit2 } from 'lucide-react';
+import { Trash2, Eye, EyeOff, Plus, Edit2, ChevronRight, Layers } from 'lucide-react';
 
 type FormData = {
   product_id: string;
@@ -19,6 +19,29 @@ type FormData = {
   delivery_content: string;
   usage_instructions: string;
 };
+
+/**
+ * A display-only grouping of inventory rows that share the exact same
+ * product + plan/option + warranty/guarantee. The database still stores one
+ * row per account (safe for stock counting and delivery); this only collapses
+ * the admin table so many pasted accounts appear as a single line.
+ */
+interface InventoryGroup {
+  key: string;
+  product_id: string;
+  product_option_id: string | null;
+  product_option_label: string | null;
+  guarantee_id: string | null;
+  guarantee_label: string | null;
+  items: InventoryItem[];
+  available: number;
+  sold: number;
+  other: number;
+}
+
+/** Group key = the exact stock-separation combination. */
+const groupKeyOf = (i: { product_id: string; product_option_id?: string | null; guarantee_id?: string | null }) =>
+  `${i.product_id}|${i.product_option_id || ''}|${i.guarantee_id || ''}`;
 
 const EMPTY_FORM: FormData = {
   product_id: '',
@@ -36,7 +59,8 @@ function AdminInventoryContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null); // a single account's revealed content
+  const [expandedGroupKey, setExpandedGroupKey] = useState<string | null>(null); // an expanded group
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
@@ -272,39 +296,100 @@ function AdminInventoryContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Returns the admin access token (or null, after setting an error).
+  const getAccessToken = async (): Promise<string | null> => {
+    const supabaseModule = await import('@/lib/supabase');
+    const supabase = supabaseModule.supabase;
+    if (!supabase) {
+      setError('Supabase is not configured');
+      return null;
+    }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setError('Session expired. Please log in again.');
+      return null;
+    }
+    return session.access_token;
+  };
+
+  // Deletes one inventory row by id. Returns true on success.
+  const deleteItemById = async (id: string, token: string): Promise<boolean> => {
+    const res = await fetch(`/api/admin/inventory/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    return !!data.success;
+  };
+
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this inventory item?')) return;
-
+    if (!confirm('Delete this account from inventory?')) return;
     try {
-      const supabaseModule = await import('@/lib/supabase');
-      const supabase = supabaseModule.supabase;
-
-      if (!supabase) {
-        setError('Supabase is not configured');
-        return;
-      }
-
-      // Get auth token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        setError('Session expired. Please log in again.');
-        return;
-      }
-
-      const res = await fetch(`/api/admin/inventory/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-      });
-      const data = await res.json();
-      if (data.success) {
+      setError('');
+      const token = await getAccessToken();
+      if (!token) return;
+      const ok = await deleteItemById(id, token);
+      if (ok) {
         await loadData();
+        setSuccessMessage('Account deleted.');
       } else {
-        setError(data.message || 'Failed to delete');
+        setError('Failed to delete account.');
       }
     } catch (err: any) {
       setError(err.message || 'Error deleting item');
+    }
+  };
+
+  // Opens the Add form pre-filled with a group's product + plan + warranty so
+  // pasted accounts join the SAME group (grouping is keyed by those fields).
+  const handleAddToGroup = (group: InventoryGroup) => {
+    setFormData({
+      product_id: group.product_id,
+      product_option_id: group.product_option_id || '',
+      product_option_label: group.product_option_label || '',
+      guarantee_id: group.guarantee_id || '',
+      guarantee_label: group.guarantee_label || '',
+      title: '',
+      delivery_content: '',
+      usage_instructions: '',
+    });
+    setEditingId(null);
+    setSplitMode('lines'); // adding to a group is usually a bulk paste
+    setSuccessMessage('');
+    setError('');
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Deletes every deletable (non-sold) account in a group. Sold/delivered rows
+  // are kept for order history and never hard-deleted.
+  const handleDeleteGroup = async (group: InventoryGroup) => {
+    const deletable = group.items.filter((i) => i.status !== 'sold');
+    if (deletable.length === 0) {
+      setError('This group only contains sold/delivered accounts, which are kept for order history.');
+      return;
+    }
+    const soldNote =
+      group.sold > 0 ? `\n\n${group.sold} sold/delivered account(s) will be kept for order history.` : '';
+    if (!confirm(`Delete ${deletable.length} account(s) in this group?${soldNote}`)) return;
+
+    try {
+      setError('');
+      const token = await getAccessToken();
+      if (!token) return;
+      let failed = 0;
+      for (const it of deletable) {
+        const ok = await deleteItemById(it.id, token);
+        if (!ok) failed++;
+      }
+      await loadData();
+      if (failed > 0) {
+        setError(`Deleted ${deletable.length - failed} of ${deletable.length}; ${failed} could not be deleted.`);
+      } else {
+        setSuccessMessage(`Deleted ${deletable.length} account(s) from the group.`);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Error deleting group');
     }
   };
 
@@ -327,13 +412,56 @@ function AdminInventoryContent() {
     }
   };
 
+  // Group rows by the exact product + plan + warranty combination for display.
+  // Counts (available / sold) are derived from the underlying rows, so the
+  // "Available" number always equals the real deliverable stock for that combo.
+  const groups: InventoryGroup[] = useMemo(() => {
+    const map = new Map<string, InventoryGroup>();
+    for (const item of items) {
+      const key = groupKeyOf(item);
+      let g = map.get(key);
+      if (!g) {
+        g = {
+          key,
+          product_id: item.product_id,
+          product_option_id: item.product_option_id ?? null,
+          product_option_label: item.product_option_label ?? null,
+          guarantee_id: item.guarantee_id ?? null,
+          guarantee_label: item.guarantee_label ?? null,
+          items: [],
+          available: 0,
+          sold: 0,
+          other: 0,
+        };
+        map.set(key, g);
+      }
+      // Backfill labels from whichever row carries them.
+      if (!g.product_option_label && item.product_option_label) g.product_option_label = item.product_option_label;
+      if (!g.guarantee_label && item.guarantee_label) g.guarantee_label = item.guarantee_label;
+      g.items.push(item);
+      if (item.status === 'available') g.available++;
+      else if (item.status === 'sold') g.sold++;
+      else g.other++;
+    }
+    return Array.from(map.values()).sort((a, b) => {
+      const pa = getProductName(a.product_id);
+      const pb = getProductName(b.product_id);
+      if (pa !== pb) return pa.localeCompare(pb);
+      return (a.product_option_label || '').localeCompare(b.product_option_label || '');
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, products]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Inventory</h1>
-          <p className="text-slate-600 mt-1">Manage digital product delivery items ({items.length} total)</p>
+          <p className="text-slate-600 mt-1">
+            Grouped by product · plan · warranty ({groups.length} group{groups.length === 1 ? '' : 's'} ·{' '}
+            {items.length} account{items.length === 1 ? '' : 's'})
+          </p>
         </div>
         <button
           onClick={() => {
@@ -578,102 +706,179 @@ function AdminInventoryContent() {
         </div>
       )}
 
-      {/* Items List */}
+      {/* Grouped inventory list — one row per product · plan · warranty. */}
       {isLoading ? (
         <div className="flex justify-center py-12">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         </div>
-      ) : items.length === 0 ? (
+      ) : groups.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-lg p-12 text-center">
           <p className="text-slate-600 text-lg">No inventory items yet. Add one to get started.</p>
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm overflow-x-auto">
-          <table className="w-full min-w-[900px]">
+          <table className="w-full min-w-[760px]">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Title</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Option / Variant</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Guarantee</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Customer Email</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Created</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Plan / Variant</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Warranty / Guarantee</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Available</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Sold</th>
                 <th className="px-6 py-3 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {items.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-slate-900 font-medium">{item.title || '—'}</td>
-                  <td className="px-6 py-4 text-sm text-slate-700">{getProductName(item.product_id)}</td>
-                  <td className="px-6 py-4 text-sm">
-                    {item.product_option_label ? (
-                      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border bg-indigo-50 text-indigo-700 border-indigo-200">
-                        {item.product_option_label}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-slate-400 italic">Product-level inventory</span>
+              {groups.map((group) => {
+                const isOpen = expandedGroupKey === group.key;
+                return (
+                  <Fragment key={group.key}>
+                    <tr className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 text-sm text-slate-800 font-medium">
+                        {getProductName(group.product_id)}
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {group.product_option_label ? (
+                          <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border bg-indigo-50 text-indigo-700 border-indigo-200">
+                            {group.product_option_label}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400 italic">Product-level</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {group.guarantee_label || <span className="text-slate-400">—</span>}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="inline-block px-3 py-1 rounded-full text-xs font-bold border bg-green-50 text-green-700 border-green-200">
+                          {group.available}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm">
+                        {group.sold > 0 ? (
+                          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold border bg-blue-50 text-blue-700 border-blue-200">
+                            {group.sold}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                        <button
+                          onClick={() => {
+                            setExpandedGroupKey(isOpen ? null : group.key);
+                            setExpandedId(null);
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title={isOpen ? 'Hide accounts' : 'View accounts'}
+                        >
+                          <ChevronRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                          <span className="text-xs font-semibold">{group.items.length}</span>
+                        </button>
+                        <button
+                          onClick={() => handleAddToGroup(group)}
+                          className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="Add accounts to this group"
+                        >
+                          <Plus size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteGroup(group)}
+                          className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="Delete group"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </td>
+                    </tr>
+
+                    {isOpen && (
+                      <tr>
+                        <td colSpan={6} className="bg-slate-50 p-0">
+                          <div className="p-4 space-y-2">
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                              <Layers size={14} /> {group.items.length} account{group.items.length === 1 ? '' : 's'} in this group
+                            </div>
+                            {group.items.map((item) => (
+                              <div key={item.id} className="bg-white border border-slate-200 rounded-lg p-3">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium text-slate-900 truncate">
+                                      {item.title || 'Account'}
+                                    </p>
+                                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                                      <span
+                                        className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${getStatusBadgeStyle(item.status)}`}
+                                      >
+                                        {item.status}
+                                      </span>
+                                      {item.customer_email && (
+                                        <span className="text-xs text-slate-500">{item.customer_email}</span>
+                                      )}
+                                      {item.created_at && (
+                                        <span className="text-xs text-slate-400">
+                                          {new Date(item.created_at).toLocaleDateString()}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    <button
+                                      onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                                      className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                      title="Reveal delivery content"
+                                    >
+                                      {expandedId === item.id ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                    {item.status !== 'sold' && (
+                                      <button
+                                        onClick={() => handleEdit(item)}
+                                        className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                        title="Edit account"
+                                      >
+                                        <Edit2 size={16} />
+                                      </button>
+                                    )}
+                                    {item.status !== 'sold' && (
+                                      <button
+                                        onClick={() => handleDelete(item.id)}
+                                        className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                        title="Delete account"
+                                      >
+                                        <Trash2 size={16} />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                                {expandedId === item.id && (
+                                  <div className="mt-3">
+                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                      Delivery Content
+                                    </p>
+                                    <pre className="bg-slate-50 border border-slate-300 rounded p-3 text-sm text-slate-900 overflow-x-auto font-mono whitespace-pre-wrap">
+                                      {item.delivery_content}
+                                    </pre>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            <div className="pt-1">
+                              <button
+                                onClick={() => handleAddToGroup(group)}
+                                className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                              >
+                                <Plus size={15} /> Add accounts to this group
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
                     )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{item.guarantee_label || '—'}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(item.status)}`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{item.customer_email || '—'}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
-                    {item.created_at ? new Date(item.created_at).toLocaleDateString() : '—'}
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                    <button
-                      onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
-                      className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                      title="Reveal delivery content"
-                    >
-                      {expandedId === item.id ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                    {item.status !== 'sold' && (
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="Edit"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                    )}
-                    {item.status !== 'sold' && (
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
-
-          {/* Expanded content */}
-          {expandedId && (
-            <div className="bg-slate-50 border-t border-slate-200 p-6">
-              {(() => {
-                const item = items.find((i) => i.id === expandedId);
-                return (
-                  <div>
-                    <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Delivery Content</p>
-                    <pre className="bg-white border border-slate-300 rounded p-4 text-sm text-slate-900 overflow-x-auto font-mono">
-                      {item?.delivery_content}
-                    </pre>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
         </div>
       )}
     </div>
