@@ -60,6 +60,17 @@ export async function createCategory(input: CreateCategoryInput): Promise<Catego
 export async function updateCategory(id: string, input: UpdateCategoryInput): Promise<Category> {
   if (!supabaseAdmin) throw new Error('Supabase admin client not configured');
 
+  // Read the current name first so we can detect a rename and cascade it to
+  // products. Products reference a category by its NAME (products.category is
+  // TEXT), and the storefront filters by name — so without this cascade a
+  // renamed category's chip would match zero products.
+  const { data: existing } = await supabaseAdmin
+    .from('categories')
+    .select('name')
+    .eq('id', id)
+    .single();
+  const oldName = (existing?.name as string | undefined) ?? undefined;
+
   const patch: Record<string, any> = {};
   if (input.name !== undefined) patch.name = input.name;
   if (input.slug !== undefined) patch.slug = input.slug || slugify(input.name || '') || undefined;
@@ -79,6 +90,21 @@ export async function updateCategory(id: string, input: UpdateCategoryInput): Pr
     if (error?.code === '23505') throw new Error('A category with this slug already exists');
     throw new Error(error?.message || 'Failed to update category');
   }
+
+  // Cascade a rename onto existing products so filtering/product counts keep
+  // working with the new name. Best-effort: the category update already
+  // succeeded, so a cascade failure is logged but not fatal.
+  const newName = (data as Category).name;
+  if (oldName && newName && oldName !== newName) {
+    const { error: cascadeErr } = await supabaseAdmin
+      .from('products')
+      .update({ category: newName })
+      .eq('category', oldName);
+    if (cascadeErr) {
+      console.error('[categoryService] Failed to cascade category rename to products:', cascadeErr.message);
+    }
+  }
+
   return data as Category;
 }
 

@@ -2,13 +2,15 @@
 
 import { useState, useMemo, Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { fetchProducts } from '@/lib/api';
+import { fetchProducts, fetchCategories } from '@/lib/api';
 import { Product } from '@/types/product';
 import ProductCard from '@/components/products/ProductCard';
 import PromoBannerList from '@/components/promos/PromoBannerList';
 import { Search, SlidersHorizontal, Zap, Shield, Package, HeadphonesIcon } from 'lucide-react';
 
-const CATEGORIES = ['All Products', 'Gaming', 'Streaming', 'AI Tools', 'Software', 'Productivity'];
+// "All Products" is the only static chip. Every other chip is loaded from the
+// same DB/admin source the homepage uses (no hardcoded category names).
+const ALL_PRODUCTS = 'All Products';
 const SORT_OPTIONS = [
   { label: 'Newest Releases', value: 'newest' },
   { label: 'Price: Low to High', value: 'price_asc' },
@@ -22,17 +24,28 @@ function ProductsContent() {
   const categoryParam = searchParams.get('category');
   
   const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState(categoryParam || 'All Products');
+  const [activeCategory, setActiveCategory] = useState(categoryParam || ALL_PRODUCTS);
   const [sort, setSort] = useState('newest');
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>([ALL_PRODUCTS]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Sync activeCategory when the URL category search parameter changes
   useEffect(() => {
-    setActiveCategory(categoryParam || 'All Products');
+    setActiveCategory(categoryParam || ALL_PRODUCTS);
   }, [categoryParam]);
+
+  // Load category filter chips from the database (same source as the homepage),
+  // so admin renames/additions/removals show up here too. Fetched fresh on mount
+  // (fetchCategories uses cache: 'no-store'); "All Products" stays a static chip.
+  useEffect(() => {
+    (async () => {
+      const cats = await fetchCategories();
+      setCategories([ALL_PRODUCTS, ...cats.map((c) => c.name)]);
+    })();
+  }, []);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -71,7 +84,7 @@ function ProductsContent() {
   const filtered = useMemo(() => {
     let result = [...products];
 
-    if (activeCategory !== 'All Products') {
+    if (activeCategory !== ALL_PRODUCTS) {
       result = result.filter((p) => p.category === activeCategory);
     }
 
@@ -164,7 +177,7 @@ function ProductsContent() {
 
         {/* Category Filters */}
         <div className="flex gap-3 flex-wrap mb-10 pb-4 border-b border-border/50">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -184,7 +197,7 @@ function ProductsContent() {
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           Showing <span className="text-text-primary font-bold">{filtered.length}</span>{' '}
           {filtered.length === 1 ? 'product' : 'products'}
-          {activeCategory !== 'All Products' ? ` in ${activeCategory}` : ''}
+          {activeCategory !== ALL_PRODUCTS ? ` in ${activeCategory}` : ''}
           {search ? ` matching "${search}"` : ''}
         </p>
 
@@ -221,7 +234,7 @@ function ProductsContent() {
               Try adjusting your search or selecting a different category.
             </p>
             <button
-              onClick={() => { setSearch(''); setActiveCategory('All Products'); }}
+              onClick={() => { setSearch(''); setActiveCategory(ALL_PRODUCTS); }}
               className="mp-button-primary"
             >
               Clear Filters
