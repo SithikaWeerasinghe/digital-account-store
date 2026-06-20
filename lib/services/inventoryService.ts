@@ -335,6 +335,38 @@ export async function getAvailableOptionIdsForProduct(productId: string): Promis
   return Array.from(new Set((data || []).map((r: any) => r.product_option_id ?? null)));
 }
 
+/**
+ * Diagnostics: available stock grouped by the exact (option, guarantee) combo
+ * for a product. Used in logs and the admin "why is this 0?" warning so a
+ * mismatch between the selected warranty and the stocked warranty is obvious.
+ */
+export async function getStockBreakdown(
+  productId: string
+): Promise<Array<{ product_option_id: string | null; product_option_label: string | null; guarantee_id: string | null; guarantee_label: string | null; available: number }>> {
+  if (!supabaseAdmin || !productId) return [];
+  const { data, error } = await supabaseAdmin
+    .from('inventory_items')
+    .select('product_option_id, product_option_label, guarantee_id, guarantee_label')
+    .eq('product_id', productId)
+    .eq('status', 'available');
+  if (error || !data) return [];
+  const map = new Map<string, { product_option_id: string | null; product_option_label: string | null; guarantee_id: string | null; guarantee_label: string | null; available: number }>();
+  for (const r of data as any[]) {
+    const key = `${r.product_option_id ?? ''}|${r.guarantee_id ?? ''}`;
+    const existing = map.get(key);
+    if (existing) existing.available++;
+    else
+      map.set(key, {
+        product_option_id: r.product_option_id ?? null,
+        product_option_label: r.product_option_label ?? null,
+        guarantee_id: r.guarantee_id ?? null,
+        guarantee_label: r.guarantee_label ?? null,
+        available: 1,
+      });
+  }
+  return Array.from(map.values());
+}
+
 export async function assignInventoryItemToOrder(
   productId: string,
   orderId: string,

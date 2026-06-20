@@ -86,6 +86,13 @@ export async function deliverOrder(orderId: string, skipPaymentCheck = false): P
     // Deliver exactly the purchased quantity — one inventory item per unit.
     const requestedQty = Math.max(1, Number(order.quantity) || 1);
 
+    // Diagnostic: the exact combination this delivery will look up, so a failed
+    // assignment can be traced to an option/guarantee mismatch in inventory.
+    console.log(
+      `[delivery] order=${order.id} product=${productId} option="${optionLabel ?? '—'}"(${optionId ?? 'null'}) ` +
+        `guarantee="${guaranteeLabel ?? '—'}"(${guaranteeId ?? 'null'}) qty=${requestedQty}`
+    );
+
     // Pre-check available stock for the EXACT product + plan + warranty
     // combination so we never assign a partial batch, and never borrow stock
     // from a different option or warranty. If there isn't enough for the full

@@ -219,15 +219,24 @@ export default function CheckoutPage() {
         const originalAmount = round2(itemAmounts[i]);
         const share = Math.min(discountShares[i], originalAmount);
         const finalAmount = round2(originalAmount - share);
+        // The "plan" the inventory is keyed by is the selected option OR variant.
+        // Forward whichever exists as the option id/label/price so the server
+        // stock check, order_metadata, and delivery all use the SAME id the
+        // product page / cart / pre-check used (variant products were sending
+        // an undefined option id, so their stock was looked up under the wrong
+        // key). Guarantee id/label flow unchanged.
+        const planId = item.selectedOption?.id ?? item.selectedVariant?.id;
+        const planLabel = item.selectedOption?.label ?? item.selectedVariant?.label;
+        const planPrice = item.selectedOption?.price ?? item.selectedVariant?.price;
         const created = await createOrder({
           customerEmail: email,
           productId: item.product.id,
           quantity: item.quantity,
           amount: finalAmount,
           paymentMethod: paymentMethod,
-          selectedOptionId: item.selectedOption?.id,
-          selectedOptionLabel: item.selectedOption?.label,
-          selectedOptionPrice: item.selectedOption?.price,
+          selectedOptionId: planId,
+          selectedOptionLabel: planLabel,
+          selectedOptionPrice: planPrice,
           selectedGuaranteeId: item.selectedGuarantee?.id,
           selectedGuaranteeLabel: item.selectedGuarantee?.label,
           selectedGuaranteeMonths: item.selectedGuarantee?.months,

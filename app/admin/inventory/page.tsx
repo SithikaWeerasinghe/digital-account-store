@@ -61,6 +61,7 @@ function AdminInventoryContent() {
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null); // a single account's revealed content
   const [expandedGroupKey, setExpandedGroupKey] = useState<string | null>(null); // an expanded group
+  const [reassignSelections, setReassignSelections] = useState<Record<string, string>>({}); // per-group chosen warranty id
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
@@ -390,6 +391,51 @@ function AdminInventoryContent() {
       }
     } catch (err: any) {
       setError(err.message || 'Error deleting group');
+    }
+  };
+
+  // The warranty options a group's stock can be (re)assigned to — exactly the
+  // ones the product/plan really offers customers (so tagged stock matches an
+  // order). Empty when the product has no warranty layer → only "No warranty".
+  const warrantiesForGroup = (group: InventoryGroup): GuaranteeOption[] => {
+    const product = products.find((p) => p.id === group.product_id);
+    if (!product) return [];
+    const opt = product.options?.find((o) => o.id === group.product_option_id) ?? null;
+    const v = product.variants?.find((x) => x.id === group.product_option_id) ?? null;
+    return resolveGuaranteeOptions(product, guaranteeSourceForPlan(opt, v));
+  };
+
+  // Reassigns the warranty tag on every editable (non-sold) account in a group.
+  // Fixes legacy/mismatched rows: e.g. accounts saved with no warranty (or the
+  // wrong one) can be set to the warranty customers actually select, so the
+  // exact product+plan+warranty stock lookup finds them.
+  const handleReassignGroup = async (group: InventoryGroup, guaranteeId: string, guaranteeLabel: string | null) => {
+    const targets = group.items.filter((i) => i.status !== 'sold');
+    if (targets.length === 0) {
+      setError('No editable accounts in this group (sold/delivered accounts are locked).');
+      return;
+    }
+    if (!confirm(`Set warranty to "${guaranteeLabel || 'No warranty (general stock)'}" for ${targets.length} account(s)?`)) return;
+    try {
+      setError('');
+      const token = await getAccessToken();
+      if (!token) return;
+      let failed = 0;
+      for (const it of targets) {
+        const res = await fetch(`/api/admin/inventory/${it.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ guarantee_id: guaranteeId || null, guarantee_label: guaranteeLabel || null }),
+        });
+        const data = await res.json();
+        if (!data.success) failed++;
+      }
+      await loadData();
+      setExpandedGroupKey(null);
+      if (failed > 0) setError(`Reassigned ${targets.length - failed} of ${targets.length}; ${failed} failed.`);
+      else setSuccessMessage(`Reassigned ${targets.length} account(s) to "${guaranteeLabel || 'No warranty (general stock)'}".`);
+    } catch (err: any) {
+      setError(err.message || 'Error reassigning warranty');
     }
   };
 
@@ -799,6 +845,66 @@ function AdminInventoryContent() {
                             <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                               <Layers size={14} /> {group.items.length} account{group.items.length === 1 ? '' : 's'} in this group
                             </div>
+
+                            {/* Reassign-warranty tool: fixes legacy/mismatched rows so
+                                the exact product+plan+warranty stock lookup finds them. */}
+                            {(() => {
+                              const choices = warrantiesForGroup(group);
+                              const current = reassignSelections[group.key] ?? (group.guarantee_id ?? '');
+                              const siblings = groups.filter(
+                                (s) =>
+                                  s.key !== group.key &&
+                                  s.product_id === group.product_id &&
+                                  (s.product_option_id ?? '') === (group.product_option_id ?? '')
+                              );
+                              return (
+                                <>
+                                  {/* #6 — why a warranty might show 0 at checkout */}
+                                  {siblings.length > 0 && (
+                                    <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+                                      This plan also has stock under other warranties:{' '}
+                                      {siblings
+                                        .map((s) => `${s.guarantee_label || 'No warranty'} (${s.available} avail.)`)
+                                        .join(', ')}
+                                      . A customer only receives stock matching the EXACT warranty they select — if they
+                                      pick a warranty with 0 here, checkout shows &quot;0 available&quot;. Reassign below to fix.
+                                    </div>
+                                  )}
+                                  <div className="flex flex-wrap items-end gap-2 bg-white border border-slate-200 rounded-lg p-3">
+                                    <div className="min-w-[200px]">
+                                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                                        Reassign warranty for all accounts
+                                      </label>
+                                      <select
+                                        value={current}
+                                        onChange={(e) =>
+                                          setReassignSelections((prev) => ({ ...prev, [group.key]: e.target.value }))
+                                        }
+                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+                                      >
+                                        <option value="">No warranty (general stock for this plan)</option>
+                                        {choices.map((g) => (
+                                          <option key={g.id} value={g.id}>
+                                            {g.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const g = choices.find((x) => x.id === current);
+                                        handleReassignGroup(group, current, g?.label ?? null);
+                                      }}
+                                      className="px-3 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-900 transition-colors"
+                                    >
+                                      Apply to {group.items.filter((i) => i.status !== 'sold').length} account(s)
+                                    </button>
+                                  </div>
+                                </>
+                              );
+                            })()}
+
                             {group.items.map((item) => (
                               <div key={item.id} className="bg-white border border-slate-200 rounded-lg p-3">
                                 <div className="flex flex-wrap items-center justify-between gap-3">

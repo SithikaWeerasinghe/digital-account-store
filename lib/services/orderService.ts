@@ -2,7 +2,7 @@ import { Order, OrderItem, CreateOrderInput } from '@/types/order';
 import { sampleProducts } from '@/data/sampleProducts';
 import { supabase as anonClient, supabaseAdmin } from '@/lib/supabase';
 import { getRedeemableCoupon, incrementCouponUsage } from '@/lib/services/discountService';
-import { getInventoryStockStatus } from '@/lib/services/inventoryService';
+import { getInventoryStockStatus, getStockBreakdown } from '@/lib/services/inventoryService';
 
 // Orders are only ever accessed server-side (API routes / webhooks). Prefer the
 // service-role client so all reads/writes bypass Row-Level Security; fall back to
@@ -199,7 +199,26 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   // Stock is checked for the EXACT product + plan + warranty combination, so an
   // order for one warranty can never be created against another warranty's stock.
   const stock = await getInventoryStockStatus(productId, selectedOptionId, selectedGuaranteeId);
+  // Diagnostic log: shows exactly what combination was looked up and what was
+  // found, so a "0 available" is traceable to an option/guarantee mismatch.
+  console.log(
+    `[stock-check] product="${product.name}" (${productId}) option="${selectedOptionLabel ?? '—'}"(${selectedOptionId ?? 'null'}) ` +
+      `guarantee="${selectedGuaranteeLabel ?? '—'}"(${selectedGuaranteeId ?? 'null'}) ` +
+      `→ tracked=${stock.tracked} available=${stock.available} requested=${requestedQty}`
+  );
   if (stock.tracked && stock.available < requestedQty) {
+    // Surface what IS in stock for this product so the mismatch is obvious.
+    try {
+      const breakdown = await getStockBreakdown(productId);
+      console.warn(
+        `[stock-check] INSUFFICIENT for product="${product.name}" (${productId}). Available stock by combination:`,
+        breakdown.length
+          ? breakdown.map((b) => `[option=${b.product_option_label ?? b.product_option_id ?? 'null'} warranty=${b.guarantee_label ?? b.guarantee_id ?? 'null'} → ${b.available}]`).join(' ')
+          : '(none)'
+      );
+    } catch {
+      /* logging only — never block the order path on a diagnostic */
+    }
     const planSuffix = selectedOptionLabel ? ` — ${selectedOptionLabel}` : '';
     const warrantySuffix = selectedGuaranteeLabel ? ` (${selectedGuaranteeLabel})` : '';
     throw new Error(
