@@ -127,6 +127,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
   const [usageInstructions, setUsageInstructions] = useState('');
   const [inStock, setInStock] = useState(true);
   const [isInstantDelivery, setIsInstantDelivery] = useState(true);
+  const [isActive, setIsActive] = useState(true); // visible on storefront
   const [variants, setVariants] = useState<VariantRow[]>([]);
   const [guarantees, setGuarantees] = useState<GuaranteeRow[]>([]);
 
@@ -146,6 +147,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
       setUsageInstructions(product.usage_instructions || '');
       setInStock(product.inStock);
       setIsInstantDelivery(product.isInstantDelivery);
+      setIsActive(product.is_active !== false); // default visible
       setVariants(
         product.variants?.map((v) => ({
           id: v.id,
@@ -267,6 +269,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
       usageInstructions: usageInstructions.trim() || null,
       inStock,
       isInstantDelivery,
+      isActive,
       variants: cleanVariants.length > 0 ? cleanVariants : null,
       guaranteeOptions: cleanGuarantees.length > 0 ? cleanGuarantees : null,
     };
@@ -468,6 +471,18 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                   className="w-4 h-4 rounded accent-primary"
                 />
                 <span className="text-sm font-semibold text-slate-700">Instant Delivery</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="w-4 h-4 rounded accent-primary"
+                />
+                <span className="text-sm font-semibold text-slate-700">
+                  Visible on store
+                  <span className="block text-[11px] font-normal text-slate-400">Uncheck to hide; storefront shows &quot;not found&quot;.</span>
+                </span>
               </label>
             </div>
 

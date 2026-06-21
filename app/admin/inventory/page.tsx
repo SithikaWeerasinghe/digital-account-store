@@ -60,7 +60,8 @@ function AdminInventoryContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null); // a single account's revealed content
-  const [expandedGroupKey, setExpandedGroupKey] = useState<string | null>(null); // an expanded group
+  const [expandedProductId, setExpandedProductId] = useState<string | null>(null); // an expanded product
+  const [expandedGroupKey, setExpandedGroupKey] = useState<string | null>(null); // an expanded plan/warranty group
   const [reassignSelections, setReassignSelections] = useState<Record<string, string>>({}); // per-group chosen warranty id
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -498,6 +499,147 @@ function AdminInventoryContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, products]);
 
+  // Product-first view: one top row per PRODUCT, with its plan/warranty combos
+  // nested inside (the customer wants fewer top-level lines).
+  const productGroups = useMemo(() => {
+    const map = new Map<
+      string,
+      { product_id: string; name: string; combos: InventoryGroup[]; available: number; sold: number; accounts: number }
+    >();
+    for (const g of groups) {
+      let pg = map.get(g.product_id);
+      if (!pg) {
+        pg = { product_id: g.product_id, name: getProductName(g.product_id), combos: [], available: 0, sold: 0, accounts: 0 };
+        map.set(g.product_id, pg);
+      }
+      pg.combos.push(g);
+      pg.available += g.available;
+      pg.sold += g.sold;
+      pg.accounts += g.items.length;
+    }
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groups, products]);
+
+  // The expanded detail for one plan/warranty combo: a reassign-warranty tool,
+  // a mismatch note, and the individual accounts (reveal/edit/delete).
+  const renderComboDetail = (group: InventoryGroup) => {
+    const choices = warrantiesForGroup(group);
+    const current = reassignSelections[group.key] ?? (group.guarantee_id ?? '');
+    const siblings = groups.filter(
+      (s) =>
+        s.key !== group.key &&
+        s.product_id === group.product_id &&
+        (s.product_option_id ?? '') === (group.product_option_id ?? '')
+    );
+    return (
+      <>
+        {/* #6 — why a warranty might show 0 at checkout */}
+        {siblings.length > 0 && (
+          <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
+            This plan also has stock under other warranties:{' '}
+            {siblings.map((s) => `${s.guarantee_label || 'No warranty'} (${s.available} avail.)`).join(', ')}. A customer
+            only receives stock matching the EXACT warranty they select — if they pick a warranty with 0 here, checkout
+            shows &quot;0 available&quot;. Reassign below to fix.
+          </div>
+        )}
+        {/* Reassign-warranty tool: fixes legacy/mismatched rows. */}
+        <div className="flex flex-wrap items-end gap-2 bg-slate-50 border border-slate-200 rounded-lg p-3">
+          <div className="min-w-[200px]">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+              Reassign warranty for all accounts
+            </label>
+            <select
+              value={current}
+              onChange={(e) => setReassignSelections((prev) => ({ ...prev, [group.key]: e.target.value }))}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+            >
+              <option value="">No warranty (general stock for this plan)</option>
+              {choices.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const g = choices.find((x) => x.id === current);
+              handleReassignGroup(group, current, g?.label ?? null);
+            }}
+            className="px-3 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-900 transition-colors"
+          >
+            Apply to {group.items.filter((i) => i.status !== 'sold').length} account(s)
+          </button>
+        </div>
+
+        {group.items.map((item) => (
+          <div key={item.id} className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-900 truncate">{item.title || 'Account'}</p>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${getStatusBadgeStyle(item.status)}`}>
+                    {item.status}
+                  </span>
+                  {item.customer_email && <span className="text-xs text-slate-500">{item.customer_email}</span>}
+                  {item.created_at && (
+                    <span className="text-xs text-slate-400">{new Date(item.created_at).toLocaleDateString()}</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <button
+                  onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                  className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                  title="Reveal delivery content"
+                >
+                  {expandedId === item.id ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+                {item.status !== 'sold' && (
+                  <button
+                    onClick={() => handleEdit(item)}
+                    className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                    title="Edit account"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                )}
+                {item.status !== 'sold' && (
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Delete account"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+            {expandedId === item.id && (
+              <div className="mt-3">
+                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Delivery Content</p>
+                <pre className="bg-white border border-slate-300 rounded p-3 text-sm text-slate-900 overflow-x-auto font-mono whitespace-pre-wrap">
+                  {item.delivery_content}
+                </pre>
+              </div>
+            )}
+          </div>
+        ))}
+
+        <div className="pt-1">
+          <button
+            onClick={() => handleAddToGroup(group)}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700"
+          >
+            <Plus size={15} /> Add accounts to this plan/warranty
+          </button>
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -752,230 +894,136 @@ function AdminInventoryContent() {
         </div>
       )}
 
-      {/* Grouped inventory list — one row per product · plan · warranty. */}
+      {/* Inventory — one row per PRODUCT; expand for the plan/warranty breakdown
+          and individual accounts (storage stays one row per account internally). */}
       {isLoading ? (
         <div className="flex justify-center py-12">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         </div>
-      ) : groups.length === 0 ? (
+      ) : productGroups.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-lg p-12 text-center">
           <p className="text-slate-600 text-lg">No inventory items yet. Add one to get started.</p>
         </div>
       ) : (
         <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm overflow-x-auto">
-          <table className="w-full min-w-[760px]">
+          <table className="w-full min-w-[640px]">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Plan / Variant</th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Warranty / Guarantee</th>
+                <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Plan / Warranty Groups</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Available</th>
                 <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Sold</th>
                 <th className="px-6 py-3 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {groups.map((group) => {
-                const isOpen = expandedGroupKey === group.key;
+              {productGroups.map((pg) => {
+                const productOpen = expandedProductId === pg.product_id;
                 return (
-                  <Fragment key={group.key}>
+                  <Fragment key={pg.product_id}>
                     <tr className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-slate-800 font-medium">
-                        {getProductName(group.product_id)}
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        {group.product_option_label ? (
-                          <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border bg-indigo-50 text-indigo-700 border-indigo-200">
-                            {group.product_option_label}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-slate-400 italic">Product-level</span>
-                        )}
-                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-800 font-semibold">{pg.name}</td>
                       <td className="px-6 py-4 text-sm text-slate-600">
-                        {group.guarantee_label || <span className="text-slate-400">—</span>}
+                        {pg.combos.length} group{pg.combos.length === 1 ? '' : 's'}
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-block px-3 py-1 rounded-full text-xs font-bold border bg-green-50 text-green-700 border-green-200">
-                          {group.available}
+                          {pg.available}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm">
-                        {group.sold > 0 ? (
+                        {pg.sold > 0 ? (
                           <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold border bg-blue-50 text-blue-700 border-blue-200">
-                            {group.sold}
+                            {pg.sold}
                           </span>
                         ) : (
                           <span className="text-slate-400">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                      <td className="px-6 py-4 text-right whitespace-nowrap">
                         <button
                           onClick={() => {
-                            setExpandedGroupKey(isOpen ? null : group.key);
+                            setExpandedProductId(productOpen ? null : pg.product_id);
+                            setExpandedGroupKey(null);
                             setExpandedId(null);
                           }}
                           className="inline-flex items-center gap-1 px-2 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title={isOpen ? 'Hide accounts' : 'View accounts'}
+                          title={productOpen ? 'Hide breakdown' : 'View plan/warranty breakdown'}
                         >
-                          <ChevronRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-                          <span className="text-xs font-semibold">{group.items.length}</span>
-                        </button>
-                        <button
-                          onClick={() => handleAddToGroup(group)}
-                          className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                          title="Add accounts to this group"
-                        >
-                          <Plus size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteGroup(group)}
-                          className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                          title="Delete group"
-                        >
-                          <Trash2 size={16} />
+                          <ChevronRight size={16} className={`transition-transform ${productOpen ? 'rotate-90' : ''}`} />
+                          <span className="text-xs font-semibold">
+                            {pg.accounts} acct{pg.accounts === 1 ? '' : 's'}
+                          </span>
                         </button>
                       </td>
                     </tr>
 
-                    {isOpen && (
+                    {productOpen && (
                       <tr>
-                        <td colSpan={6} className="bg-slate-50 p-0">
-                          <div className="p-4 space-y-2">
-                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                              <Layers size={14} /> {group.items.length} account{group.items.length === 1 ? '' : 's'} in this group
+                        <td colSpan={5} className="bg-slate-50 p-0">
+                          <div className="p-4 space-y-3">
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                              <Layers size={14} /> Plan / warranty breakdown
                             </div>
-
-                            {/* Reassign-warranty tool: fixes legacy/mismatched rows so
-                                the exact product+plan+warranty stock lookup finds them. */}
-                            {(() => {
-                              const choices = warrantiesForGroup(group);
-                              const current = reassignSelections[group.key] ?? (group.guarantee_id ?? '');
-                              const siblings = groups.filter(
-                                (s) =>
-                                  s.key !== group.key &&
-                                  s.product_id === group.product_id &&
-                                  (s.product_option_id ?? '') === (group.product_option_id ?? '')
-                              );
+                            {pg.combos.map((group) => {
+                              const isOpen = expandedGroupKey === group.key;
                               return (
-                                <>
-                                  {/* #6 — why a warranty might show 0 at checkout */}
-                                  {siblings.length > 0 && (
-                                    <div className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-                                      This plan also has stock under other warranties:{' '}
-                                      {siblings
-                                        .map((s) => `${s.guarantee_label || 'No warranty'} (${s.available} avail.)`)
-                                        .join(', ')}
-                                      . A customer only receives stock matching the EXACT warranty they select — if they
-                                      pick a warranty with 0 here, checkout shows &quot;0 available&quot;. Reassign below to fix.
-                                    </div>
-                                  )}
-                                  <div className="flex flex-wrap items-end gap-2 bg-white border border-slate-200 rounded-lg p-3">
-                                    <div className="min-w-[200px]">
-                                      <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                                        Reassign warranty for all accounts
-                                      </label>
-                                      <select
-                                        value={current}
-                                        onChange={(e) =>
-                                          setReassignSelections((prev) => ({ ...prev, [group.key]: e.target.value }))
-                                        }
-                                        className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-blue-500"
-                                      >
-                                        <option value="">No warranty (general stock for this plan)</option>
-                                        {choices.map((g) => (
-                                          <option key={g.id} value={g.id}>
-                                            {g.label}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const g = choices.find((x) => x.id === current);
-                                        handleReassignGroup(group, current, g?.label ?? null);
-                                      }}
-                                      className="px-3 py-2 bg-slate-800 text-white rounded-lg text-sm font-semibold hover:bg-slate-900 transition-colors"
-                                    >
-                                      Apply to {group.items.filter((i) => i.status !== 'sold').length} account(s)
-                                    </button>
-                                  </div>
-                                </>
-                              );
-                            })()}
-
-                            {group.items.map((item) => (
-                              <div key={item.id} className="bg-white border border-slate-200 rounded-lg p-3">
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <p className="text-sm font-medium text-slate-900 truncate">
-                                      {item.title || 'Account'}
-                                    </p>
-                                    <div className="flex flex-wrap items-center gap-2 mt-1">
-                                      <span
-                                        className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${getStatusBadgeStyle(item.status)}`}
-                                      >
-                                        {item.status}
-                                      </span>
-                                      {item.customer_email && (
-                                        <span className="text-xs text-slate-500">{item.customer_email}</span>
+                                <div key={group.key} className="bg-white border border-slate-200 rounded-lg">
+                                  <div className="flex flex-wrap items-center justify-between gap-3 p-3">
+                                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                                      {group.product_option_label ? (
+                                        <span className="inline-block px-2.5 py-1 rounded-full text-xs font-semibold border bg-indigo-50 text-indigo-700 border-indigo-200">
+                                          {group.product_option_label}
+                                        </span>
+                                      ) : (
+                                        <span className="text-xs text-slate-400 italic">Product-level</span>
                                       )}
-                                      {item.created_at && (
-                                        <span className="text-xs text-slate-400">
-                                          {new Date(item.created_at).toLocaleDateString()}
+                                      <span className="text-xs text-slate-500">
+                                        {group.guarantee_label ? `· ${group.guarantee_label}` : '· No warranty'}
+                                      </span>
+                                      <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-green-50 text-green-700 border-green-200">
+                                        {group.available} available
+                                      </span>
+                                      {group.sold > 0 && (
+                                        <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-blue-50 text-blue-700 border-blue-200">
+                                          {group.sold} sold
                                         </span>
                                       )}
                                     </div>
-                                  </div>
-                                  <div className="flex items-center gap-1 flex-shrink-0">
-                                    <button
-                                      onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
-                                      className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                      title="Reveal delivery content"
-                                    >
-                                      {expandedId === item.id ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    </button>
-                                    {item.status !== 'sold' && (
+                                    <div className="flex items-center gap-1 flex-shrink-0">
                                       <button
-                                        onClick={() => handleEdit(item)}
-                                        className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                        title="Edit account"
+                                        onClick={() => {
+                                          setExpandedGroupKey(isOpen ? null : group.key);
+                                          setExpandedId(null);
+                                        }}
+                                        className="inline-flex items-center gap-1 px-2 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                        title={isOpen ? 'Hide accounts' : 'View accounts'}
                                       >
-                                        <Edit2 size={16} />
+                                        <ChevronRight size={16} className={`transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                                        <span className="text-xs font-semibold">{group.items.length}</span>
                                       </button>
-                                    )}
-                                    {item.status !== 'sold' && (
                                       <button
-                                        onClick={() => handleDelete(item.id)}
+                                        onClick={() => handleAddToGroup(group)}
+                                        className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                        title="Add accounts to this plan/warranty"
+                                      >
+                                        <Plus size={16} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteGroup(group)}
                                         className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                                        title="Delete account"
+                                        title="Delete available stock in this plan/warranty"
                                       >
                                         <Trash2 size={16} />
                                       </button>
-                                    )}
+                                    </div>
                                   </div>
+                                  {isOpen && (
+                                    <div className="border-t border-slate-200 p-3 space-y-2">{renderComboDetail(group)}</div>
+                                  )}
                                 </div>
-                                {expandedId === item.id && (
-                                  <div className="mt-3">
-                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                                      Delivery Content
-                                    </p>
-                                    <pre className="bg-slate-50 border border-slate-300 rounded p-3 text-sm text-slate-900 overflow-x-auto font-mono whitespace-pre-wrap">
-                                      {item.delivery_content}
-                                    </pre>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                            <div className="pt-1">
-                              <button
-                                onClick={() => handleAddToGroup(group)}
-                                className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:text-blue-700"
-                              >
-                                <Plus size={15} /> Add accounts to this group
-                              </button>
-                            </div>
+                              );
+                            })}
                           </div>
                         </td>
                       </tr>

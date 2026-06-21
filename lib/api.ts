@@ -451,6 +451,7 @@ export type ProductFormInput = {
   features?: string[];
   inStock?: boolean;
   isInstantDelivery?: boolean;
+  isActive?: boolean;
   variants?: {
     id: string;
     label: string;

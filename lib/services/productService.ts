@@ -132,15 +132,37 @@ export async function getActiveProducts(): Promise<Product[]> {
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const client = supabaseAdmin || supabase;
   if (!client) return sampleProducts.find((p) => p.slug === slug) ?? null;
+  // maybeSingle: 0 rows returns null data (not an error), so a missing slug is
+  // handled cleanly instead of throwing.
   const { data, error } = await client
     .from('products')
     .select('*')
     .eq('slug', slug)
-    .single();
-  if (error || !data) return sampleProducts.find((p) => p.slug === slug) ?? null;
-  const product = mapDatabaseProduct(data);
-  // Archived products are not publicly accessible — behave as "not found".
-  if (product.is_active === false) return null;
+    .maybeSingle();
+  if (error) {
+    console.warn(`[productService] getProductBySlug DB error for slug="${slug}": ${error.message} — trying sample fallback`);
+    return sampleProducts.find((p) => p.slug === slug) ?? null;
+  }
+  if (!data) {
+    const sample = sampleProducts.find((p) => p.slug === slug) ?? null;
+    if (!sample) console.warn(`[productService] Product not found for slug="${slug}" (no DB row, no sample match)`);
+    return sample;
+  }
+  let product: Product;
+  try {
+    product = mapDatabaseProduct(data);
+  } catch (err: any) {
+    // A malformed row must not 500 the whole product page.
+    console.error(`[productService] Failed to map product slug="${slug}" id="${data?.id}": ${err?.message || err}`);
+    return null;
+  }
+  // Archived/hidden products are not publicly accessible — behave as "not found"
+  // (admin can still see/edit them via getProductById). Logged so the reason for
+  // a storefront 404 is clear: hidden, not missing.
+  if (product.is_active === false) {
+    console.warn(`[productService] Product slug="${slug}" id="${product.id}" is INACTIVE/hidden — returning null for storefront`);
+    return null;
+  }
   return product;
 }
 
@@ -151,9 +173,22 @@ export async function getProductById(id: string): Promise<Product | null> {
     .from('products')
     .select('*')
     .eq('id', id)
-    .single();
-  if (error || !data) return sampleProducts.find((p) => p.id === id) ?? null;
-  return mapDatabaseProduct(data);
+    .maybeSingle();
+  if (error) {
+    console.warn(`[productService] getProductById DB error for id="${id}": ${error.message}`);
+    return sampleProducts.find((p) => p.id === id) ?? null;
+  }
+  if (!data) {
+    const sample = sampleProducts.find((p) => p.id === id) ?? null;
+    if (!sample) console.warn(`[productService] Product not found for id="${id}"`);
+    return sample;
+  }
+  try {
+    return mapDatabaseProduct(data);
+  } catch (err: any) {
+    console.error(`[productService] Failed to map product id="${id}": ${err?.message || err}`);
+    return null;
+  }
 }
 
 // ============================================================
@@ -170,6 +205,7 @@ export interface ProductInput {
   features?: string[];
   inStock?: boolean;
   isInstantDelivery?: boolean;
+  isActive?: boolean;
   variants?: ProductVariant[] | null;
   usageInstructions?: string | null;
   guaranteeOptions?: GuaranteeOption[] | null;
@@ -193,6 +229,13 @@ function mapInputToRow(input: ProductInput): Record<string, any> {
 
   if (input.inStock !== undefined) {
     row.stock_count = input.inStock ? 20 : 0;
+  }
+
+  // Visibility: admin can hide a product (is_active=false) or restore a
+  // previously archived one. Storefront shows active products only; admin sees
+  // all. Only written when provided so other updates don't flip visibility.
+  if (input.isActive !== undefined) {
+    row.is_active = input.isActive;
   }
 
   if (input.usageInstructions !== undefined) {
