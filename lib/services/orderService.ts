@@ -3,6 +3,7 @@ import { sampleProducts } from '@/data/sampleProducts';
 import { supabase as anonClient, supabaseAdmin } from '@/lib/supabase';
 import { getRedeemableCoupon, incrementCouponUsage } from '@/lib/services/discountService';
 import { getInventoryStockStatus, getStockBreakdown } from '@/lib/services/inventoryService';
+import { getProductById } from '@/lib/services/productService';
 
 // Orders are only ever accessed server-side (API routes / webhooks). Prefer the
 // service-role client so all reads/writes bypass Row-Level Security; fall back to
@@ -182,8 +183,21 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     );
   }
 
-  const product = sampleProducts.find((p) => p.id === productId);
-  if (!product) throw new Error('Product not found');
+  // Look the product up from the DATABASE (with sample fallback), not the static
+  // sampleProducts array — admin-created products are not in sampleProducts, so
+  // the old lookup threw "Product not found" at checkout for every real product.
+  const product = await getProductById(productId);
+  if (!product) {
+    console.warn(
+      `[createOrder] Product lookup FAILED — productId="${productId}" ` +
+        `option="${input.selectedOptionLabel ?? '—'}"(${input.selectedOptionId ?? 'null'}) ` +
+        `guarantee="${input.selectedGuaranteeLabel ?? '—'}"(${input.selectedGuaranteeId ?? 'null'}) ` +
+        `reason="no product row for this id"`
+    );
+    throw new Error(
+      'This product is no longer available (it may have been removed or hidden). Please remove it from your cart and add it again.'
+    );
+  }
 
   // ── Stock protection (server-side, authoritative) ──
   // Never let an order be created for more units than the exact selected

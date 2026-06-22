@@ -49,7 +49,11 @@ export async function POST(request: Request) {
     // Out-of-stock at order creation → 409 Conflict (stock changed / insufficient).
     const isStockError =
       typeof error.message === 'string' && error.message.includes('Please update your cart');
-    const isValidationError = validationErrors.includes(error.message) || isMaintenanceError;
+    // Cart references a removed/hidden product → a clear, actionable 400.
+    const isUnavailableProduct =
+      typeof error.message === 'string' && error.message.includes('no longer available');
+    const isValidationError =
+      validationErrors.includes(error.message) || isMaintenanceError || isUnavailableProduct;
     const status = isStockError ? 409 : isValidationError ? 400 : 500;
 
     return NextResponse.json(

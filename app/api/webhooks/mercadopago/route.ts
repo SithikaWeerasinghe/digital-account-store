@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Invalid signature' }, { status: 401 });
     }
 
+    console.log(`[mercadopago webhook] received — topic="${topic || 'payment'}" data.id="${dataId}"`);
+
     // Fetch the authoritative payment record from Mercado Pago.
     const payment = await getPayment(String(dataId));
 
@@ -90,6 +92,11 @@ export async function POST(request: NextRequest) {
 
     const mappedStatus = mapPaymentStatus(payment.status);
     const merchantOrderId = payment.order?.id ? String(payment.order.id) : null;
+
+    console.log(
+      `[mercadopago webhook] payment_id="${payment.id}" mp_status="${payment.status}" → mapped="${mappedStatus ?? 'pending'}" ` +
+        `external_reference="${payment.external_reference ?? '—'}" matched_orders=[${orderIds.join(',')}]`
+    );
 
     // Build the field patch shared across all orders in this checkout.
     const patch: PaymentFieldsUpdate = {
@@ -131,11 +138,23 @@ export async function POST(request: NextRequest) {
         ])
       );
 
-      // Trigger automatic delivery for paid orders
-      // This sends digital access details to the customer if inventory is available
-      await Promise.allSettled(
+      // Trigger automatic delivery for paid orders. This sends digital access
+      // details to the customer if inventory is available. deliverOrder is
+      // idempotent (an already-delivered order is skipped), so duplicate
+      // webhook deliveries never double-send.
+      const deliveries = await Promise.allSettled(
         updatedOrders.map((order) => deliverOrder(order.id, false))
       );
+      deliveries.forEach((d, i) => {
+        const orderId = updatedOrders[i].id;
+        if (d.status === 'fulfilled') {
+          console.log(`[mercadopago webhook] delivery order="${orderId}" → ${d.value.success ? 'delivered' : 'skipped/failed'}: ${d.value.message}`);
+        } else {
+          console.error(`[mercadopago webhook] delivery order="${orderId}" threw: ${d.reason?.message || d.reason}`);
+        }
+      });
+    } else if (mappedStatus === 'paid') {
+      console.warn(`[mercadopago webhook] payment approved but no matching order was updated (orders=[${orderIds.join(',')}]) — delivery skipped`);
     }
 
     return NextResponse.json({

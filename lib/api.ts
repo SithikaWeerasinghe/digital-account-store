@@ -496,7 +496,8 @@ export async function fetchAdminOrders(): Promise<Order[]> {
 }
 
 export async function fetchAdminOrderById(id: string): Promise<Order> {
-  return fetchApi<Order>(`/api/admin/orders/${id}`);
+  // Admin route — requires the Supabase bearer token (fetchAdminApi attaches it).
+  return fetchAdminApi<Order>(`/api/admin/orders/${id}`);
 }
 
 export type OrderStatusUpdate = {
@@ -505,17 +506,19 @@ export type OrderStatusUpdate = {
 };
 
 export async function updateOrderStatus(id: string, payload: OrderStatusUpdate): Promise<Order> {
-  return fetchApi<Order>(`/api/admin/orders/${id}`, {
+  // Admin route — must send the bearer token, else the API returns
+  // "Unauthorized: No bearer token provided". fetchAdminApi adds it and throws a
+  // clear "Please log in again" message if the session is missing/expired.
+  return fetchAdminApi<Order>(`/api/admin/orders/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
 }
 
 export async function resendOrderEmail(id: string, credentials?: string): Promise<{ id?: string }> {
-  return fetchApi<{ id?: string }>(`/api/admin/orders/${id}/resend-email`, {
+  // Admin route — requires the bearer token.
+  return fetchAdminApi<{ id?: string }>(`/api/admin/orders/${id}/resend-email`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ credentials }),
   });
 }
