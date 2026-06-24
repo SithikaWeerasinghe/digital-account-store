@@ -100,6 +100,12 @@ const inMemoryOrders: DatabaseOrderRow[] = [
 
 export function mapDatabaseOrder(row: DatabaseOrderRow): Order {
   const matchedProduct = sampleProducts.find((p) => p.id === row.product_id);
+  // Prefer the name stored at order time, then any sample match. Real DB
+  // products aren't in sampleProducts, so without the stored name the UI/email
+  // fell back to the raw product id. getOrders/getOrderById enrich this from the
+  // products table for older orders that have no stored name.
+  const storedName = (row.order_metadata as any)?.product_name as string | undefined;
+  const productName = storedName || matchedProduct?.name || null;
   const items: OrderItem[] = [
     {
       id: `item-${row.id}`,
@@ -128,6 +134,7 @@ export function mapDatabaseOrder(row: DatabaseOrderRow): Order {
     invoice_number: row.invoice_number,
     customer_email: row.customer_email,
     product_id: row.product_id,
+    product_name: productName,
     quantity: row.quantity,
     amount: row.amount,
     payment_method: row.payment_method,
@@ -269,8 +276,11 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   // `amount` reflects what is actually charged (the discounted total).
   const orderAmount = finalAmount;
 
-  // Build order metadata from selected product option and guarantee
-  const orderMetadata: DatabaseOrderRow['order_metadata'] = {};
+  // Build order metadata from selected product option and guarantee.
+  // Persist the human-readable product NAME so every later view (admin order
+  // detail, customer emails, payment page) shows the name instead of the raw
+  // product id (e.g. "prod-qnzgzzdzk").
+  const orderMetadata: DatabaseOrderRow['order_metadata'] = { product_name: product.name };
 
   if (input.selectedOptionId || input.selectedOptionLabel) {
     orderMetadata.product_option = {
@@ -328,6 +338,28 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
   return mapDatabaseOrder(newRow);
 }
 
+/**
+ * Fills in product_name for orders that don't carry one (older orders created
+ * before the name was stored, whose product isn't in sampleProducts). One batch
+ * query — no N+1. Best-effort: on any error the orders are returned unchanged.
+ */
+async function attachProductNames(orders: Order[]): Promise<Order[]> {
+  if (!supabase || orders.length === 0) return orders;
+  const missing = orders.filter((o) => !o.product_name && o.product_id);
+  if (missing.length === 0) return orders;
+  const ids = Array.from(new Set(missing.map((o) => o.product_id as string)));
+  const { data, error } = await supabase.from('products').select('id, name').in('id', ids);
+  if (error || !data) return orders;
+  const nameById = new Map<string, string>((data as any[]).map((r) => [r.id, r.name]));
+  for (const o of orders) {
+    if (!o.product_name && o.product_id) {
+      const name = nameById.get(o.product_id);
+      if (name) o.product_name = name;
+    }
+  }
+  return orders;
+}
+
 export async function getOrders(): Promise<Order[]> {
   if (!supabase) return inMemoryOrders.map(mapDatabaseOrder);
   const { data, error } = await supabase
@@ -335,7 +367,7 @@ export async function getOrders(): Promise<Order[]> {
     .select('*')
     .order('created_at', { ascending: false });
   if (error || !data) return inMemoryOrders.map(mapDatabaseOrder);
-  return data.map((row) => mapDatabaseOrder(row as DatabaseOrderRow));
+  return attachProductNames(data.map((row) => mapDatabaseOrder(row as DatabaseOrderRow)));
 }
 
 export async function getOrderById(id: string): Promise<Order | null> {
@@ -345,7 +377,9 @@ export async function getOrderById(id: string): Promise<Order | null> {
   }
   const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
   if (error || !data) return null;
-  return mapDatabaseOrder(data as DatabaseOrderRow);
+  const order = mapDatabaseOrder(data as DatabaseOrderRow);
+  const [enriched] = await attachProductNames([order]);
+  return enriched;
 }
 
 export async function getOrderByInvoiceNumber(invoiceNumber: string): Promise<Order | null> {

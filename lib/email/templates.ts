@@ -73,7 +73,12 @@ interface OrderEmailOptions {
 export function buildOrderConfirmationEmail(order: Order, options: OrderEmailOptions = {}) {
   const invoice = order.invoice_number || order.id;
   const email = order.customer_email || order.userId;
-  const productName = order.items?.[0]?.product?.name || order.product_id || 'Digital Product';
+  const productName =
+    order.product_name ||
+    ((order.order_metadata as any)?.product_name as string | undefined) ||
+    order.items?.[0]?.product?.name ||
+    order.product_id ||
+    'Digital Product';
   const quantity = order.quantity ?? order.items?.[0]?.quantity ?? 1;
   const method = (order.payment_method || order.paymentMethod || 'card').toUpperCase();
   const paymentStatus = order.payment_status || (order.status === 'completed' ? 'paid' : order.status);
@@ -184,7 +189,12 @@ export function buildOrderConfirmationEmail(order: Order, options: OrderEmailOpt
 export function buildAdminNotificationEmail(order: Order, adminEmail: string) {
   const invoice = order.invoice_number || order.id;
   const email = order.customer_email || order.userId;
-  const productName = order.items?.[0]?.product?.name || order.product_id || 'Digital Product';
+  const productName =
+    order.product_name ||
+    ((order.order_metadata as any)?.product_name as string | undefined) ||
+    order.items?.[0]?.product?.name ||
+    order.product_id ||
+    'Digital Product';
   const method = (order.payment_method || order.paymentMethod || 'card').toUpperCase();
   const paymentStatus = order.payment_status || (order.status === 'completed' ? 'paid' : order.status);
   const paid = paymentStatus === 'paid';
@@ -461,7 +471,12 @@ export function buildAdminDeliveryEmail(
 ) {
   const invoice = order.invoice_number || order.id;
   const email = order.customer_email || order.userId;
-  const productName = order.items?.[0]?.product?.name || order.product_id || 'Digital Product';
+  const productName =
+    order.product_name ||
+    ((order.order_metadata as any)?.product_name as string | undefined) ||
+    order.items?.[0]?.product?.name ||
+    order.product_id ||
+    'Digital Product';
   const optionLabel = order.order_metadata?.product_option?.label;
   const heading = info.ok ? '✅ Order Delivered' : '⚠️ Delivery Needs Attention';
   const headColor = info.ok ? '#047857' : '#b45309';

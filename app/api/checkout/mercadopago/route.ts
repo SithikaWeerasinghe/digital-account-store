@@ -82,7 +82,11 @@ export async function POST(request: NextRequest) {
         order.final_amount ?? order.amount ?? order.totalAmount ?? 0;
       const unitPrice = Number((lineTotal / (quantity || 1)).toFixed(2));
       const title =
-        order.items?.[0]?.product?.name || order.product_id || 'Digital Product';
+        order.product_name ||
+        (order.order_metadata?.product_name as string | undefined) ||
+        order.items?.[0]?.product?.name ||
+        order.product_id ||
+        'Digital Product';
       return {
         id: order.product_id || order.id,
         title,

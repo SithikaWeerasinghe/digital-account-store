@@ -75,7 +75,12 @@ export default function OrderDetail({ order: initialOrder, onClose, onUpdate }: 
 
   const paymentStatus = order.payment_status || 'pending';
   const deliveryStatus = order.delivery_status || 'pending';
-  const productName = order.items?.[0]?.product?.name || order.product_id || '—';
+  const productName =
+    order.product_name ||
+    ((order.order_metadata as any)?.product_name as string | undefined) ||
+    order.items?.[0]?.product?.name ||
+    order.product_id ||
+    '—';
 
   const runUpdate = async (action: string, update: OrderStatusUpdate) => {
     try {

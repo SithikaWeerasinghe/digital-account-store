@@ -13,6 +13,8 @@ export interface Order {
   invoice_number?: string;
   customer_email?: string;
   product_id?: string;
+  /** Human-readable product name resolved for display (admin, emails, payment page). */
+  product_name?: string | null;
   quantity?: number;
   amount?: number;
   payment_method?: 'card' | 'crypto' | 'manual';
