@@ -1,6 +1,31 @@
-import { Ticket, CreateTicketInput } from '@/types/ticket';
+import { Ticket, CreateTicketInput, TicketReplyEntry } from '@/types/ticket';
 import { supabase, supabaseAdmin } from '@/lib/supabase';
 import crypto from 'crypto';
+
+/**
+ * The conversation thread is stored in the existing `admin_reply` TEXT column as
+ * a JSON array of {sender,text,at}, so EVERY admin reply is preserved instead of
+ * overwriting the previous one (no DB migration needed). Legacy tickets whose
+ * `admin_reply` is plain text are read as a single admin message.
+ */
+function parseThread(rawAdminReply: string | null, fallbackAt: string): TicketReplyEntry[] {
+  if (!rawAdminReply || !rawAdminReply.trim()) return [];
+  try {
+    const parsed = JSON.parse(rawAdminReply);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .filter((m) => m && typeof m.text === 'string' && m.text.length > 0)
+        .map((m) => ({
+          sender: m.sender === 'customer' ? 'customer' : 'admin',
+          text: String(m.text),
+          at: typeof m.at === 'string' && m.at ? m.at : fallbackAt,
+        }));
+    }
+  } catch {
+    /* not JSON → a legacy single plain-text reply */
+  }
+  return [{ sender: 'admin', text: rawAdminReply, at: fallbackAt }];
+}
 
 export interface DatabaseTicketRow {
   id: string;
@@ -50,6 +75,9 @@ export function mapDatabaseTicket(row: DatabaseTicketRow): Ticket {
   if (row.issue_type.toLowerCase().includes('payment') || row.issue_type.toLowerCase().includes('refund')) priority = 'urgent';
   else if (row.issue_type.toLowerCase().includes('not working') || row.issue_type.toLowerCase().includes('not received')) priority = 'high';
 
+  const messages = parseThread(row.admin_reply, row.updated_at);
+  const latestAdminReply = [...messages].reverse().find((m) => m.sender === 'admin')?.text ?? null;
+
   return {
     id: row.id,
     userId: row.email,
@@ -62,7 +90,8 @@ export function mapDatabaseTicket(row: DatabaseTicketRow): Ticket {
     updatedAt: row.updated_at,
     name: row.name,
     issueType: row.issue_type,
-    adminReply: row.admin_reply,
+    adminReply: latestAdminReply,
+    messages,
   };
 }
 
@@ -189,22 +218,39 @@ export async function replyToTicket(
   status?: 'open' | 'in_progress' | 'resolved' | 'closed'
 ): Promise<Ticket | null> {
   const client = supabaseAdmin || supabase;
-  const updateData: any = {
-    admin_reply: replyText,
-    updated_at: new Date().toISOString(),
-  };
-  if (status) {
-    updateData.status = status;
-  }
+  const now = new Date().toISOString();
+  const newEntry: TicketReplyEntry = { sender: 'admin', text: replyText, at: now };
 
+  // In-memory: append to the existing thread instead of overwriting it.
   if (!client) {
     const row = inMemoryTickets.find((t) => t.id === id);
     if (!row) return null;
-    row.admin_reply = replyText;
+    const thread = [...parseThread(row.admin_reply, row.updated_at), newEntry];
+    row.admin_reply = JSON.stringify(thread);
     if (status) row.status = status;
-    row.updated_at = new Date().toISOString();
+    row.updated_at = now;
     return mapDatabaseTicket(row);
   }
+
+  // DB: read the current thread first, append the new reply, then persist —
+  // so earlier replies are never lost (the whole conversation is kept).
+  const { data: existing, error: fetchErr } = await client
+    .from('tickets')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (fetchErr || !existing) {
+    console.error('Supabase ticket reply lookup error:', fetchErr?.message);
+    return null;
+  }
+  const existingRow = existing as DatabaseTicketRow;
+  const thread = [...parseThread(existingRow.admin_reply, existingRow.updated_at), newEntry];
+
+  const updateData: any = {
+    admin_reply: JSON.stringify(thread),
+    updated_at: now,
+  };
+  if (status) updateData.status = status;
 
   const { data, error } = await client
     .from('tickets')
@@ -212,7 +258,7 @@ export async function replyToTicket(
     .eq('id', id)
     .select();
   if (error || !data || data.length === 0) {
-    console.error("Supabase ticket reply error:", error?.message);
+    console.error('Supabase ticket reply error:', error?.message);
     return null;
   }
   return mapDatabaseTicket(data[0] as DatabaseTicketRow);

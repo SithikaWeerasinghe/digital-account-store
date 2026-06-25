@@ -187,11 +187,30 @@ export default function TicketTable({ tickets: initialTickets }: { tickets: Tick
                             </div>
                           )}
 
-                          {ticket.adminReply && (
+                          {ticket.messages && ticket.messages.length > 0 && (
                             <div className="border-t border-slate-200/60 pt-4">
-                              <span className="text-[10px] font-mono font-bold tracking-widest uppercase text-slate-400 block mb-1.5">Previous Admin Reply</span>
-                              <div className="p-4 bg-sky-550/5 border border-sky-100 rounded-xl text-slate-800 text-sm whitespace-pre-wrap leading-relaxed shadow-sm font-medium">
-                                {ticket.adminReply}
+                              <span className="text-[10px] font-mono font-bold tracking-widest uppercase text-slate-400 block mb-1.5">
+                                Conversation ({ticket.messages.length} {ticket.messages.length === 1 ? 'reply' : 'replies'})
+                              </span>
+                              <div className="space-y-2">
+                                {ticket.messages.map((m, idx) => (
+                                  <div
+                                    key={idx}
+                                    className={`p-4 rounded-xl border text-slate-800 text-sm whitespace-pre-wrap leading-relaxed shadow-sm font-medium ${
+                                      m.sender === 'admin' ? 'bg-sky-550/5 border-sky-100' : 'bg-white border-slate-200'
+                                    }`}
+                                  >
+                                    <div
+                                      className={`text-[10px] font-mono font-bold tracking-widest uppercase mb-1.5 ${
+                                        m.sender === 'admin' ? 'text-sky-600' : 'text-slate-400'
+                                      }`}
+                                    >
+                                      {m.sender === 'admin' ? 'Support' : ticket.name || 'Customer'}
+                                      {m.at ? ` · ${formatDate(m.at)}` : ''}
+                                    </div>
+                                    {m.text}
+                                  </div>
+                                ))}
                               </div>
                             </div>
                           )}

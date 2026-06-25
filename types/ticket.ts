@@ -1,3 +1,10 @@
+/** One message in a ticket's conversation thread. */
+export interface TicketReplyEntry {
+  sender: 'admin' | 'customer';
+  text: string;
+  at: string;
+}
+
 export interface Ticket {
   id: string;
   userId: string;
@@ -9,7 +16,10 @@ export interface Ticket {
   updatedAt: string;
   name?: string;
   issueType?: string;
+  /** Latest admin reply text (back-compat). The full thread is in `messages`. */
   adminReply?: string | null;
+  /** Ordered conversation thread (all admin replies, oldest first). */
+  messages?: TicketReplyEntry[];
   email?: string;
 }
 
