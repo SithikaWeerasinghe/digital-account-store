@@ -5,10 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// ApexFled change request: currency adjustment (EUR → GBP).
+// SINGLE SOURCE OF TRUTH for the displayed currency. Change these three constants
+// to switch the whole storefront's displayed currency. Payment-provider
+// (processing) currencies are configured separately via Vercel env vars — see
+// the rollback notes. To revert: set CODE='EUR', SYMBOL='€', LOCALE='en-US'.
+export const CURRENCY_CODE = 'GBP';
+export const CURRENCY_SYMBOL = '£';
+export const CURRENCY_LOCALE = 'en-GB';
+
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat(CURRENCY_LOCALE, {
     style: 'currency',
-    currency: 'EUR',
+    currency: CURRENCY_CODE,
   }).format(amount);
 }
 

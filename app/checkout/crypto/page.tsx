@@ -7,8 +7,9 @@ import { Bitcoin, Copy, Check, AlertCircle, ShieldCheck, LifeBuoy } from 'lucide
 import { ROUTES } from '@/lib/constants';
 import { fetchCryptoConfig, CryptoWalletInfo } from '@/lib/api';
 
+// ApexFled change request: currency adjustment (EUR → GBP). Canonical helper: lib/utils.ts.
 function formatEUR(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(n);
 }
 
 type CryptoOrderSummary = {

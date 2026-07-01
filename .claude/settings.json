@@ -4,7 +4,10 @@
       "PowerShell($env:NODE_OPTIONS='--max-old-space-size=4096'; Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; npm run build 2>&1 | Select-Object -Last 35)",
       "PowerShell($env:NODE_OPTIONS=''; Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue; npm run build 2>&1 | Select-Object -Last 40)",
       "Bash(echo \"=== tsc exit: $? ===\")",
-      "Bash(echo \"\\(check-ignore exit: $?\\)\")"
+      "Bash(echo \"\\(check-ignore exit: $?\\)\")",
+      "PowerShell(cd \"d:\\\\Documents\\\\Github\\\\digital-account-store\"; npx tsc --noEmit 2>&1; Write-Host \"TSC_EXIT:$LASTEXITCODE\")",
+      "PowerShell(cd \"d:\\\\Documents\\\\Github\\\\digital-account-store\"; npm run build 2>&1 | Select-Object -Last 5; Write-Host \"BUILD_EXIT:$LASTEXITCODE\")",
+      "PowerShell(cd \"d:\\\\Documents\\\\Github\\\\digital-account-store\"; npm run build 2>&1 | Select-Object -Last 6; Write-Host \"BUILD_EXIT:$LASTEXITCODE\")"
     ]
   }
 }

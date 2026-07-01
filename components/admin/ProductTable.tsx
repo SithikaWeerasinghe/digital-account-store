@@ -9,6 +9,12 @@ interface ProductTableProps {
   onDelete: (product: Product) => void;
 }
 
+// ApexFled change request: admin-edit adjustment.
+// The Edit Product action is HIDDEN from the admin UI (not deleted). All edit
+// logic (ProductForm modal, updateProduct API) is left intact so this can be
+// restored instantly by flipping this flag back to `true`.
+const SHOW_EDIT_PRODUCT = false;
+
 export default function ProductTable({ products, onEdit, onDelete }: ProductTableProps) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
@@ -73,13 +79,17 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => onEdit(product)}
-                      className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-350 text-slate-400 hover:text-slate-700 transition-all duration-200 cursor-pointer"
-                      title="Edit Product"
-                    >
-                      <Edit size={14} />
-                    </button>
+                    {/* ApexFled change request: Edit Product hidden. Restore by
+                        setting SHOW_EDIT_PRODUCT = true above. */}
+                    {SHOW_EDIT_PRODUCT && (
+                      <button
+                        onClick={() => onEdit(product)}
+                        className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-350 text-slate-400 hover:text-slate-700 transition-all duration-200 cursor-pointer"
+                        title="Edit Product"
+                      >
+                        <Edit size={14} />
+                      </button>
+                    )}
                     <button
                       onClick={() => onDelete(product)}
                       className="p-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-rose-500/30 text-slate-400 hover:text-rose-600 transition-all duration-200 cursor-pointer"

@@ -192,7 +192,7 @@ function AdminDiscountsContent() {
   };
 
   const formatValue = (c: DiscountCode) =>
-    c.discount_type === 'percentage' ? `${c.discount_value}%` : `€${Number(c.discount_value).toFixed(2)}`;
+    c.discount_type === 'percentage' ? `${c.discount_value}%` : `£${Number(c.discount_value).toFixed(2)}`;
 
   const inputClass =
     'w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500';
@@ -259,12 +259,12 @@ function AdminDiscountsContent() {
                 className={inputClass}
               >
                 <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed Amount (€)</option>
+                <option value="fixed">Fixed Amount (£)</option>
               </select>
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1">
-                Discount Value {form.discount_type === 'percentage' ? '(%)' : '(€)'}
+                Discount Value {form.discount_type === 'percentage' ? '(%)' : '(£)'}
               </label>
               <input
                 type="number"
@@ -277,7 +277,7 @@ function AdminDiscountsContent() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">Minimum Order Amount (€)</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-1">Minimum Order Amount (£)</label>
               <input
                 type="number"
                 step="0.01"
@@ -290,7 +290,7 @@ function AdminDiscountsContent() {
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1">
-                Maximum Discount Amount (€) <span className="font-normal text-slate-400">— optional</span>
+                Maximum Discount Amount (£) <span className="font-normal text-slate-400">— optional</span>
               </label>
               <input
                 type="number"

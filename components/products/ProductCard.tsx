@@ -8,8 +8,9 @@ import { useCart } from '@/lib/contexts/CartContext';
 import { useState } from 'react';
 import ProductImage from '@/components/ui/ProductImage';
 
+// ApexFled change request: currency adjustment (EUR → GBP). Canonical helper: lib/utils.ts.
 function formatCurrency(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(n);
 }
 
 export default function ProductCard({ product }: { product: Product }) {

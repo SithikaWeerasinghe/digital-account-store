@@ -8,8 +8,9 @@ import OrderTable from '@/components/admin/OrderTable';
 import { fetchAdminOrders, fetchAdminTickets, fetchAdminProducts, fetchAdminReviews, sendTestEmail } from '@/lib/api';
 import { Order } from '@/types/order';
 
+// ApexFled change request: currency adjustment (EUR → GBP). Canonical helper: lib/utils.ts.
 function formatCurrency(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
+  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(n);
 }
 
 const chartData = [

@@ -735,7 +735,7 @@ function AdminInventoryContent() {
                   <option value="">Select an option / variant</option>
                   {variantChoices.map((o) => (
                     <option key={o.id} value={o.id}>
-                      {o.label} — €{Number(o.price).toFixed(2)}
+                      {o.label} — £{Number(o.price).toFixed(2)}
                       {o.badge ? ` (${o.badge})` : ''}
                     </option>
                   ))}

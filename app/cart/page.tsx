@@ -164,7 +164,7 @@ export default function CartPage() {
                           {item.selectedGuarantee && (
                             <p className="text-xs text-slate-600 mt-1">
                               Warranty: <span className="font-semibold">{item.selectedGuarantee.label}</span>
-                              {item.selectedGuarantee.monthly_price && ` · €${item.selectedGuarantee.monthly_price.toFixed(2)}/mo`}
+                              {item.selectedGuarantee.monthly_price && ` · £${item.selectedGuarantee.monthly_price.toFixed(2)}/mo`}
                             </p>
                           )}
 
@@ -173,7 +173,7 @@ export default function CartPage() {
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-3 mt-3 sm:mt-4">
                             {/* Price */}
                             <div className="text-lg sm:text-xl font-black text-primary mr-auto">
-                              €{itemTotal.toFixed(2)}
+                              £{itemTotal.toFixed(2)}
                             </div>
 
                             {/* Quantity Controls */}
@@ -251,13 +251,13 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">Subtotal</span>
-                    <span className="text-slate-900 font-semibold">€{cartTotal.toFixed(2)}</span>
+                    <span className="text-slate-900 font-semibold">£{cartTotal.toFixed(2)}</span>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-lg font-black text-slate-900 font-heading">Total</span>
-                  <span className="text-2xl font-black text-primary">€{cartTotal.toFixed(2)}</span>
+                  <span className="text-2xl font-black text-primary">£{cartTotal.toFixed(2)}</span>
                 </div>
 
                 <button
