@@ -10,6 +10,20 @@ import { ROUTES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import ApexFledLogo from '@/components/ui/ApexFledLogo';
 import { signOutAdmin } from '@/lib/adminAuth';
+// ApexFled temporary admin tab visibility change — restore by setting the flag
+// to true in lib/adminNav.ts. Controls which tabs appear in the sidebar.
+import {
+  SHOW_DASHBOARD_TAB,
+  SHOW_CATEGORIES_TAB,
+  SHOW_PRODUCTS_TAB,
+  SHOW_ORDERS_TAB,
+  SHOW_INVENTORY_TAB,
+  SHOW_PAYMENT_METHODS_TAB,
+  SHOW_COUPONS_TAB,
+  SHOW_PROMOS_TAB,
+  SHOW_TICKETS_TAB,
+  SHOW_REVIEWS_TAB,
+} from '@/lib/adminNav';
 
 export default function AdminSidebar({
   isOpen,
@@ -88,18 +102,20 @@ export default function AdminSidebar({
     };
   }, [pathname]);
 
+  // ApexFled temporary admin tab visibility change — hidden tabs are filtered
+  // out via the flags in lib/adminNav.ts. Restore by setting a flag to true.
   const navItems = [
-    { href: ROUTES.ADMIN.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
-    { href: ROUTES.ADMIN.PRODUCTS, label: 'Products', icon: Package },
-    { href: ROUTES.ADMIN.CATEGORIES, label: 'Categories', icon: FolderTree },
-    { href: ROUTES.ADMIN.ORDERS, label: 'Orders', icon: ShoppingCart },
-    { href: ROUTES.ADMIN.INVENTORY, label: 'Inventory', icon: Archive },
-    { href: ROUTES.ADMIN.PAYMENT_METHODS, label: 'Payment Methods', icon: CreditCard },
-    { href: ROUTES.ADMIN.DISCOUNTS, label: 'Coupons', icon: Tag },
-    { href: ROUTES.ADMIN.PROMOS, label: 'Promos', icon: Megaphone },
-    { href: ROUTES.ADMIN.TICKETS, label: 'Tickets', icon: Ticket },
-    { href: ROUTES.ADMIN.REVIEWS, label: 'Reviews', icon: Star },
-  ];
+    { href: ROUTES.ADMIN.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard, visible: SHOW_DASHBOARD_TAB },
+    { href: ROUTES.ADMIN.PRODUCTS, label: 'Products', icon: Package, visible: SHOW_PRODUCTS_TAB },
+    { href: ROUTES.ADMIN.CATEGORIES, label: 'Categories', icon: FolderTree, visible: SHOW_CATEGORIES_TAB },
+    { href: ROUTES.ADMIN.ORDERS, label: 'Orders', icon: ShoppingCart, visible: SHOW_ORDERS_TAB },
+    { href: ROUTES.ADMIN.INVENTORY, label: 'Inventory', icon: Archive, visible: SHOW_INVENTORY_TAB },
+    { href: ROUTES.ADMIN.PAYMENT_METHODS, label: 'Payment Methods', icon: CreditCard, visible: SHOW_PAYMENT_METHODS_TAB },
+    { href: ROUTES.ADMIN.DISCOUNTS, label: 'Coupons', icon: Tag, visible: SHOW_COUPONS_TAB },
+    { href: ROUTES.ADMIN.PROMOS, label: 'Promos', icon: Megaphone, visible: SHOW_PROMOS_TAB },
+    { href: ROUTES.ADMIN.TICKETS, label: 'Tickets', icon: Ticket, visible: SHOW_TICKETS_TAB },
+    { href: ROUTES.ADMIN.REVIEWS, label: 'Reviews', icon: Star, visible: SHOW_REVIEWS_TAB },
+  ].filter((item) => item.visible);
 
   return (
     <aside 
