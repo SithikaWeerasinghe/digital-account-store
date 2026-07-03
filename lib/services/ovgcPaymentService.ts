@@ -82,17 +82,6 @@ export async function createOvgcCheckout(input: OvgcCheckoutInput): Promise<Ovgc
     return { ok: false, code: 'api_error', message: 'Invalid order amount' };
   }
 
-  // ApexFled change request: currency adjustment.
-  // The storefront DISPLAYS GBP, but the OVGC account settles in a DIFFERENT
-  // currency (OVGC's payload has no currency field — `total_amount` is charged
-  // in the account's own currency). Convert the GBP amount into the OVGC
-  // currency using OVGC_CONVERSION_RATE (GBP → OVGC-currency multiplier, set in
-  // Vercel). Default 1 = no conversion (safe / unchanged) — set it before going
-  // live so customers are charged the correct amount.
-  const rawRate = Number(process.env.OVGC_CONVERSION_RATE || '1');
-  const conversionRate = Number.isFinite(rawRate) && rawRate > 0 ? rawRate : 1;
-  const gatewayAmount = Number((amount * conversionRate).toFixed(2));
-
   const site = (input.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
   const baseSuccess = SUCCESS_URL || (site ? `${site}/checkout/success` : '');
   // Carry the order reference back to the success page (informational only;
@@ -105,8 +94,7 @@ export async function createOvgcCheckout(input: OvgcCheckoutInput): Promise<Ovgc
   const body: Record<string, any> = {
     api_key: API_KEY,
     order_uuid: input.reference,
-    // ApexFled change request: send the OVGC-currency amount (GBP × rate).
-    total_amount: gatewayAmount,
+    total_amount: Number(amount.toFixed(2)),
     email: input.customerEmail || '',
     success_url: successUrl,
     cancel_url: cancelUrl,

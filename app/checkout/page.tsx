@@ -432,7 +432,7 @@ export default function CheckoutPage() {
                       )}
                     </div>
                     <p className="font-black text-text-primary">
-                      £{(itemPrice * item.quantity).toFixed(2)}
+                      €{(itemPrice * item.quantity).toFixed(2)}
                     </p>
                   </div>
                 );
@@ -441,17 +441,17 @@ export default function CheckoutPage() {
                 <>
                   <div className="flex justify-between items-center pt-1 text-text-secondary">
                     <span>Subtotal</span>
-                    <span>£{cartTotal.toFixed(2)}</span>
+                    <span>€{cartTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center text-emerald-600 font-semibold">
                     <span>Discount ({appliedCoupon.code})</span>
-                    <span>-£{discountAmount.toFixed(2)}</span>
+                    <span>-€{discountAmount.toFixed(2)}</span>
                   </div>
                 </>
               )}
               <div className="pt-3 border-t-2 border-primary flex justify-between items-center">
                 <span className="text-lg font-black text-text-primary font-heading uppercase">Total</span>
-                <span className="text-3xl font-black text-primary">£{finalTotal.toFixed(2)}</span>
+                <span className="text-3xl font-black text-primary">€{finalTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -638,7 +638,7 @@ export default function CheckoutPage() {
                             <p className="text-xs text-text-secondary mb-1">Warranty: {item.selectedGuarantee.label}</p>
                           )}
                           <p className="text-text-secondary text-sm sm:text-base font-semibold">
-                            £{(itemPrice * item.quantity).toFixed(2)}
+                            €{(itemPrice * item.quantity).toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -712,12 +712,12 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex justify-between text-text-secondary">
                       <span>Subtotal</span>
-                      <span>£{cartTotal.toFixed(2)}</span>
+                      <span>€{cartTotal.toFixed(2)}</span>
                     </div>
                     {appliedCoupon?.valid && discountAmount > 0 && (
                       <div className="flex justify-between text-emerald-600 font-semibold">
                         <span>Discount ({appliedCoupon.code})</span>
-                        <span>-£{discountAmount.toFixed(2)}</span>
+                        <span>-€{discountAmount.toFixed(2)}</span>
                       </div>
                     )}
                   </div>
@@ -725,7 +725,7 @@ export default function CheckoutPage() {
                   <div className="flex justify-between items-center mb-6">
                     <span className="font-bold text-text-primary text-lg sm:text-xl">Total</span>
                     <span className="font-black text-primary text-2xl drop-shadow-[0_0_8px_rgba(0,158,227,0.15)]">
-                      £{finalTotal.toFixed(2)}
+                      €{finalTotal.toFixed(2)}
                     </span>
                   </div>
                 </>

@@ -10,8 +10,8 @@ import { ROUTES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import ApexFledLogo from '@/components/ui/ApexFledLogo';
 import { signOutAdmin } from '@/lib/adminAuth';
-// ApexFled temporary admin tab visibility change — restore by setting the flag
-// to true in lib/adminNav.ts. Controls which tabs appear in the sidebar.
+// Admin tab visibility feature flags (lib/adminNav.ts) — control which tabs
+// appear in the sidebar. All tabs are visible by default.
 import {
   SHOW_DASHBOARD_TAB,
   SHOW_CATEGORIES_TAB,
@@ -102,8 +102,8 @@ export default function AdminSidebar({
     };
   }, [pathname]);
 
-  // ApexFled temporary admin tab visibility change — hidden tabs are filtered
-  // out via the flags in lib/adminNav.ts. Restore by setting a flag to true.
+  // Tabs are filtered by the visibility flags in lib/adminNav.ts (all visible by
+  // default; set a flag to false to hide a tab).
   const navItems = [
     { href: ROUTES.ADMIN.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard, visible: SHOW_DASHBOARD_TAB },
     { href: ROUTES.ADMIN.PRODUCTS, label: 'Products', icon: Package, visible: SHOW_PRODUCTS_TAB },

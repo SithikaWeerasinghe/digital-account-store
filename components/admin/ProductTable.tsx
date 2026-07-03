@@ -9,11 +9,9 @@ interface ProductTableProps {
   onDelete: (product: Product) => void;
 }
 
-// ApexFled change request: admin-edit adjustment.
-// The Edit Product action is HIDDEN from the admin UI (not deleted). All edit
-// logic (ProductForm modal, updateProduct API) is left intact so this can be
-// restored instantly by flipping this flag back to `true`.
-const SHOW_EDIT_PRODUCT = false;
+// Edit Product action visibility. RESTORED (visible). Set to `false` to hide the
+// Edit button again without removing any edit logic (ProductForm / updateProduct).
+const SHOW_EDIT_PRODUCT = true;
 
 export default function ProductTable({ products, onEdit, onDelete }: ProductTableProps) {
   return (
@@ -79,8 +77,7 @@ export default function ProductTable({ products, onEdit, onDelete }: ProductTabl
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    {/* ApexFled change request: Edit Product hidden. Restore by
-                        setting SHOW_EDIT_PRODUCT = true above. */}
+                    {/* Edit Product button — hidden when SHOW_EDIT_PRODUCT is false. */}
                     {SHOW_EDIT_PRODUCT && (
                       <button
                         onClick={() => onEdit(product)}

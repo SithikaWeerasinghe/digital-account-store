@@ -236,7 +236,7 @@ export async function validateAndCalculateDiscount(
   if (coupon.min_order_amount != null && total < Number(coupon.min_order_amount)) {
     return {
       valid: false,
-      message: `This coupon requires a minimum order of £${Number(coupon.min_order_amount).toFixed(2)}.`,
+      message: `This coupon requires a minimum order of €${Number(coupon.min_order_amount).toFixed(2)}.`,
     };
   }
 

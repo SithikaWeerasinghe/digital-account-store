@@ -40,7 +40,7 @@ const mapGuaranteeRows = (options?: { id: string; label: string; months: number;
   })) || [];
 
 /**
- * One editable warranty/duration row (label · months · total £) + delete.
+ * One editable warranty/duration row (label · months · total €) + delete.
  * Responsive: a single stacked column on mobile (no horizontal cut-off), a
  * compact aligned row on sm+. Reused for both shared and per-plan warranties.
  */
@@ -78,7 +78,7 @@ function GuaranteeRowEditor({
         min="0"
         value={row.total_price}
         onChange={(e) => onChange('total_price', e.target.value)}
-        placeholder="Total £"
+        placeholder="Total €"
         className={inputClass}
       />
       <button
@@ -424,7 +424,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-black tracking-widest uppercase text-slate-600 mb-2">
-                  Price (£) *
+                  Price (€) *
                 </label>
                 <input
                   type="number"
@@ -438,7 +438,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
               </div>
               <div>
                 <label className="block text-xs font-black tracking-widest uppercase text-slate-600 mb-2">
-                  Original Price (£)
+                  Original Price (€)
                 </label>
                 <input
                   type="number"
@@ -570,7 +570,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div>
                           <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                            Plan Price £
+                            Plan Price €
                           </label>
                           <input
                             type="number"
@@ -584,7 +584,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                            Compare-at £ (optional)
+                            Compare-at € (optional)
                           </label>
                           <input
                             type="number"
@@ -664,7 +664,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                   <div className="hidden sm:grid sm:grid-cols-[minmax(0,1fr)_5rem_6rem_auto] gap-2 px-1">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Label</span>
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Months</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total £</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total €</span>
                     <span />
                   </div>
                   {guarantees.map((g, index) => (

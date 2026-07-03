@@ -4,8 +4,8 @@ import { ReactNode, useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import AdminHeader from '@/components/layout/AdminHeader';
-// ApexFled temporary admin tab visibility change — restore by setting the flag
-// to true in lib/adminNav.ts. Blocks direct-URL access to hidden tabs.
+// Redirect guard for the admin tab visibility flags (lib/adminNav.ts): if a tab
+// is hidden (flag = false), direct-URL access to it redirects to the dashboard.
 import { isHiddenAdminPath } from '@/lib/adminNav';
 import { ROUTES } from '@/lib/constants';
 
@@ -52,9 +52,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
         <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50/20 p-4 md:p-6 lg:p-8">
-          {/* ApexFled temporary admin tab visibility change: hidden tabs show a
-              "Not available" notice while redirecting to the dashboard, so the
-              hidden page's content never renders. Restore via lib/adminNav.ts. */}
+          {/* A hidden tab (visibility flag = false) shows a "Not available"
+              notice while redirecting to the dashboard, so its content never
+              renders. All tabs are currently visible. */}
           {isHiddenTab ? (
             <div className="flex flex-col items-center justify-center text-center py-24">
               <h2 className="text-xl font-black uppercase tracking-widest text-slate-700">Not available</h2>

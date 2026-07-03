@@ -1,21 +1,20 @@
-// ApexFled temporary admin tab visibility change — restore by setting the flag
-// to true. This ONLY hides sidebar tabs and blocks direct-URL access to those
-// pages (redirects to the dashboard). No page files, APIs, or product/order/
-// inventory logic are deleted — flip a flag back to `true` to fully restore.
+// Admin tab visibility feature flags.
+// ALL TABS ARE VISIBLE (restored). To temporarily hide a tab again, set its flag
+// to `false` — the sidebar hides it and direct-URL access redirects to the
+// dashboard. No page files, APIs, or product/order/inventory logic are affected.
 import { ROUTES } from '@/lib/constants';
 
-// ── Admin tab visibility flags ──
-// Set any of these back to `true` to bring the tab + its page back.
-export const SHOW_DASHBOARD_TAB = true; // keep visible (required)
-export const SHOW_CATEGORIES_TAB = true; // keep visible (required)
-export const SHOW_PRODUCTS_TAB = false;
-export const SHOW_ORDERS_TAB = false;
-export const SHOW_INVENTORY_TAB = false;
-export const SHOW_PAYMENT_METHODS_TAB = false;
-export const SHOW_COUPONS_TAB = false; // "Coupons" tab → /admin/discounts
-export const SHOW_PROMOS_TAB = false;
-export const SHOW_TICKETS_TAB = false;
-export const SHOW_REVIEWS_TAB = false;
+// ── Admin tab visibility flags (all restored to visible) ──
+export const SHOW_DASHBOARD_TAB = true;
+export const SHOW_CATEGORIES_TAB = true;
+export const SHOW_PRODUCTS_TAB = true;
+export const SHOW_ORDERS_TAB = true;
+export const SHOW_INVENTORY_TAB = true;
+export const SHOW_PAYMENT_METHODS_TAB = true;
+export const SHOW_COUPONS_TAB = true; // "Coupons" tab → /admin/discounts
+export const SHOW_PROMOS_TAB = true;
+export const SHOW_TICKETS_TAB = true;
+export const SHOW_REVIEWS_TAB = true;
 
 /** Each admin route + whether it is currently visible/reachable. */
 export const ADMIN_TAB_ACCESS: { prefix: string; visible: boolean }[] = [

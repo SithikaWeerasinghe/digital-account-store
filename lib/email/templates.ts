@@ -5,9 +5,8 @@ const BRAND_COLOR = '#009ee3';
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@apexfled.com';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://apexfled.com';
 
-// ApexFled change request: currency adjustment (EUR → GBP). Canonical helper: lib/utils.ts.
 function formatEUR(amount: number): string {
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(amount);
 }
 
 /** Shared outer wrapper so all emails share the same look. */
