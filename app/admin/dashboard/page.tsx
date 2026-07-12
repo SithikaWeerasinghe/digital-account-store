@@ -7,6 +7,15 @@ import { ShoppingCart, Ticket, RefreshCw, Layers, Radio, Activity, ArrowRight, S
 import OrderTable from '@/components/admin/OrderTable';
 import { fetchAdminOrders, fetchAdminTickets, fetchAdminProducts, fetchAdminReviews, sendTestEmail } from '@/lib/api';
 import { Order } from '@/types/order';
+// Admin tab visibility flags (lib/adminNav.ts). Dashboard shortcuts/cards/links
+// that point to a hidden section are gated behind the SAME flag as the section,
+// so restoring a tab (flag → true) automatically restores its dashboard element.
+import {
+  SHOW_PRODUCTS_TAB,
+  SHOW_ORDERS_TAB,
+  SHOW_TICKETS_TAB,
+  SHOW_REVIEWS_TAB,
+} from '@/lib/adminNav';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(n);
@@ -152,33 +161,45 @@ function AdminDashboardContent() {
         </div>
       ) : (
         <>
-          {/* Stats Cards Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard
-              title="Total Products"
-              value={stats.totalProducts.toString()}
-              icon={Package}
-              trend={{ value: 12.5, isPositive: true }}
-            />
-            <StatCard
-              title="Total Orders"
-              value={stats.totalOrders.toString()}
-              icon={ShoppingCart}
-              trend={{ value: 5.2, isPositive: true }}
-            />
-            <StatCard
-              title="Active Tickets"
-              value={stats.activeTickets.toString()}
-              icon={Ticket}
-              trend={{ value: 2.4, isPositive: false }}
-            />
-            <StatCard
-              title="Total Reviews"
-              value={stats.totalReviews.toString()}
-              icon={Star}
-              trend={{ value: 8.1, isPositive: true }}
-            />
-          </div>
+          {/* Stats Cards Section — each counter reflects a hidden admin section,
+              so it renders only when that section's tab flag is enabled
+              (lib/adminNav.ts). The grid itself is skipped if none are visible. */}
+          {(SHOW_PRODUCTS_TAB || SHOW_ORDERS_TAB || SHOW_TICKETS_TAB || SHOW_REVIEWS_TAB) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {SHOW_PRODUCTS_TAB && (
+                <StatCard
+                  title="Total Products"
+                  value={stats.totalProducts.toString()}
+                  icon={Package}
+                  trend={{ value: 12.5, isPositive: true }}
+                />
+              )}
+              {SHOW_ORDERS_TAB && (
+                <StatCard
+                  title="Total Orders"
+                  value={stats.totalOrders.toString()}
+                  icon={ShoppingCart}
+                  trend={{ value: 5.2, isPositive: true }}
+                />
+              )}
+              {SHOW_TICKETS_TAB && (
+                <StatCard
+                  title="Active Tickets"
+                  value={stats.activeTickets.toString()}
+                  icon={Ticket}
+                  trend={{ value: 2.4, isPositive: false }}
+                />
+              )}
+              {SHOW_REVIEWS_TAB && (
+                <StatCard
+                  title="Total Reviews"
+                  value={stats.totalReviews.toString()}
+                  icon={Star}
+                  trend={{ value: 8.1, isPositive: true }}
+                />
+              )}
+            </div>
+          )}
 
           {/* Main Visual Panels Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
@@ -405,15 +426,21 @@ function AdminDashboardContent() {
                 </div>
 
                 <div className="space-y-2 mt-4">
-                  <a href="/admin/products" className="flex items-center justify-between p-3 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-350 group transition-all">
-                    <span className="text-xs font-bold text-slate-650 group-hover:text-slate-800">Product Manager</span>
-                    <ArrowRight size={14} className="text-slate-400 group-hover:text-[#009ee3] transition-transform group-hover:translate-x-1" />
-                  </a>
+                  {/* Quick-action shortcuts to hidden sections render only when
+                      the matching tab flag is enabled (lib/adminNav.ts). */}
+                  {SHOW_PRODUCTS_TAB && (
+                    <a href="/admin/products" className="flex items-center justify-between p-3 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-350 group transition-all">
+                      <span className="text-xs font-bold text-slate-650 group-hover:text-slate-800">Product Manager</span>
+                      <ArrowRight size={14} className="text-slate-400 group-hover:text-[#009ee3] transition-transform group-hover:translate-x-1" />
+                    </a>
+                  )}
 
-                  <a href="/admin/tickets" className="flex items-center justify-between p-3 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-350 group transition-all">
-                    <span className="text-xs font-bold text-slate-650 group-hover:text-slate-800">Support Queue</span>
-                    <ArrowRight size={14} className="text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
-                  </a>
+                  {SHOW_TICKETS_TAB && (
+                    <a href="/admin/tickets" className="flex items-center justify-between p-3 rounded-xl border border-slate-150 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-350 group transition-all">
+                      <span className="text-xs font-bold text-slate-650 group-hover:text-slate-800">Support Queue</span>
+                      <ArrowRight size={14} className="text-slate-400 group-hover:text-amber-600 transition-transform group-hover:translate-x-1" />
+                    </a>
+                  )}
 
                   {/* Send Test Email — verifies Resend admin notifications */}
                   <button
@@ -444,25 +471,29 @@ function AdminDashboardContent() {
 
           </div>
 
-          {/* Recent Orders Section */}
-          <div className="mt-10 border-t border-slate-200/80 pt-8">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h2 className="text-xl font-black text-slate-800 font-heading tracking-wide uppercase">Recent Operations</h2>
-                <p className="text-xs text-slate-400 mt-1">LATEST SALES AND INGESTIONS</p>
+          {/* Recent Orders Section — lists order records and links to the hidden
+              Orders section, so the whole block renders only when SHOW_ORDERS_TAB
+              is true (lib/adminNav.ts). */}
+          {SHOW_ORDERS_TAB && (
+            <div className="mt-10 border-t border-slate-200/80 pt-8">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="text-xl font-black text-slate-800 font-heading tracking-wide uppercase">Recent Operations</h2>
+                  <p className="text-xs text-slate-400 mt-1">LATEST SALES AND INGESTIONS</p>
+                </div>
+                <a href="/admin/orders" className="text-xs text-[#009ee3] hover:text-[#008cc9] font-black font-mono tracking-wider uppercase flex items-center gap-1 hover:underline">
+                  VIEW ALL RECORDS <ArrowRight size={12} />
+                </a>
               </div>
-              <a href="/admin/orders" className="text-xs text-[#009ee3] hover:text-[#008cc9] font-black font-mono tracking-wider uppercase flex items-center gap-1 hover:underline">
-                VIEW ALL RECORDS <ArrowRight size={12} />
-              </a>
+              {orders.length > 0 ? (
+                <OrderTable orders={orders.slice(0, 5)} />
+              ) : (
+                <div className="text-center py-12 bg-slate-50/50 border border-slate-200 rounded-2xl">
+                  <p className="text-slate-400 font-mono text-sm">No recent orders recorded in network logs.</p>
+                </div>
+              )}
             </div>
-            {orders.length > 0 ? (
-              <OrderTable orders={orders.slice(0, 5)} />
-            ) : (
-              <div className="text-center py-12 bg-slate-50/50 border border-slate-200 rounded-2xl">
-                <p className="text-slate-400 font-mono text-sm">No recent orders recorded in network logs.</p>
-              </div>
-            )}
-          </div>
+          )}
         </>
       )}
     </div>
