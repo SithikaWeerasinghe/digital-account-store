@@ -1,24 +1,25 @@
-// ApexFled temporary admin visibility change.
-// Set a flag to `true` to restore that tab and page.
+// Admin tab visibility flags.
 //
-// Only the Dashboard tab is currently visible. Every other tab is hidden: the
-// sidebar omits it and direct-URL access redirects to the dashboard. This is a
-// UI/access change ONLY — no page files, routes, components, APIs, services, or
-// product/order/inventory/database logic are affected. Fully reversible: flip a
-// flag back to `true` and its sidebar tab and direct-URL access both return.
+// ALL TABS ARE VISIBLE (fully restored). Each flag controls three things at once
+// for its section: the sidebar tab, direct-URL access, and any matching dashboard
+// card/shortcut. Setting a flag to `false` hides that section (sidebar omits the
+// tab and direct-URL access redirects to the dashboard); setting it back to
+// `true` restores all three. This is a UI/access mechanism ONLY — no page files,
+// routes, components, APIs, services, or product/order/inventory/database logic
+// are affected either way.
 import { ROUTES } from '@/lib/constants';
 
-// ── Admin tab visibility flags (temporarily hidden — Dashboard only) ──
+// ── Admin tab visibility flags (all restored to visible) ──
 export const SHOW_DASHBOARD_TAB = true;
-export const SHOW_CATEGORIES_TAB = false;
-export const SHOW_PRODUCTS_TAB = false;
-export const SHOW_ORDERS_TAB = false;
-export const SHOW_INVENTORY_TAB = false;
-export const SHOW_PAYMENT_METHODS_TAB = false;
-export const SHOW_COUPONS_TAB = false; // "Coupons" tab → /admin/discounts
-export const SHOW_PROMOS_TAB = false;
-export const SHOW_TICKETS_TAB = false;
-export const SHOW_REVIEWS_TAB = false;
+export const SHOW_CATEGORIES_TAB = true;
+export const SHOW_PRODUCTS_TAB = true;
+export const SHOW_ORDERS_TAB = true;
+export const SHOW_INVENTORY_TAB = true;
+export const SHOW_PAYMENT_METHODS_TAB = true;
+export const SHOW_COUPONS_TAB = true; // "Coupons" tab → /admin/discounts
+export const SHOW_PROMOS_TAB = true;
+export const SHOW_TICKETS_TAB = true;
+export const SHOW_REVIEWS_TAB = true;
 
 /** Each admin route + whether it is currently visible/reachable. */
 export const ADMIN_TAB_ACCESS: { prefix: string; visible: boolean }[] = [

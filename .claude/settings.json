@@ -8,7 +8,10 @@
       "PowerShell(cd \"d:\\\\Documents\\\\Github\\\\digital-account-store\"; npx tsc --noEmit 2>&1; Write-Host \"TSC_EXIT:$LASTEXITCODE\")",
       "PowerShell(cd \"d:\\\\Documents\\\\Github\\\\digital-account-store\"; npm run build 2>&1 | Select-Object -Last 5; Write-Host \"BUILD_EXIT:$LASTEXITCODE\")",
       "PowerShell(cd \"d:\\\\Documents\\\\Github\\\\digital-account-store\"; npm run build 2>&1 | Select-Object -Last 6; Write-Host \"BUILD_EXIT:$LASTEXITCODE\")",
-      "PowerShell(cd \"d:\\\\Documents\\\\Github\\\\digital-account-store\"; Write-Host \"=== BRANCH ===\"; git branch --show-current; Write-Host \"=== STATUS \\(short\\) ===\"; git status --short; Write-Host \"=== UNCOMMITTED FILE COUNT ===\"; \\(git status --short | Measure-Object -Line\\).Lines; Write-Host \"=== LAST 5 COMMITS ===\"; git log --oneline -5; Write-Host \"=== UNPUSHED? \\(local vs origin\\) ===\"; git status -sb | Select-Object -First 1)"
+      "PowerShell(cd \"d:\\\\Documents\\\\Github\\\\digital-account-store\"; Write-Host \"=== BRANCH ===\"; git branch --show-current; Write-Host \"=== STATUS \\(short\\) ===\"; git status --short; Write-Host \"=== UNCOMMITTED FILE COUNT ===\"; \\(git status --short | Measure-Object -Line\\).Lines; Write-Host \"=== LAST 5 COMMITS ===\"; git log --oneline -5; Write-Host \"=== UNPUSHED? \\(local vs origin\\) ===\"; git status -sb | Select-Object -First 1)",
+      "PowerShell(npx tsc --noEmit; Write-Output \"TSC_EXIT_CODE=$LASTEXITCODE\")",
+      "PowerShell(npm run build; Write-Output \"BUILD_EXIT_CODE=$LASTEXITCODE\")",
+      "PowerShell(npm run lint 2>&1 | Select-Object -First 60; Write-Output \"LINT_EXIT_CODE=$LASTEXITCODE\")"
     ]
   }
 }
