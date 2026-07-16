@@ -1,8 +1,21 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import * as orderService from '@/lib/services/orderService';
+import { requireAdminAuth } from '@/lib/apiAuth';
 import { sendOrderConfirmation, sendAdminNotification } from '@/lib/services/emailService';
 
-export async function GET() {
+/**
+ * GET /api/orders — ADMIN ONLY.
+ *
+ * Returns every order (customer emails, invoice numbers, totals, payment state)
+ * and reads through the service-role client, which bypasses Row-Level Security.
+ * It must therefore never be reachable without an admin bearer token: an
+ * unauthenticated caller previously received the entire order table.
+ * Unauthorized requests get 401 (no token / bad token) or 403 (not an admin).
+ */
+export async function GET(request: NextRequest) {
+  const authError = await requireAdminAuth(request);
+  if (authError) return authError;
+
   try {
     const orders = await orderService.getOrders();
     return NextResponse.json({ success: true, data: orders });
@@ -14,6 +27,15 @@ export async function GET() {
   }
 }
 
+/**
+ * POST /api/orders — PUBLIC by design.
+ *
+ * Checkout must create orders before the customer has any session, so this stays
+ * unauthenticated. Behaviour is unchanged: all authoritative validation (product
+ * lookup, exact product+option+guarantee stock gate, coupon re-validation,
+ * payment-method maintenance gate) remains server-side in orderService.createOrder(),
+ * so a direct POST still cannot bypass it.
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json();

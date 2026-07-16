@@ -10,7 +10,6 @@ import { createReview } from '@/lib/api';
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order_id') || searchParams.get('external_reference');
-  const invoiceNumber = searchParams.get('invoice_number');
 
   // Mercado Pago appends these to the success back_url after a redirect.
   const paymentId = searchParams.get('payment_id') || searchParams.get('collection_id');
@@ -23,7 +22,10 @@ function CheckoutSuccessContent() {
   // Mercado Pago reports status=approved in the URL.
   const orderAmount = searchParams.get('amount') ? `$${searchParams.get('amount')}` : null;
 
-  const lookupId = orderId || invoiceNumber;
+  // Order id only. GET /api/orders/[id] no longer accepts invoice numbers (they
+  // were enumerable), and no provider redirect ever supplied invoice_number —
+  // every success URL carries order_id (Mercado Pago) or external_reference.
+  const lookupId = orderId;
 
   // Order Details state for verifying review eligibility
   const [orderData, setOrderData] = useState<any>(null);
@@ -75,14 +77,13 @@ function CheckoutSuccessContent() {
     setIsSubmitting(true);
     setSubmitError('');
     try {
-      const emailVal = orderData.customerEmail;
-      const formattedEmail = `${emailVal}|${formName.trim()}`;
-
+      // Send NO email and no product id: the server resolves both from the
+      // order id, so neither can be spoofed and the order endpoint never has to
+      // hand the customer's email to the browser.
       await createReview({
         rating: formRating,
         comment: formComment.trim(),
-        customer_email: formattedEmail,
-        product_id: orderData.productId,
+        display_name: formName.trim(),
         order_id: orderData.id,
       });
 
@@ -120,10 +121,10 @@ function CheckoutSuccessContent() {
           </p>
 
           <div className="bg-slate-50 border border-border rounded-xl p-4 mb-6 text-left text-sm font-mono space-y-2">
-            {(orderId || invoiceNumber) && (
+            {orderId && (
               <div className="flex justify-between gap-3">
                 <span className="text-text-secondary/70">Order ID:</span>
-                <span className="font-bold text-text-primary truncate max-w-[150px]">{orderId || invoiceNumber}</span>
+                <span className="font-bold text-text-primary truncate max-w-[150px]">{orderId}</span>
               </div>
             )}
             <div className="flex justify-between border-t border-border/60 pt-2">
@@ -266,17 +267,18 @@ function CheckoutSuccessContent() {
                     />
                   </div>
 
+                  {/* The email is intentionally NOT shown here any more: the
+                      public order endpoint no longer returns customer PII. The
+                      review is still tied to the order's real email, resolved
+                      server-side from the order id in POST /api/reviews. */}
                   <div>
                     <label className="block text-xs font-black tracking-wider uppercase text-text-secondary mb-2">
                       Verified Email
                     </label>
-                    <input
-                      type="email"
-                      value={orderData.customerEmail || ''}
-                      disabled
-                      className="w-full bg-slate-100 border border-slate-200 text-text-secondary/70 rounded-xl px-4 py-3 text-sm font-medium cursor-not-allowed select-none"
-                    />
-                    <span className="text-[10px] text-text-secondary/60 mt-1 block">Tied securely to your purchase order.</span>
+                    <p className="w-full bg-slate-100 border border-slate-200 text-text-secondary/70 rounded-xl px-4 py-3 text-sm font-medium">
+                      Tied securely to the email on this order.
+                    </p>
+                    <span className="text-[10px] text-text-secondary/60 mt-1 block">We never show it publicly.</span>
                   </div>
 
                   <div>

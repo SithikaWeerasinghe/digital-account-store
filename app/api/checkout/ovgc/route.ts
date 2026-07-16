@@ -87,13 +87,20 @@ export async function POST(request: NextRequest) {
       orders.reduce((sum, o) => sum + Number(o.final_amount ?? o.amount ?? o.totalAmount ?? 0), 0).toFixed(2)
     );
     const primary = orders.find((o) => o.id === orderId) ?? orders[0];
-    const reference = `ovgc_${primary.invoice_number || primary.id}`;
+    // Reference keys the webhook match (stored below as checkout_reference and
+    // echoed back by OVGC as order_uuid). Built from the internal order id, NOT
+    // the invoice number: invoice numbers are enumerable (INV-<date>-<1000..9999>)
+    // and must not be handed to a third party or placed in a redirect URL.
+    // Safe to change — matching is data-driven (the webhook compares OVGC's
+    // order_uuid against the stored column), so in-flight orders still resolve.
+    const reference = `ovgc_${primary.id}`;
 
     const siteUrl =
       process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || new URL(request.url).origin;
 
     const result = await createOvgcCheckout({
       reference,
+      orderId: primary.id,
       amount,
       orderDescription: primary.invoice_number || primary.id,
       customerEmail: primary.customer_email || primary.userId,

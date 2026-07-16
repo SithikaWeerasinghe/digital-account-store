@@ -382,15 +382,12 @@ export async function getOrderById(id: string): Promise<Order | null> {
   return enriched;
 }
 
-export async function getOrderByInvoiceNumber(invoiceNumber: string): Promise<Order | null> {
-  if (!supabase) {
-    const row = inMemoryOrders.find((o) => o.invoice_number === invoiceNumber);
-    return row ? mapDatabaseOrder(row) : null;
-  }
-  const { data, error } = await supabase.from('orders').select('*').eq('invoice_number', invoiceNumber).single();
-  if (error || !data) return null;
-  return mapDatabaseOrder(data as DatabaseOrderRow);
-}
+// NOTE: getOrderByInvoiceNumber was removed deliberately. Invoice numbers are
+// INV-<date>-<1000..9999> (see generateInvoiceNumber) — only 9000 combinations
+// per day — so allowing a lookup by invoice number made the public order
+// endpoint trivially enumerable. Do NOT reintroduce a by-invoice-number lookup
+// on any unauthenticated route. Webhooks resolve orders by checkout_reference or
+// provider payment id (below), never by invoice number.
 
 /** All orders sharing a checkout reference (one NOWPayments invoice → many orders). */
 export async function getOrdersByCheckoutReference(reference: string): Promise<Order[]> {

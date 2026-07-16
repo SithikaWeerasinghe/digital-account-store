@@ -1,5 +1,5 @@
 import { Product } from '@/types/product';
-import { Review, CreateReviewInput } from '@/types/review';
+import { Review, SubmitReviewInput } from '@/types/review';
 import { Order, CreateOrderInput } from '@/types/order';
 import { Ticket, CreateTicketInput } from '@/types/ticket';
 import { AdminLoginInput } from '@/types/admin';
@@ -49,10 +49,6 @@ export async function fetchReviews(params?: { type?: 'website' | 'product'; prod
     url += `?${query.toString()}`;
   }
   return fetchApi<Review[]>(url);
-}
-
-export async function fetchOrders(): Promise<Order[]> {
-  return fetchApi<Order[]>('/api/orders');
 }
 
 export async function fetchTickets(): Promise<Ticket[]> {
@@ -418,7 +414,9 @@ export async function createTicket(payload: CreateTicketInput): Promise<any> {
   });
 }
 
-export async function createReview(payload: CreateReviewInput): Promise<any> {
+export async function createReview(payload: SubmitReviewInput): Promise<any> {
+  // Sends NO customer email: POST /api/reviews resolves the email and product id
+  // server-side from order_id, so the public order endpoint never returns PII.
   return fetchApi('/api/reviews', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -492,7 +490,11 @@ export async function deleteProduct(
 }
 
 export async function fetchAdminOrders(): Promise<Order[]> {
-  return fetchApi<Order[]>('/api/orders');
+  // GET /api/orders is admin-only — it must send the Supabase bearer token, else
+  // the API returns 401 "Unauthorized: No bearer token provided". fetchAdminApi
+  // attaches it and throws a clear "Please log in again" error when the session
+  // is missing or expired.
+  return fetchAdminApi<Order[]>('/api/orders');
 }
 
 export async function fetchAdminOrderById(id: string): Promise<Order> {
@@ -539,20 +541,23 @@ export async function fetchAdminTickets(): Promise<Ticket[]> {
   return fetchApi<Ticket[]>('/api/tickets');
 }
 
+// Admin review routes — all three return or mutate unpublished/moderation data,
+// so they must send the Supabase bearer token. fetchAdminApi attaches it and
+// throws "No authentication session. Please log in again." when the session is
+// missing or expired. The storefront's fetchReviews() stays unauthenticated.
 export async function fetchAdminReviews(): Promise<Review[]> {
-  return fetchApi<Review[]>('/api/reviews?all=true');
+  return fetchAdminApi<Review[]>('/api/reviews?all=true');
 }
 
 export async function approveAdminReview(id: string): Promise<any> {
-  return fetchApi('/api/reviews', {
+  return fetchAdminApi('/api/reviews', {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id }),
   });
 }
 
 export async function deleteAdminReview(id: string): Promise<any> {
-  return fetchApi(`/api/reviews?id=${encodeURIComponent(id)}`, {
+  return fetchAdminApi(`/api/reviews?id=${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
 }

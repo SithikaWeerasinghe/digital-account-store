@@ -11,7 +11,14 @@
       "PowerShell(cd \"d:\\\\Documents\\\\Github\\\\digital-account-store\"; Write-Host \"=== BRANCH ===\"; git branch --show-current; Write-Host \"=== STATUS \\(short\\) ===\"; git status --short; Write-Host \"=== UNCOMMITTED FILE COUNT ===\"; \\(git status --short | Measure-Object -Line\\).Lines; Write-Host \"=== LAST 5 COMMITS ===\"; git log --oneline -5; Write-Host \"=== UNPUSHED? \\(local vs origin\\) ===\"; git status -sb | Select-Object -First 1)",
       "PowerShell(npx tsc --noEmit; Write-Output \"TSC_EXIT_CODE=$LASTEXITCODE\")",
       "PowerShell(npm run build; Write-Output \"BUILD_EXIT_CODE=$LASTEXITCODE\")",
-      "PowerShell(npm run lint 2>&1 | Select-Object -First 60; Write-Output \"LINT_EXIT_CODE=$LASTEXITCODE\")"
+      "PowerShell(npm run lint 2>&1 | Select-Object -First 60; Write-Output \"LINT_EXIT_CODE=$LASTEXITCODE\")",
+      "PowerShell(npm run build 2>&1 | Select-Object -Last 25; Write-Output \"BUILD_EXIT_CODE=$LASTEXITCODE\")",
+      "PowerShell(npm run lint 2>&1 | Select-String -Pattern \"orders|reviews|success|api\\\\.ts|Error:|error|warning\" | Select-Object -First 30; Write-Output \"LINT_EXIT=$LASTEXITCODE\")",
+      "PowerShell(npx eslint app/api/orders app/api/reviews lib/api.ts lib/services/reviewService.ts lib/services/orderService.ts types/review.ts app/checkout/success -f compact 2>&1)",
+      "mcp__claude_ai_Supabase__list_projects",
+      "PowerShell(npm run build 2>&1 | Select-Object -First 12; Write-Output \"BUILD_EXIT_CODE=$LASTEXITCODE\")",
+      "PowerShell(npm run build 2>&1)",
+      "PowerShell($out = npm run build 2>&1 | Out-String; Write-Output \"BUILD_EXIT_CODE=$LASTEXITCODE\"; \\($out -split \"`n\" | Select-String -Pattern \"Compiled successfully|Generating static pages using 19 workers \\\\\\(34/34\\\\\\)|Failed|Error:\"\\))"
     ]
   }
 }

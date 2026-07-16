@@ -41,7 +41,14 @@ export function isOvgcConfigured(): boolean {
 }
 
 export type OvgcCheckoutInput = {
-  reference: string; // our checkout reference → OVGC order_uuid
+  reference: string; // our checkout reference → OVGC order_uuid (webhook matching)
+  /**
+   * The REAL internal order id, used only to build the success-page URL. Kept
+   * separate from `reference`: the reference is prefixed (and is matched whole
+   * against checkout_reference by the webhook), so it is not a valid order id
+   * and the success page cannot look an order up with it.
+   */
+  orderId: string;
   amount: number; // total in major units (e.g. 25.00 = €25.00)
   orderDescription?: string;
   customerEmail?: string;
@@ -84,10 +91,13 @@ export async function createOvgcCheckout(input: OvgcCheckoutInput): Promise<Ovgc
 
   const site = (input.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
   const baseSuccess = SUCCESS_URL || (site ? `${site}/checkout/success` : '');
-  // Carry the order reference back to the success page (informational only;
-  // payment is confirmed by the webhook, not by this redirect).
+  // Carry the REAL internal order id back to the success page (informational
+  // only; payment is confirmed by the webhook, not by this redirect). This must
+  // NOT be `input.reference` — that value is prefixed ("ovgc_…"), so the success
+  // page's GET /api/orders/<id> lookup never matched it and the customer lost
+  // the verified-review form. The webhook still matches on `reference`.
   const successUrl = baseSuccess
-    ? `${baseSuccess}${baseSuccess.includes('?') ? '&' : '?'}order_id=${encodeURIComponent(input.reference)}`
+    ? `${baseSuccess}${baseSuccess.includes('?') ? '&' : '?'}order_id=${encodeURIComponent(input.orderId)}`
     : '';
   const cancelUrl = CANCEL_URL || (site ? `${site}/checkout/cancel` : '');
 

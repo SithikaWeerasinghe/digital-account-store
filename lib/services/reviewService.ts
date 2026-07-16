@@ -13,9 +13,13 @@ export interface DatabaseReviewRow {
   created_at: string;
 }
 
+// Demo/fallback fixtures, only used when Supabase is unconfigured or returns no
+// rows. They carry a sentinel order_id so they still render as verified once
+// verifiedPurchase is derived from order_id (below) — they are display data and
+// never inserted into the database.
 const inMemoryReviews: DatabaseReviewRow[] = sampleReviews.map((r) => ({
   id: r.id,
-  order_id: null,
+  order_id: `sample-${r.id}`,
   product_id: r.productId,
   customer_email: r.userId.includes('@') ? r.userId : `${r.userId}@example.com`,
   rating: r.rating,
@@ -43,14 +47,52 @@ export function mapDatabaseReview(row: DatabaseReviewRow): Review {
   return {
     id: row.id,
     productId: row.product_id,
-    userId: email,
+    // NEVER expose the customer's email here. GET /api/reviews serves mapped
+    // reviews to every visitor, so returning the email published it in bulk for
+    // any row stored without the "email|name" pipe (blank name + all historical
+    // rows). No UI reads review.userId — only review.userName is rendered.
+    userId: row.id,
     userName,
     rating: row.rating,
     comment: row.comment,
     createdAt: row.created_at,
-    verifiedPurchase: true,
+    // Derived, not hardcoded. POST /api/reviews now resolves order_id against the
+    // orders table before a review is created, so for every review written after
+    // that change a non-null order_id means a real order was verified.
+    // Caveat: rows created BEFORE that change carry an unvalidated, client-supplied
+    // order_id, so their badge reflects "an order id was supplied", not "an order
+    // was checked". Nothing here exposes the order or the customer either way.
+    verifiedPurchase: !!row.order_id,
     isApproved: row.is_approved,
   };
+}
+
+/**
+ * Public-facing review shape. Deliberately drops the moderation flag; the mapper
+ * above already guarantees no customer email is present. Used for every
+ * unauthenticated read so the storefront can never receive admin-only fields.
+ */
+export function toPublicReview(review: Review): Omit<Review, 'isApproved'> {
+  const { isApproved, ...safe } = review;
+  void isApproved;
+  return safe;
+}
+
+/** One review per order — used to reject duplicate submissions. */
+export async function getReviewByOrderId(orderId: string): Promise<Review | null> {
+  if (!orderId) return null;
+  const client = supabaseAdmin || supabase;
+  if (!client) {
+    const row = inMemoryReviews.find((r) => r.order_id === orderId);
+    return row ? mapDatabaseReview(row) : null;
+  }
+  const { data, error } = await client
+    .from('reviews')
+    .select('*')
+    .eq('order_id', orderId)
+    .limit(1);
+  if (error || !data || data.length === 0) return null;
+  return mapDatabaseReview(data[0] as DatabaseReviewRow);
 }
 
 export async function getApprovedReviews(): Promise<Review[]> {
@@ -109,11 +151,20 @@ export async function createReview(input: CreateReviewInput): Promise<Review> {
   if (isNaN(ratingVal) || ratingVal < 1 || ratingVal > 5) throw new Error('Rating must be between 1 and 5');
   if (!input.comment?.trim()) throw new Error('Comment is required');
 
+  // The customer_email column overloads two fields as "email|displayName".
+  // mapDatabaseReview owns the decode (above), so the encode belongs here beside
+  // it rather than in a route handler. '|' is stripped from the name because the
+  // decode keeps only parts[1] — a name containing a pipe would silently truncate.
+  const displayName = (input.displayName || '').replace(/\|/g, ' ').trim().slice(0, 60);
+  const storedEmail = displayName
+    ? `${customerEmail.trim()}|${displayName}`
+    : customerEmail.trim();
+
   const newRow: DatabaseReviewRow = {
     id: `rev-${Math.random().toString(36).substring(2, 9)}`,
     order_id: orderId || null,
     product_id: productId || null,
-    customer_email: customerEmail.trim(),
+    customer_email: storedEmail,
     rating: Math.floor(ratingVal),
     comment: input.comment.trim(),
     is_approved: false,
