@@ -16,12 +16,16 @@ export const dynamic = 'force-dynamic';
  *  2. NO PII IN THE RESPONSE. This is the primary control, not id secrecy —
  *     order ids are currently generated with Math.random(), so they are NOT a
  *     cryptographic secret. Even a successful guess must yield nothing worth
- *     stealing: no customer email, no amount, no payment/delivery state, no
- *     invoice number, no delivery credentials, no order metadata.
+ *     stealing: no customer email, no amount, no invoice number, no delivery
+ *     credentials, no payment-provider ids, no order metadata.
  *
- * The success page only needs these three fields (it renders the product name
- * and submits a review keyed on the order id); the review's customer email is
- * derived server-side in POST /api/reviews, never returned to the browser.
+ * Payment/delivery status ARE returned: the success page must show real
+ * server-confirmed state (it previously hardcoded "Pending" forever) and poll
+ * for it while a webhook is still in flight. They are order state, not personal
+ * data, and reveal nothing about the customer.
+ *
+ * The review's customer email is still derived server-side in POST /api/reviews
+ * and never returned to the browser.
  */
 export async function GET(
   request: NextRequest,
@@ -51,12 +55,24 @@ export async function GET(
     const productId = order.product_id || (order.items && order.items[0]?.productId);
     const product = productId ? await productService.getProductById(productId) : null;
 
+    const paymentStatus = order.payment_status || 'pending';
+    const deliveryStatus = order.delivery_status || 'pending';
+
+    // Safe diagnostic: ids and state only — never the email, credentials, tokens
+    // or provider metadata.
+    console.log(
+      `[order-status] order=${order.id} payment=${paymentStatus} delivery=${deliveryStatus}`
+    );
+
     return NextResponse.json({
       success: true,
       data: {
         id: order.id,
         productId: productId || null,
         productName: product ? product.name : 'Digital Purchase',
+        paymentStatus,
+        deliveryStatus,
+        status: order.status || 'pending',
       },
     });
   } catch (error: any) {
